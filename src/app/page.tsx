@@ -87,7 +87,7 @@ export default function Home() {
         </div>
         <nav className="hidden md:flex gap-6 font-bold uppercase tracking-widest text-sm">
           <a href="#" className="hover:text-yellow-400 underline decoration-2 underline-offset-4">Fechas</a>
-          <a href="#" className="hover:text-yellow-400">Entrevistas</a>
+          <a href="/interviews" className="hover:text-yellow-400">Entrevistas</a>
           <a href="/submit" className="hover:text-yellow-400">Subir Fecha</a>
         </nav>
       </header>
