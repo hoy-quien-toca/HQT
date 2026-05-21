@@ -18,6 +18,7 @@ export default function InterviewsPage() {
     const { data, error } = await supabase
       .from('interviews')
       .select('*')
+      .eq('is_active', true) // Solo entrevistas activas
       .order('published_at', { ascending: false });
 
     if (!error && data) {
@@ -28,29 +29,23 @@ export default function InterviewsPage() {
 
   return (
     <div className="min-h-screen text-white font-sans relative overflow-x-hidden">
+      <div className="fixed inset-0 flex items-center justify-center pointer-events-none opacity-[0.05] z-0">
+        <Image src="/logo.jpg" alt="Watermark" width={1000} height={1000} className="grayscale" />
+      </div>
+
       <header className="border-b-4 border-yellow-400 p-6 flex justify-between items-center bg-zinc-950 sticky top-0 z-50 shadow-xl">
         <Link href="/" className="flex items-center gap-4">
-          <Image
-            src="/logo.jpg"
-            alt="Hoy Quien Toca Logo"
-            width={50}
-            height={50}
-            className="rounded-none border-2 border-white shadow-[2px_2px_0px_0px_rgba(250,204,21,1)]"
-          />
-          <h1 className="text-2xl md:text-4xl font-black tracking-tighter uppercase italic text-yellow-400">
-            Hoy Quien Toca
-          </h1>
+          <Image src="/logo.jpg" alt="Logo" width={50} height={50} className="border-2 border-white" />
+          <h1 className="text-2xl md:text-4xl font-black tracking-tighter uppercase italic text-yellow-400">Hoy Quien Toca</h1>
         </Link>
         <nav className="flex gap-6 font-bold uppercase tracking-widest text-xs">
           <Link href="/" className="hover:text-yellow-400">Fechas</Link>
-          <Link href="/interviews" className="hover:text-yellow-400 underline decoration-2 underline-offset-4 text-yellow-400">Entrevistas</Link>
+          <Link href="/interviews" className="hover:text-yellow-400 underline decoration-2 text-yellow-400">Entrevistas</Link>
         </nav>
       </header>
 
       <main className="max-w-6xl mx-auto p-6 space-y-12 relative z-10">
-        <h2 className="text-6xl font-black uppercase italic tracking-tighter text-center py-10 border-b-8 border-white">
-          Entrevistas
-        </h2>
+        <h2 className="text-6xl font-black uppercase italic tracking-tighter text-center py-10 border-b-8 border-white">Entrevistas</h2>
 
         {loading ? (
           <p className="text-center text-4xl font-black animate-pulse text-yellow-400 uppercase italic">Cargando...</p>
@@ -59,7 +54,7 @@ export default function InterviewsPage() {
             <p className="text-3xl font-black uppercase italic text-zinc-600 tracking-tighter">Próximamente nuevas entrevistas...</p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-12 text-left">
             {interviews.map((interview) => (
               <Link 
                 href={`/interviews/${interview.id}`} 
@@ -73,16 +68,13 @@ export default function InterviewsPage() {
                     <div className="w-full h-full flex items-center justify-center text-zinc-500 font-black italic uppercase">Sin Imagen</div>
                   )}
                 </div>
-                <div className="space-y-3 text-left">
-                  <span className="bg-yellow-400 text-black px-3 py-1 text-xs font-black uppercase tracking-widest italic">
-                    {interview.band_name}
-                  </span>
-                  <h3 className="text-3xl font-black uppercase leading-none group-hover:text-yellow-400 transition-colors">
-                    {interview.title}
-                  </h3>
-                  <p className="text-zinc-500 font-bold text-xs uppercase tracking-tighter">
-                    Publicado: {new Date(interview.published_at).toLocaleDateString()}
-                  </p>
+                <div className="space-y-3">
+                  <span className="bg-yellow-400 text-black px-3 py-1 text-xs font-black uppercase tracking-widest italic">{interview.band_name}</span>
+                  <h3 className="text-3xl font-black uppercase leading-none group-hover:text-yellow-400 transition-colors">{interview.title}</h3>
+                  <div className="flex justify-between items-center text-zinc-500 font-bold text-[10px] uppercase tracking-tighter">
+                    <p>Publicado: {new Date(interview.published_at).toLocaleDateString()}</p>
+                    {interview.author && <p>Por: {interview.author}</p>}
+                  </div>
                 </div>
               </Link>
             ))}

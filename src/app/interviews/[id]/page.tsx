@@ -40,31 +40,47 @@ export default function InterviewDetail() {
   );
 
   return (
-    <div className="min-h-screen text-white font-sans relative overflow-x-hidden">
+    <div className="min-h-screen text-white font-sans relative overflow-x-hidden text-left">
+      <div className="fixed inset-0 flex items-center justify-center pointer-events-none opacity-[0.05] z-0">
+        <Image src="/logo.jpg" alt="Watermark" width={1000} height={1000} className="grayscale" />
+      </div>
+
       <header className="border-b-4 border-yellow-400 p-6 flex justify-between items-center bg-zinc-950 sticky top-0 z-50 shadow-xl">
         <Link href="/" className="flex items-center gap-4">
           <Image src="/logo.jpg" alt="Logo" width={40} height={40} className="border border-white" />
-          <h1 className="text-xl md:text-3xl font-black tracking-tighter uppercase italic text-yellow-400 text-left">Hoy Quien Toca</h1>
+          <h1 className="text-xl md:text-3xl font-black tracking-tighter uppercase italic text-yellow-400">Hoy Quien Toca</h1>
         </Link>
         <Link href="/interviews" className="font-black uppercase tracking-widest text-xs hover:text-yellow-400">← Volver</Link>
       </header>
 
-      <article className="max-w-4xl mx-auto p-6 space-y-8 py-16 relative z-10 text-left">
+      <article className="max-w-4xl mx-auto p-6 space-y-8 py-16 relative z-10">
         <div className="space-y-4">
-          <span className="bg-red-600 text-white px-4 py-1 text-sm font-black uppercase tracking-widest italic shadow-[4px_4px_0px_0px_rgba(255,255,255,1)]">
+          <span className="bg-red-600 text-white px-4 py-1 text-sm font-black uppercase tracking-widest italic shadow-md">
             Entrevista: {interview.band_name}
           </span>
           <h1 className="text-5xl md:text-7xl font-black uppercase leading-[0.9] tracking-tighter text-yellow-400">
             {interview.title}
           </h1>
-          <p className="text-zinc-500 font-bold uppercase text-xs tracking-widest border-l-4 border-yellow-400 pl-3">
-            Publicado el {new Date(interview.published_at).toLocaleDateString()}
-          </p>
+          <div className="flex justify-between items-center border-l-4 border-yellow-400 pl-3">
+             <p className="text-zinc-500 font-bold uppercase text-xs tracking-widest">
+               Publicado el {new Date(interview.published_at).toLocaleDateString()}
+             </p>
+             {interview.author && (
+               <p className="text-yellow-400 font-black uppercase text-xs italic tracking-widest">
+                 Por: {interview.author}
+               </p>
+             )}
+          </div>
         </div>
 
         {interview.image_url && (
-          <div className="border-8 border-white shadow-[12px_12px_0px_0px_rgba(234,179,8,1)] overflow-hidden">
+          <div className="border-8 border-white shadow-[12px_12px_0px_0px_rgba(234,179,8,1)] overflow-hidden relative group">
             <img src={interview.image_url} alt={interview.band_name} className="w-full h-auto grayscale hover:grayscale-0 transition-all duration-700" />
+            {interview.photo_credit && (
+              <div className="absolute bottom-2 right-2 bg-black/80 text-white text-[8px] font-black px-2 py-1 uppercase tracking-widest border border-white">
+                Foto: {interview.photo_credit}
+              </div>
+            )}
           </div>
         )}
 
