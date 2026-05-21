@@ -10,11 +10,11 @@ export default function Home() {
   const [allEvents, setAllEvents] = useState<any[]>([]);
   const [featuredEvents, setFeaturedEvent] = useState<any[]>([]);
   const [currentHeroIndex, setCurrentHeroIndex] = useState(0);
-  const [ads, setAds] = useState<any[]>([]);
+  const [sponsors, setSponsors] = useState<any[]>([]); // Renamed from ads
   const [currentBottomAdIndex, setCurrentBottomAdIndex] = useState(0);
   const [loading, setLoading] = useState(true);
   const [selectedEvent, setSelectedEvent] = useState<any>(null);
-  const [selectedAd, setSelectedAd] = useState<any>(null); // For Ad Modal
+  const [selectedAd, setSelectedAd] = useState<any>(null);
   
   const [department, setDepartment] = useState('');
   const [genre, setGenre] = useState('');
@@ -24,7 +24,6 @@ export default function Home() {
     fetchData();
   }, []);
 
-  // Hero Banner Rotation (10s)
   useEffect(() => {
     if (featuredEvents.length > 1) {
       const timer = setInterval(() => {
@@ -34,28 +33,27 @@ export default function Home() {
     }
   }, [featuredEvents]);
 
-  // Bottom Ad Rotation (10s)
   useEffect(() => {
-    const bottomAds = ads.filter(a => a.position === 'bottom');
+    const bottomAds = sponsors.filter(a => a.position === 'bottom');
     if (bottomAds.length > 1) {
       const timer = setInterval(() => {
         setCurrentBottomAdIndex((prev) => (prev + 1) % bottomAds.length);
       }, 10000);
       return () => clearInterval(timer);
     }
-  }, [ads]);
+  }, [sponsors]);
 
   async function fetchData() {
     setLoading(true);
     const { data: eventData } = await supabase.from('events').select('*').eq('is_approved', true).order('date', { ascending: true });
-    const { data: adData } = await supabase.from('ads').select('*').eq('is_active', true);
+    const { data: sponsorData } = await supabase.from('sponsors').select('*').eq('is_active', true); // Fetch from sponsors table
 
     if (eventData) {
       setAllEvents(eventData);
       setEvents(eventData);
       setFeaturedEvent(eventData.filter(e => e.is_featured));
     }
-    if (adData) setAds(adData);
+    if (sponsorData) setSponsors(sponsorData);
     setLoading(false);
   }
 
@@ -67,9 +65,9 @@ export default function Home() {
     setEvents(filtered);
   }
 
-  const bottomAds = ads.filter(a => a.position === 'bottom' || a.position === 'top'); // 'top' now maps to bottom in logic
+  const bottomAds = sponsors.filter(a => a.position === 'bottom');
   const activeBottomAd = bottomAds[currentBottomAdIndex];
-  const sidebarAds = ads.filter(a => a.position === 'sidebar');
+  const sidebarAds = sponsors.filter(a => a.position === 'sidebar');
   
   const activeDepartments = Array.from(new Set(allEvents.map(e => e.department))).sort();
   const activeGenres = Array.from(new Set(allEvents.map(e => e.genre))).sort();
@@ -89,13 +87,12 @@ export default function Home() {
 
   return (
     <div className="min-h-screen text-white font-sans relative overflow-x-hidden">
-      {/* Watermark Logo */}
       <div className="fixed inset-0 flex items-center justify-center pointer-events-none opacity-[0.05] z-0">
         <Image src="/logo.jpg" alt="Watermark" width={1000} height={1000} className="grayscale" />
       </div>
 
       <header className="border-b-4 border-yellow-400 p-6 flex justify-between items-center bg-zinc-950 sticky top-0 z-50 shadow-xl">
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-4 text-left">
           <Image src="/logo.jpg" alt="Logo" width={60} height={60} className="border-2 border-white shadow-[4px_4px_0px_0px_rgba(250,204,21,1)]" />
           <h1 className="text-3xl md:text-5xl font-black tracking-tighter uppercase italic text-yellow-400">Hoy Quien Toca</h1>
         </div>
@@ -107,18 +104,15 @@ export default function Home() {
       </header>
 
       <main className="max-w-6xl mx-auto p-6 space-y-12 relative z-10">
-        
-        {/* Rotating Hero Banner */}
         {featuredEvents.length > 0 && (
-          <section className="relative h-[450px] border-8 border-white bg-zinc-800 flex items-end p-10 overflow-hidden shadow-[12px_12px_0px_0px_rgba(234,179,8,1)] group transition-all duration-1000">
-            <div className="absolute inset-0 transition-opacity duration-1000">
+          <section className="relative h-[450px] border-8 border-white bg-zinc-800 flex items-end p-10 overflow-hidden shadow-[12px_12px_0px_0px_rgba(234,179,8,1)] group">
+            <div className="absolute inset-0">
                {featuredEvents[currentHeroIndex].flyer_url && (
                  <img src={featuredEvents[currentHeroIndex].flyer_url} className="absolute inset-0 w-full h-full object-cover opacity-40 blur-[2px]" />
                )}
             </div>
             <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent z-10" />
-            
-            <div className="relative z-20 w-full animate-in fade-in slide-in-from-bottom-4 duration-1000">
+            <div className="relative z-20 w-full text-left">
               <span className="bg-red-600 text-white px-4 py-1 text-sm font-black uppercase italic tracking-widest shadow-[4px_4px_0px_0px_rgba(255,255,255,1)]">
                 {featuredEvents[currentHeroIndex].suggestion_tag || 'DESTACADO'}
               </span>
@@ -130,8 +124,6 @@ export default function Home() {
               </p>
               <button onClick={() => setSelectedEvent(featuredEvents[currentHeroIndex])} className="mt-8 bg-white text-black font-black uppercase px-8 py-3 hover:bg-yellow-400 transition-all shadow-[6px_6px_0px_0px_rgba(255,255,255,0.3)]">Ver Info Completa</button>
             </div>
-            
-            {/* Carousel Indicators */}
             <div className="absolute top-6 right-8 z-30 flex gap-2">
               {featuredEvents.map((_, i) => (
                 <div key={i} className={`h-2 w-8 border border-white transition-all ${i === currentHeroIndex ? 'bg-yellow-400 w-12' : 'bg-transparent opacity-50'}`} />
@@ -142,7 +134,6 @@ export default function Home() {
 
         <div className="flex flex-col lg:flex-row gap-12">
           <div className="flex-1 space-y-12 text-left">
-            {/* Filters */}
             <section className="bg-yellow-400 text-black p-4 flex flex-wrap gap-4 items-center font-black uppercase italic shadow-[8px_8px_0px_0px_rgba(255,255,255,1)]">
               <span className="text-xl tracking-tighter">Filtrar:</span>
               <select value={department} onChange={(e) => { setDepartment(e.target.value); applyFilters(e.target.value, genre, date); }} className="bg-black text-white p-2 border-2 border-white focus:outline-none font-bold min-w-[150px]">
@@ -157,7 +148,6 @@ export default function Home() {
               <button onClick={() => {setDepartment(''); setGenre(''); setDate(''); setEvents(allEvents);}} className="text-[10px] underline hover:text-red-600 font-bold uppercase">Limpiar</button>
             </section>
 
-            {/* Event Feed */}
             <section className="grid grid-cols-1 md:grid-cols-2 gap-8">
               {loading ? (
                 <p className="col-span-full text-center text-4xl font-black animate-pulse text-yellow-400 uppercase italic">Cargando...</p>
@@ -168,7 +158,7 @@ export default function Home() {
                   <div key={event.id} onClick={() => setSelectedEvent(event)} className="border-4 border-white p-4 hover:translate-x-2 hover:-translate-y-2 transition-all bg-zinc-950 shadow-[8px_8px_0px_0px_rgba(234,179,8,1)] flex flex-col group/card relative overflow-hidden cursor-pointer">
                     {event.suggestion_tag && <div className="absolute top-2 left-2 bg-yellow-400 text-black text-[8px] font-black px-2 py-0.5 z-20 shadow-md uppercase tracking-widest">{event.suggestion_tag}</div>}
                     {event.is_sold_out && <div className="absolute top-8 -right-12 bg-red-600 text-white font-black py-2 px-12 rotate-45 uppercase text-sm border-y-2 border-white z-30 shadow-xl tracking-tighter italic">¡AGOTADO!</div>}
-                    <div className="aspect-square bg-zinc-800 mb-4 border-2 border-zinc-700 flex items-center justify-center overflow-hidden">
+                    <div className="aspect-square bg-zinc-800 mb-4 border-2 border-zinc-700 flex items-center justify-center overflow-hidden shadow-[inset_0_0_20px_rgba(0,0,0,0.5)]">
                       {event.flyer_url ? <img src={event.flyer_url} alt="Flyer" className={`object-cover w-full h-full transition-all duration-500 ${event.is_sold_out ? 'grayscale blur-[1px]' : 'group-hover/card:scale-105'}`} /> : <div className="text-zinc-600 font-black italic">FLYER DEL SHOW</div>}
                     </div>
                     <div className="space-y-2 flex-1">
@@ -185,7 +175,6 @@ export default function Home() {
             </section>
           </div>
 
-          {/* Sidebar Ads */}
           <aside className="lg:w-72 space-y-8 relative z-10 text-left">
             <h3 className="text-xl font-black uppercase italic text-yellow-400 border-b-4 border-yellow-400 pb-2 tracking-widest shadow-[4px_4px_0px_0px_rgba(255,255,255,1)] inline-block px-2 bg-zinc-950">Auspician</h3>
             <div className="space-y-6">
@@ -204,17 +193,15 @@ export default function Home() {
           </aside>
         </div>
 
-        {/* Rotating Bottom Ad Banner (Extra High) */}
         {activeBottomAd && (
           <section className="pt-12">
              <a href={activeBottomAd.link} target="_blank" rel="noopener noreferrer" className="block w-full h-48 md:h-64 bg-zinc-950 border-8 border-white overflow-hidden shadow-[12px_12px_0px_0px_rgba(255,255,255,1)] group relative">
-                <img src={activeBottomAd.image_url} alt="Auspiciante" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-1000" />
-                <div className="absolute top-4 left-4 bg-black/80 text-white text-[10px] font-black px-4 py-1 border-2 border-yellow-400 uppercase tracking-widest">Publicidad Destacada</div>
+                <img src={activeBottomAd.image_url} alt="Sponsor" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-1000" />
+                <div className="absolute top-4 left-4 bg-black/80 text-white text-[10px] font-black px-4 py-1 border-2 border-yellow-400 uppercase tracking-widest">Auspiciante Destacado</div>
              </a>
           </section>
         )}
 
-        {/* Event Detail Modal */}
         {selectedEvent && (
           <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 md:p-10">
             <div className="absolute inset-0 bg-black/90 backdrop-blur-sm" onClick={() => setSelectedEvent(null)} />
@@ -234,7 +221,7 @@ export default function Home() {
                 </div>
                 <div className="border-t-2 border-zinc-800 pt-6">
                   <h4 className="text-xs font-black uppercase text-zinc-500 mb-2 italic">Reseña / Bio del Show</h4>
-                  <div className="text-zinc-200 leading-relaxed font-medium space-y-4 max-h-48 overflow-y-auto pr-4 text-sm uppercase">
+                  <div className="text-zinc-200 leading-relaxed font-medium space-y-4 max-h-48 overflow-y-auto pr-4 text-sm uppercase custom-scrollbar">
                     {selectedEvent.description?.split('\n').map((p: string, i: number) => <p key={i}>{p}</p>) || <p className="italic text-zinc-600">No hay reseña disponible.</p>}
                   </div>
                 </div>
@@ -252,7 +239,6 @@ export default function Home() {
           </div>
         )}
 
-        {/* Ad Detail Modal */}
         {selectedAd && (
           <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
             <div className="absolute inset-0 bg-black/95 backdrop-blur" onClick={() => setSelectedAd(null)} />
