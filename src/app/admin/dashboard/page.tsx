@@ -7,10 +7,12 @@ import { useRouter } from 'next/navigation';
 export default function AdminDashboard() {
   const [events, setEvents] = useState<any[]>([]);
   const [messages, setMessages] = useState<any[]>([]);
+  const [interviews, setInterviews] = useState<any[]>([]);
   const [ads, setAds] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
   
+  const [newInterview, setNewInterview] = useState({ title: '', band_name: '', content: '', image_url: '' });
   const [newAd, setNewAd] = useState({ client_name: '', image_url: '', link: '', position: 'sidebar' });
 
   const router = useRouter();
@@ -26,13 +28,15 @@ export default function AdminDashboard() {
 
   async function fetchData() {
     setLoading(true);
-    const [eventRes, messageRes, adRes] = await Promise.all([
+    const [eventRes, messageRes, interviewRes, adRes] = await Promise.all([
       supabase.from('events').select('*').order('date', { ascending: true }),
       supabase.from('contact_messages').select('*').order('created_at', { ascending: false }),
+      supabase.from('interviews').select('*').order('published_at', { ascending: false }),
       supabase.from('ads').select('*').order('created_at', { ascending: false })
     ]);
     setEvents(eventRes.data || []);
     setMessages(messageRes.data || []);
+    setInterviews(interviewRes.data || []);
     setAds(adRes.data || []);
     setLoading(false);
   }
@@ -42,8 +46,14 @@ export default function AdminDashboard() {
     const fileExt = file.name.split('.').pop();
     const fileName = `${Math.random()}.${fileExt}`;
     const filePath = `${folder}/${fileName}`;
+
     const { error: uploadError } = await supabase.storage.from('hqt-assets').upload(filePath, file);
-    if (uploadError) { alert('Error subiendo: ' + uploadError.message); setUploading(false); return null; }
+    if (uploadError) {
+      alert('Error subiendo: ' + uploadError.message);
+      setUploading(false);
+      return null;
+    }
+
     const { data } = supabase.storage.from('hqt-assets').getPublicUrl(filePath);
     setUploading(false);
     return data.publicUrl;
@@ -71,16 +81,42 @@ export default function AdminDashboard() {
     if (!error) {
       setNewAd({ client_name: '', image_url: '', link: '', position: 'sidebar' });
       fetchData();
+    } else {
+      alert('Error al guardar: ' + error.message);
     }
   }
 
   async function toggleAdStatus(id: string, currentStatus: boolean) {
-    await supabase.from('ads').update({ is_active: !currentStatus }).eq('id', id);
-    fetchData();
+    const { error } = await supabase.from('ads').update({ is_active: !currentStatus }).eq('id', id);
+    if (error) alert('Error: ' + error.message);
+    else fetchData();
   }
 
   async function deleteAd(id: string) {
-    if (confirm('¿Borrar publicidad?')) { await supabase.from('ads').delete().eq('id', id); fetchData(); }
+    if (confirm('¿Borrar anuncio definitivamente?')) {
+      const { error } = await supabase.from('ads').delete().eq('id', id);
+      if (error) alert('Error: ' + error.message);
+      else fetchData();
+    }
+  }
+
+  async function handleCreateInterview(e: React.FormEvent) {
+    e.preventDefault();
+    if (!newInterview.image_url) return alert('Sube una foto primero');
+    const { error } = await supabase.from('interviews').insert([newInterview]);
+    if (!error) {
+      setNewInterview({ title: '', band_name: '', content: '', image_url: '' });
+      fetchData();
+    } else {
+      alert('Error: ' + error.message);
+    }
+  }
+
+  async function deleteInterview(id: string) {
+    if (confirm('¿Borrar entrevista?')) {
+      await supabase.from('interviews').delete().eq('id', id);
+      fetchData();
+    }
   }
 
   async function toggleApproval(id: string, currentStatus: boolean) {
@@ -89,10 +125,13 @@ export default function AdminDashboard() {
   }
 
   async function deleteEvent(id: string) {
-    if (confirm('¿Borrar evento?')) { await supabase.from('events').delete().eq('id', id); fetchData(); }
+    if (confirm('¿Borrar evento?')) {
+      await supabase.from('events').delete().eq('id', id);
+      fetchData();
+    }
   }
 
-  if (loading) return <div className="min-h-screen bg-black text-yellow-400 flex items-center justify-center font-black text-4xl">CARGANDO...</div>;
+  if (loading) return <div className="min-h-screen bg-black text-yellow-400 flex items-center justify-center font-black text-4xl uppercase italic">Cargando Admin...</div>;
 
   return (
     <div className="min-h-screen bg-zinc-900 text-white p-6 font-sans relative">
@@ -105,23 +144,18 @@ export default function AdminDashboard() {
       </header>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
-        {/* Gestion de Fechas */}
+        {/* Gestión de Fechas */}
         <section className="space-y-6">
-          <h2 className="text-2xl font-black uppercase italic text-yellow-400 border-l-8 border-yellow-400 pl-4 bg-zinc-950 py-2">Gestión de Fechas</h2>
+          <h2 className="text-2xl font-black uppercase italic text-yellow-400 border-l-8 border-yellow-400 pl-4 bg-zinc-950 py-2">Fechas y Destacados</h2>
           <div className="space-y-6 max-h-[800px] overflow-y-auto pr-2 custom-scrollbar">
             {events.map((event) => (
               <div key={event.id} className={`border-4 p-4 flex flex-col gap-4 ${event.is_approved ? 'border-zinc-700 bg-zinc-950/90' : 'border-red-600 bg-zinc-900'}`}>
-                <div className="flex justify-between items-center">
+                <div className="flex justify-between items-center w-full">
                   <div className="flex gap-4 items-center">
-                    {event.flyer_url ? (
-                      <img src={event.flyer_url} className="w-16 h-16 object-cover border-2 border-white shadow-md" />
-                    ) : (
-                      <div className="w-16 h-16 bg-zinc-800 border-2 border-zinc-700 flex items-center justify-center text-[8px] font-black text-zinc-500">SIN FLYER</div>
-                    )}
+                    {event.flyer_url && <img src={event.flyer_url} className="w-16 h-16 object-cover border-2 border-white shadow-md" />}
                     <div>
                       <h3 className="text-xl font-black uppercase leading-none text-white">{event.band_name}</h3>
                       <p className="text-[10px] font-bold text-yellow-400 uppercase tracking-widest">{event.date} @ {event.venue}</p>
-                      <p className="text-[8px] text-zinc-500 font-bold uppercase">{event.city}, {event.department}</p>
                     </div>
                   </div>
                   <div className="flex gap-2">
@@ -134,7 +168,6 @@ export default function AdminDashboard() {
 
                 {event.is_approved && (
                   <div className="space-y-4 border-t border-zinc-800 pt-4">
-                    {/* Boton para el Banner Principal */}
                     <button 
                       onClick={() => toggleFeatured(event.id, event.is_featured)} 
                       className={`w-full py-2 font-black uppercase text-xs border-4 transition-all ${event.is_featured ? 'bg-yellow-400 text-black border-white shadow-[4px_4px_0px_0px_rgba(255,255,255,1)]' : 'bg-black text-yellow-400 border-yellow-400 hover:bg-zinc-800'}`}
@@ -147,11 +180,11 @@ export default function AdminDashboard() {
                       <button onClick={() => updateEventTag(event.id, 'PLANAZO')} className={`px-2 py-1 text-[9px] font-black uppercase border-2 ${event.suggestion_tag === 'PLANAZO' ? 'bg-red-600 border-white text-white' : 'border-red-600 text-red-600'}`}>PLANAZO</button>
                       <button onClick={() => updateEventTag(event.id, 'SALIDA SEGURA')} className={`px-2 py-1 text-[9px] font-black uppercase border-2 ${event.suggestion_tag === 'SALIDA SEGURA' ? 'bg-yellow-400 border-black text-black' : 'border-yellow-400 text-yellow-400'}`}>SALIDA SEGURA</button>
                       <button onClick={() => updateEventTag(event.id, 'NO FALLA')} className={`px-2 py-1 text-[9px] font-black uppercase border-2 ${event.suggestion_tag === 'NO FALLA' ? 'bg-white border-black text-black' : 'border-white text-white'}`}>NO FALLA</button>
-                      <button onClick={() => updateEventTag(event.id, '')} className="text-[8px] font-black text-zinc-500 hover:text-white underline ml-2">BORRAR ETIQUETA</button>
+                      <button onClick={() => updateEventTag(event.id, '')} className="text-[8px] font-black text-zinc-500 hover:text-white underline ml-2 cursor-pointer">BORRAR ETIQUETA</button>
                     </div>
 
                     <button onClick={() => toggleSoldOut(event.id, event.is_sold_out)} className={`w-full py-2 font-black uppercase text-xs border-2 transition-all ${event.is_sold_out ? 'bg-red-600 border-white text-white' : 'border-zinc-700 text-zinc-500 hover:border-red-600 hover:text-red-600'}`}>
-                      {event.is_sold_out ? '¡AGOTADO! (Click para vender de nuevo)' : 'MARCAR COMO AGOTADO'}
+                      {event.is_sold_out ? 'VENDER DE NUEVO' : 'MARCAR COMO AGOTADO'}
                     </button>
                   </div>
                 )}
@@ -160,47 +193,45 @@ export default function AdminDashboard() {
           </div>
         </section>
 
-        {/* Publicidad y Mensajes */}
+        {/* Publicidad, Mensajes y Entrevistas */}
         <section className="space-y-12">
           {/* Publicidad */}
           <div className="space-y-6">
-            <h2 className="text-2xl font-black uppercase italic text-yellow-400 border-l-8 border-yellow-400 pl-4 bg-zinc-950 py-2">Gestión de Publicidad</h2>
+            <h2 className="text-2xl font-black uppercase italic text-yellow-400 border-l-8 border-yellow-400 pl-4 bg-zinc-950 py-2">Publicidad</h2>
             <form onSubmit={handleCreateAd} className="bg-zinc-950 p-6 border-4 border-white space-y-4 shadow-xl">
-              <input placeholder="Nombre del Cliente" className="w-full bg-black border-2 border-white p-2 font-bold uppercase text-xs text-white focus:border-yellow-400 outline-none" value={newAd.client_name} onChange={e => setNewAd({...newAd, client_name: e.target.value})} required />
+              <input placeholder="Cliente" className="w-full bg-black border-2 border-white p-2 font-bold uppercase text-xs text-white outline-none focus:border-yellow-400" value={newAd.client_name} onChange={e => setNewAd({...newAd, client_name: e.target.value})} required />
               
               <div className="flex gap-4 items-center border-2 border-dashed border-zinc-700 p-4 text-center relative hover:border-yellow-400 transition-colors">
                 <div className="flex-1">
-                  <p className="text-[10px] font-black uppercase text-zinc-500">{uploading ? 'Subiendo archivo...' : (newAd.image_url ? '¡Imagen Cargada! ✅' : 'Subir Imagen / GIF / Video')}</p>
-                  <p className="text-[8px] text-zinc-600 mt-1 uppercase italic">(Lateral: 400x500px | Inferior: 1200x400px)</p>
+                  <p className="text-[10px] font-black uppercase text-zinc-500">{uploading ? 'Subiendo...' : (newAd.image_url ? 'Imagen Cargada ✅' : 'Subir Imagen/GIF/Video')}</p>
                 </div>
                 <input type="file" className="absolute inset-0 opacity-0 cursor-pointer" onChange={async (e) => {
                   const file = e.target.files?.[0]; if (file) { const url = await handleFileUpload(file, 'ads'); if (url) setNewAd({...newAd, image_url: url}); }
                 }} />
-                {newAd.image_url && <img src={newAd.image_url} className="h-16 w-16 object-cover border-2 border-white" />}
+                {newAd.image_url && <img src={newAd.image_url} className="h-10 w-10 object-cover border" />}
               </div>
 
               <div className="grid grid-cols-2 gap-4">
-                <input placeholder="Link (Opcional)" className="bg-black border-2 border-white p-2 text-xs text-white focus:border-yellow-400 outline-none" value={newAd.link} onChange={e => setNewAd({...newAd, link: e.target.value})} />
-                <select className="bg-black border-2 border-white p-2 text-xs text-white uppercase font-black focus:border-yellow-400 outline-none" value={newAd.position} onChange={e => setNewAd({...newAd, position: e.target.value})}>
-                  <option value="sidebar">LATERAL (Costado)</option>
-                  <option value="bottom">INFERIOR (Banner Grande)</option>
+                <input placeholder="Link" className="bg-black border-2 border-white p-2 text-xs text-white outline-none focus:border-yellow-400" value={newAd.link} onChange={e => setNewAd({...newAd, link: e.target.value})} />
+                <select className="bg-black border-2 border-white p-2 text-xs text-white font-black" value={newAd.position} onChange={e => setNewAd({...newAd, position: e.target.value})}>
+                  <option value="sidebar">LATERAL</option>
+                  <option value="bottom">INFERIOR</option>
                 </select>
               </div>
-              
-              <button type="submit" disabled={uploading || !newAd.image_url} className="w-full bg-yellow-400 text-black font-black uppercase py-3 text-sm hover:bg-white transition-colors disabled:opacity-50 shadow-[4px_4px_0px_0px_rgba(255,255,255,1)]">Guardar Anuncio</button>
+              <button type="submit" disabled={uploading || !newAd.image_url} className="w-full bg-yellow-400 text-black font-black uppercase py-3 text-sm hover:bg-white transition-colors">Guardar</button>
             </form>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-h-[400px] overflow-y-auto pr-2 custom-scrollbar">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-h-[300px] overflow-y-auto pr-2 custom-scrollbar">
               {ads.map(ad => (
                 <div key={ad.id} className={`border-2 p-3 flex flex-col gap-2 ${ad.is_active ? 'border-yellow-400 bg-zinc-950' : 'border-zinc-800 opacity-50 bg-zinc-900'}`}>
-                  <div className="flex justify-between items-start">
-                    <div>
-                      <h3 className="text-[10px] font-black uppercase text-white truncate max-w-[120px]">{ad.client_name}</h3>
-                      <span className="text-[8px] font-bold text-zinc-500 uppercase tracking-tighter">{ad.position === 'sidebar' ? 'LATERAL' : 'BANNER INFERIOR'}</span>
+                  <div className="flex justify-between items-start w-full">
+                    <div className="truncate max-w-[100px]">
+                      <h3 className="text-[10px] font-black uppercase text-white truncate">{ad.client_name}</h3>
+                      <span className="text-[7px] text-zinc-500 uppercase">{ad.position}</span>
                     </div>
                     <div className="flex gap-1">
-                      <button onClick={() => toggleAdStatus(ad.id, ad.is_active)} className={`px-2 py-1 text-[7px] font-black uppercase border ${ad.is_active ? 'bg-zinc-800 border-zinc-600 text-zinc-400' : 'bg-green-600 border-white text-white'}`}>{ad.is_active ? 'PAUSAR' : 'ACTIVAR'}</button>
-                      <button onClick={() => deleteAd(ad.id)} className="px-2 py-1 bg-red-600 border border-white text-[7px] font-black uppercase text-white">X</button>
+                      <button onClick={() => toggleAdStatus(ad.id, ad.is_active)} className={`px-2 py-1 text-[7px] font-black uppercase border ${ad.is_active ? 'bg-zinc-800 text-zinc-400' : 'bg-green-600 text-white'}`}>{ad.is_active ? 'PAUSAR' : 'ACTIVAR'}</button>
+                      <button onClick={() => deleteAd(ad.id)} className="px-2 py-1 bg-red-600 text-white border border-white text-[7px] font-black uppercase">X</button>
                     </div>
                   </div>
                   <img src={ad.image_url} className="w-full h-16 object-cover border border-zinc-800" />
@@ -209,17 +240,48 @@ export default function AdminDashboard() {
             </div>
           </div>
 
+          {/* Entrevistas */}
+          <div className="space-y-6 border-t-4 border-zinc-800 pt-8">
+            <h2 className="text-2xl font-black uppercase italic text-yellow-400 border-l-8 border-yellow-400 pl-4 bg-zinc-950 py-2">Entrevistas</h2>
+            <form onSubmit={handleCreateInterview} className="bg-zinc-950 p-6 border-4 border-white space-y-4 shadow-xl">
+              <input placeholder="Título" className="w-full bg-black border-2 border-white p-2 font-bold uppercase text-xs text-white outline-none focus:border-yellow-400" value={newInterview.title} onChange={e => setNewInterview({...newInterview, title: e.target.value})} required />
+              <input placeholder="Banda" className="w-full bg-black border-2 border-white p-2 font-bold uppercase text-xs text-white outline-none focus:border-yellow-400" value={newInterview.band_name} onChange={e => setNewInterview({...newInterview, band_name: e.target.value})} required />
+              
+              <div className="flex gap-4 items-center border-2 border-dashed border-zinc-700 p-4 text-center relative hover:border-yellow-400 transition-colors">
+                <p className="text-[10px] font-black uppercase text-zinc-500 flex-1">{uploading ? 'Subiendo...' : (newInterview.image_url ? 'Foto Lista ✅' : 'Subir Foto Banda')}</p>
+                <input type="file" className="absolute inset-0 opacity-0 cursor-pointer" onChange={async (e) => {
+                  const file = e.target.files?.[0]; if (file) { const url = await handleFileUpload(file, 'interviews'); if (url) setNewInterview({...newInterview, image_url: url}); }
+                }} />
+                {newInterview.image_url && <img src={newInterview.image_url} className="h-10 w-10 object-cover border" />}
+              </div>
+              <textarea placeholder="Contenido de la entrevista..." className="w-full bg-black border-2 border-white p-2 text-xs text-white h-32 focus:border-yellow-400 outline-none" value={newInterview.content} onChange={e => setNewInterview({...newInterview, content: e.target.value})} required />
+              <button type="submit" disabled={uploading || !newInterview.image_url} className="w-full bg-yellow-400 text-black font-black uppercase py-3 text-sm hover:bg-white">Publicar Entrevista</button>
+            </form>
+
+            <div className="grid grid-cols-2 gap-4 max-h-[300px] overflow-y-auto pr-2 custom-scrollbar">
+              {interviews.map(interview => (
+                <div key={interview.id} className="border-2 border-zinc-700 p-2 bg-zinc-950 flex justify-between items-center group">
+                  <div className="truncate pr-4 text-left">
+                    <h3 className="font-black uppercase text-[9px] text-yellow-400 truncate">{interview.title}</h3>
+                    <p className="text-[8px] text-zinc-500 uppercase">{interview.band_name}</p>
+                  </div>
+                  <button onClick={() => deleteInterview(interview.id)} className="bg-red-600 text-white px-2 py-0.5 text-[8px] font-black uppercase opacity-0 group-hover:opacity-100 transition-opacity">X</button>
+                </div>
+              ))}
+            </div>
+          </div>
+
           {/* Mensajes */}
           <div className="space-y-6 border-t-4 border-zinc-800 pt-8">
-            <h2 className="text-2xl font-black uppercase italic text-yellow-400 border-l-8 border-yellow-400 pl-4 bg-zinc-950 py-2">Mensajes de Contacto</h2>
-            <div className="space-y-4 max-h-[300px] overflow-y-auto pr-2 custom-scrollbar">
-              {messages.length === 0 ? <p className="text-zinc-600 font-bold uppercase text-[10px] italic">No hay mensajes nuevos.</p> : messages.map((msg) => (
-                <div key={msg.id} className={`border-2 p-3 space-y-2 ${msg.is_read ? 'border-zinc-800 bg-zinc-950/50 opacity-60' : 'border-white bg-zinc-900'}`}>
+            <h2 className="text-2xl font-black uppercase italic text-yellow-400 border-l-8 border-yellow-400 pl-4 bg-zinc-950 py-2">Mensajes</h2>
+            <div className="space-y-4 max-h-[200px] overflow-y-auto pr-2 custom-scrollbar text-left">
+              {messages.length === 0 ? <p className="text-zinc-600 font-bold uppercase text-[9px] italic">Sin mensajes nuevos.</p> : messages.map((msg) => (
+                <div key={msg.id} className={`border-2 p-3 space-y-1 ${msg.is_read ? 'border-zinc-800 bg-zinc-950/50 opacity-60' : 'border-white bg-zinc-900'}`}>
                   <div className="flex justify-between items-center">
-                    <h3 className="font-black uppercase text-[10px] text-yellow-400">{msg.name} <span className="text-zinc-600 lowercase font-normal">({msg.email})</span></h3>
-                    {!msg.is_read && <button onClick={() => supabase.from('contact_messages').update({ is_read: true }).eq('id', msg.id).then(() => fetchData())} className="text-[7px] bg-white text-black px-2 py-0.5 font-black uppercase hover:bg-yellow-400">Leído</button>}
+                    <h3 className="font-black uppercase text-[9px] text-yellow-400">{msg.name} <span className="text-zinc-600 lowercase font-normal italic">({msg.email})</span></h3>
+                    {!msg.is_read && <button onClick={() => supabase.from('contact_messages').update({ is_read: true }).eq('id', msg.id).then(() => fetchData())} className="text-[7px] bg-white text-black px-2 py-0.5 font-black uppercase hover:bg-yellow-400">Marcar Leído</button>}
                   </div>
-                  <p className="text-[10px] text-zinc-300 leading-tight italic">"{msg.message}"</p>
+                  <p className="text-[9px] text-zinc-300 leading-tight italic">"{msg.message}"</p>
                 </div>
               ))}
             </div>
