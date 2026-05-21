@@ -27,8 +27,8 @@ export default function InterviewsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-black text-white font-sans">
-      <header className="border-b-4 border-yellow-400 p-6 flex justify-between items-center bg-zinc-900 sticky top-0 z-50">
+    <div className="min-h-screen text-white font-sans relative overflow-x-hidden">
+      <header className="border-b-4 border-yellow-400 p-6 flex justify-between items-center bg-zinc-950 sticky top-0 z-50 shadow-xl">
         <Link href="/" className="flex items-center gap-4">
           <Image
             src="/logo.jpg"
@@ -47,13 +47,13 @@ export default function InterviewsPage() {
         </nav>
       </header>
 
-      <main className="max-w-6xl mx-auto p-6 space-y-12">
+      <main className="max-w-6xl mx-auto p-6 space-y-12 relative z-10">
         <h2 className="text-6xl font-black uppercase italic tracking-tighter text-center py-10 border-b-8 border-white">
           Entrevistas
         </h2>
 
         {loading ? (
-          <p className="text-center text-4xl font-black animate-pulse text-yellow-400">CARGANDO...</p>
+          <p className="text-center text-4xl font-black animate-pulse text-yellow-400 uppercase italic">Cargando...</p>
         ) : interviews.length === 0 ? (
           <div className="text-center py-20">
             <p className="text-3xl font-black uppercase italic text-zinc-600 tracking-tighter">Próximamente nuevas entrevistas...</p>
@@ -64,23 +64,23 @@ export default function InterviewsPage() {
               <Link 
                 href={`/interviews/${interview.id}`} 
                 key={interview.id}
-                className="group border-4 border-white p-4 hover:bg-zinc-900 transition-colors shadow-[8px_8px_0px_0px_rgba(234,179,8,1)]"
+                className="group border-4 border-white p-4 bg-zinc-950/80 hover:bg-zinc-900 transition-colors shadow-[8px_8px_0px_0px_rgba(234,179,8,1)]"
               >
                 <div className="aspect-video bg-zinc-800 mb-6 border-2 border-zinc-700 overflow-hidden">
                   {interview.image_url ? (
-                    <img src={interview.image_url} alt={interview.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                    <img src={interview.image_url} alt={interview.title} className="w-full h-full object-cover grayscale group-hover:grayscale-0 group-hover:scale-105 transition-all duration-500" />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center text-zinc-500 font-black italic uppercase">Sin Imagen</div>
                   )}
                 </div>
-                <div className="space-y-3">
+                <div className="space-y-3 text-left">
                   <span className="bg-yellow-400 text-black px-3 py-1 text-xs font-black uppercase tracking-widest italic">
                     {interview.band_name}
                   </span>
                   <h3 className="text-3xl font-black uppercase leading-none group-hover:text-yellow-400 transition-colors">
                     {interview.title}
                   </h3>
-                  <p className="text-zinc-400 font-bold text-sm uppercase tracking-tighter">
+                  <p className="text-zinc-500 font-bold text-xs uppercase tracking-tighter">
                     Publicado: {new Date(interview.published_at).toLocaleDateString()}
                   </p>
                 </div>
