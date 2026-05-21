@@ -33,15 +33,24 @@ export default function AdminDashboard() {
 
   async function fetchData() {
     setLoading(true);
-    const { data: eventData } = await supabase.from('events').select('*').order('created_at', { ascending: false });
-    const { data: messageData } = await supabase.from('contact_messages').select('*').order('created_at', { ascending: false });
-    const { data: interviewData } = await supabase.from('interviews').select('*').order('published_at', { ascending: false });
-    const { data: adData } = await supabase.from('ads').select('*').order('created_at', { ascending: false });
+    console.log('Fetching admin data...');
     
-    setEvents(eventData || []);
-    setMessages(messageData || []);
-    setInterviews(interviewData || []);
-    setAds(adData || []);
+    const [eventRes, messageRes, interviewRes, adRes] = await Promise.all([
+      supabase.from('events').select('*').order('created_at', { ascending: false }),
+      supabase.from('contact_messages').select('*').order('created_at', { ascending: false }),
+      supabase.from('interviews').select('*').order('published_at', { ascending: false }),
+      supabase.from('ads').select('*').order('created_at', { ascending: false })
+    ]);
+
+    if (eventRes.error) console.error('Error fetching events:', eventRes.error);
+    if (messageRes.error) console.error('Error fetching messages:', messageRes.error);
+    if (interviewRes.error) console.error('Error fetching interviews:', interviewRes.error);
+    if (adRes.error) console.error('Error fetching ads:', adRes.error);
+
+    setEvents(eventRes.data || []);
+    setMessages(messageRes.data || []);
+    setInterviews(interviewRes.data || []);
+    setAds(adRes.data || []);
     setLoading(false);
   }
 
