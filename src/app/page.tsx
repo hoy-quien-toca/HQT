@@ -10,7 +10,7 @@ export default function Home() {
   const [allEvents, setAllEvents] = useState<any[]>([]);
   const [featuredEvents, setFeaturedEvent] = useState<any[]>([]);
   const [currentHeroIndex, setCurrentHeroIndex] = useState(0);
-  const [sponsors, setSponsors] = useState<any[]>([]); // Renamed from ads
+  const [sponsors, setSponsors] = useState<any[]>([]);
   const [currentBottomAdIndex, setCurrentBottomAdIndex] = useState(0);
   const [loading, setLoading] = useState(true);
   const [selectedEvent, setSelectedEvent] = useState<any>(null);
@@ -46,7 +46,7 @@ export default function Home() {
   async function fetchData() {
     setLoading(true);
     const { data: eventData } = await supabase.from('events').select('*').eq('is_approved', true).order('date', { ascending: true });
-    const { data: sponsorData } = await supabase.from('sponsors').select('*').eq('is_active', true); // Fetch from sponsors table
+    const { data: sponsorData } = await supabase.from('sponsors').select('*').eq('is_active', true);
 
     if (eventData) {
       setAllEvents(eventData);
@@ -262,5 +262,3 @@ export default function Home() {
     </div>
   );
 }
-/ /   f o r c e   u p d a t e  
- 
