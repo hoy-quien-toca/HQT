@@ -1,5 +1,6 @@
 'use client';
 
+// VERSION: 4.0 - DEFINITIVE UPDATE WITH STAR BUTTON
 import { useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabase';
 import { useRouter } from 'next/navigation';
@@ -156,7 +157,7 @@ export default function AdminDashboard() {
     }
   }
 
-  if (loading) return <div className="min-h-screen bg-black text-yellow-400 flex items-center justify-center font-black text-4xl uppercase italic">Cargando Administrador...</div>;
+  if (loading) return <div className="min-h-screen bg-black text-yellow-400 flex items-center justify-center font-black text-4xl uppercase italic text-center">Cargando Admin...</div>;
 
   return (
     <div className="min-h-screen bg-zinc-900 text-white p-4 md:p-6 font-sans relative text-left overflow-x-hidden">
@@ -188,9 +189,9 @@ export default function AdminDashboard() {
                    <option value="+5">+5</option><option value="+7">+7</option><option value="+10">+10</option>
                    <option value="+12">+12</option><option value="+15">+15</option><option value="+18">+18</option>
                 </select>
-                <div className="col-span-2 flex gap-2 pt-2">
+                <div className="col-span-2 flex gap-2 pt-2 text-white">
                   <button type="submit" className="flex-1 bg-blue-600 py-2 font-black border-2 border-white">ACTUALIZAR</button>
-                  <button type="button" onClick={() => setEditingEvent(null)} className="bg-zinc-700 px-4 font-black">X</button>
+                  <button type="button" onClick={() => setEditingEvent(null)} className="bg-zinc-700 px-4 font-black border-2 border-white">X</button>
                 </div>
               </form>
             </div>
@@ -199,10 +200,10 @@ export default function AdminDashboard() {
           <div className="space-y-4">
             {events.map((event) => (
               <div key={event.id} className={`border-4 p-4 flex flex-col gap-4 ${!event.is_approved ? 'border-red-600 bg-zinc-900 animate-pulse shadow-lg' : event.is_featured ? 'border-yellow-400 bg-zinc-950/80 shadow-md' : 'border-zinc-700 bg-zinc-950/80'}`}>
-                <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 text-left">
                   <div className="flex gap-4 items-center">
                     {event.flyer_url && <img src={event.flyer_url} className="w-16 h-16 object-cover border-2 border-white shadow-md" />}
-                    <div>
+                    <div className="text-left">
                       <h3 className="text-xl font-black uppercase leading-none">{event.band_name}</h3>
                       <p className="text-[10px] font-bold text-yellow-400 uppercase">{event.date} - {event.time.substring(0,5)}hs</p>
                       <p className="text-[8px] text-white uppercase opacity-50 bg-zinc-800 px-2 py-0.5 inline-block rounded mt-1">{!event.is_approved ? 'PENDIENTE' : event.is_featured ? '★ DESTACADO' : 'APROBADO'}</p>
@@ -221,7 +222,7 @@ export default function AdminDashboard() {
                       onClick={() => toggleFeatured(event.id, event.is_featured)} 
                       className={`w-full py-1 font-black uppercase text-[10px] border-2 transition-all ${event.is_featured ? 'bg-yellow-400 text-black border-white shadow-md' : 'bg-black text-yellow-400 border-yellow-400'}`}
                     >
-                      {event.is_featured ? '★ EN BANNER PRINCIPAL (DESACTIVAR)' : 'PONER EN BANNER PRINCIPAL'}
+                      {event.is_featured ? '★ EN BANNER PRINCIPAL (DESACTIVAR)' : '★ PONER EN BANNER PRINCIPAL'}
                     </button>
                     <div className="flex flex-wrap gap-2 items-center">
                       <button onClick={() => updateEventTag(event.id, 'PLANAZO')} className={`px-2 py-1 text-[8px] font-black border-2 ${event.suggestion_tag === 'PLANAZO' ? 'bg-red-600 border-white text-white' : 'border-red-600 text-red-600'}`}>PLANAZO</button>
@@ -245,16 +246,16 @@ export default function AdminDashboard() {
             <form onSubmit={handleSaveSponsor} className="bg-zinc-950 p-4 md:p-6 border-4 border-white space-y-4 shadow-xl text-left">
               <span className="text-[10px] font-black uppercase text-zinc-500">{newSponsor.id ? 'EDITANDO' : 'NUEVO ANUNCIO'}</span>
               <input placeholder="Nombre Cliente" className="w-full bg-black border-2 border-white p-2 font-bold uppercase text-xs text-white outline-none focus:border-yellow-400" value={newSponsor.client_name} onChange={e => setNewSponsor({...newSponsor, client_name: e.target.value})} required />
-              <div className="flex gap-4 items-center border-2 border-dashed border-zinc-700 p-2 relative">
-                <p className="text-[10px] font-black uppercase text-zinc-500 flex-1">{uploading ? 'Subiendo...' : (newSponsor.image_url ? 'Imagen OK ✅' : 'Subir Imagen/GIF')}</p>
+              <div className="flex gap-4 items-center border-2 border-dashed border-zinc-700 p-2 relative text-left">
+                <p className="text-[10px] font-black uppercase text-zinc-500 flex-1">{uploading ? 'Cargando...' : (newSponsor.image_url ? 'Imagen OK ✅' : 'Subir Imagen/GIF')}</p>
                 <input type="file" className="absolute inset-0 opacity-0 cursor-pointer" onChange={async (e) => {
                   const file = e.target.files?.[0]; if (file) { const url = await handleFileUpload(file, 'sponsors'); if (url) setNewSponsor({...newSponsor, image_url: url}); }
                 }} />
                 {newSponsor.image_url && <img src={newSponsor.image_url} className="h-10 w-10 object-cover border" />}
               </div>
-              <div className="grid grid-cols-2 gap-2">
-                <input placeholder="Link" className="bg-black border-2 border-white p-2 text-xs text-white" value={newSponsor.link} onChange={e => setNewSponsor({...newSponsor, link: e.target.value})} />
-                <select className="bg-black border-2 border-white p-2 text-xs text-white uppercase font-black" value={newSponsor.position} onChange={e => setNewSponsor({...newSponsor, position: e.target.value})}>
+              <div className="grid grid-cols-2 gap-2 text-white font-black">
+                <input placeholder="Link" className="bg-black border-2 border-white p-2 text-xs" value={newSponsor.link} onChange={e => setNewSponsor({...newSponsor, link: e.target.value})} />
+                <select className="bg-black border-2 border-white p-2 text-xs uppercase" value={newSponsor.position} onChange={e => setNewSponsor({...newSponsor, position: e.target.value})}>
                   <option value="top">SUPERIOR (Banner Arriba)</option>
                   <option value="sidebar">LATERAL (Costado)</option>
                   <option value="bottom">INFERIOR (Banner Abajo)</option>
@@ -273,7 +274,7 @@ export default function AdminDashboard() {
                     <div className="flex gap-1">
                       <button onClick={() => setNewSponsor(sp)} className="px-2 py-0.5 bg-blue-600 text-white text-[7px] font-black border border-white">EDITAR</button>
                       <button onClick={() => toggleSponsorStatus(sp.id, sp.is_active)} className={`px-2 py-0.5 text-white text-[7px] font-black border border-white ${sp.is_active ? 'bg-green-600' : 'bg-zinc-700'}`}>{sp.is_active ? 'PAUSAR' : 'ACTIVAR'}</button>
-                      <button onClick={() => deleteSponsor(sp.id)} className="px-2 py-0.5 bg-red-600 text-white text-[7px] font-black border border-white">ELIMINAR</button>
+                      <button onClick={() => deleteSponsor(sp.id)} className="px-2 py-0.5 bg-red-600 text-white text-[7px] font-black border border-white">BORRAR</button>
                     </div>
                   </div>
                   <img src={sp.image_url} className="w-full h-12 object-cover border border-zinc-800 shadow-inner" />
@@ -286,8 +287,8 @@ export default function AdminDashboard() {
           <div className="space-y-6 border-t-4 border-zinc-800 pt-8 text-left">
             <h2 className="text-2xl font-black uppercase italic text-yellow-400 border-l-8 border-yellow-400 pl-4 bg-zinc-950 py-2">Entrevistas</h2>
             <form onSubmit={handleSaveInterview} className="bg-zinc-950 p-4 md:p-6 border-4 border-white space-y-4 shadow-xl">
-              <input placeholder="Título" className="w-full bg-black border-2 border-white p-2 font-bold uppercase text-xs text-white" value={newInterview.title} onChange={e => setNewInterview({...newInterview, title: e.target.value})} required />
-              <input placeholder="Banda" className="w-full bg-black border-2 border-white p-2 font-bold uppercase text-xs text-white" value={newInterview.band_name} onChange={e => setNewInterview({...newInterview, band_name: e.target.value})} required />
+              <input placeholder="Título" className="w-full bg-black border-2 border-white p-2 font-bold uppercase text-xs text-white outline-none focus:border-yellow-400" value={newInterview.title} onChange={e => setNewInterview({...newInterview, title: e.target.value})} required />
+              <input placeholder="Banda" className="w-full bg-black border-2 border-white p-2 font-bold uppercase text-xs text-white outline-none focus:border-yellow-400" value={newInterview.band_name} onChange={e => setNewInterview({...newInterview, band_name: e.target.value})} required />
               <div className="grid grid-cols-2 gap-2 text-[10px] text-white">
                 <input placeholder="Autor Texto" className="bg-black border p-2 uppercase font-black" value={newInterview.author} onChange={e => setNewInterview({...newInterview, author: e.target.value})} />
                 <input placeholder="Crédito Foto" className="bg-black border p-2 uppercase font-black" value={newInterview.photo_credit} onChange={e => setNewInterview({...newInterview, photo_credit: e.target.value})} />
@@ -307,15 +308,15 @@ export default function AdminDashboard() {
             </form>
             <div className="grid grid-cols-1 gap-2 max-h-[300px] overflow-y-auto custom-scrollbar">
               {interviews.map(int => (
-                <div key={int.id} className={`border-2 p-3 flex justify-between items-center ${int.is_active ? 'border-zinc-700 bg-zinc-900 shadow-md' : 'border-red-600 bg-zinc-950 opacity-40 grayscale italic'}`}>
-                  <div className="truncate pr-4 text-left">
+                <div key={int.id} className={`border-2 p-3 flex justify-between items-center ${int.is_active ? 'border-zinc-700 bg-zinc-900 shadow-md' : 'border-red-600 bg-zinc-950 opacity-40 grayscale italic text-left'}`}>
+                  <div className="truncate pr-4">
                     <span className="text-[10px] font-black uppercase text-yellow-400">{int.title}</span>
-                    <p className="text-[8px] text-zinc-500 uppercase font-bold">{int.band_name} {int.is_active ? '' : '(PAUSADA)'}</p>
+                    <p className="text-[8px] text-zinc-500 uppercase font-bold text-left">{int.band_name} {int.is_active ? '' : '(PAUSADA)'}</p>
                   </div>
                   <div className="flex gap-1 shrink-0">
-                    <button onClick={() => setNewInterview(int)} className="px-2 py-0.5 bg-blue-600 text-white text-[7px] font-black border border-white">EDITAR</button>
-                    <button onClick={() => toggleInterviewStatus(int.id, int.is_active)} className={`px-2 py-0.5 text-white text-[7px] font-black border border-white shadow-sm ${int.is_active ? 'bg-green-600' : 'bg-zinc-700'}`}>{int.is_active ? 'PAUSAR' : 'ACTIVAR'}</button>
-                    <button onClick={() => confirm('¿Borrar?') && supabase.from('interviews').delete().eq('id', int.id).then(() => fetchData())} className="px-2 py-0.5 bg-red-600 text-white text-[7px] font-black border border-white">BORRAR</button>
+                    <button onClick={() => setNewInterview(int)} className="px-2 py-0.5 bg-blue-600 text-white text-[7px] font-black border border-white shadow-sm">EDITAR</button>
+                    <button onClick={() => toggleInterviewStatus(int.id, int.is_active)} className={`px-2 py-0.5 text-white text-[7px] font-black border border-white shadow-sm ${int.is_active ? 'bg-green-600' : 'bg-zinc-700'}`}>{int.is_active ? 'PAUSA' : 'ACTIVO'}</button>
+                    <button onClick={() => confirm('¿Borrar?') && supabase.from('interviews').delete().eq('id', int.id).then(() => fetchData())} className="px-2 py-0.5 bg-red-600 text-white text-[7px] font-black border border-white shadow-sm">BORRAR</button>
                   </div>
                 </div>
               ))}
@@ -323,7 +324,7 @@ export default function AdminDashboard() {
           </div>
 
           {/* Mensajes */}
-          <div className="space-y-6 border-t-4 border-zinc-800 pt-8 text-left">
+          <div className="space-y-6 border-t-4 border-zinc-800 pt-8 text-left text-white">
             <h2 className="text-2xl font-black uppercase italic text-yellow-400 border-l-8 border-yellow-400 pl-4 bg-zinc-950 py-2">Mensajes</h2>
             <div className="space-y-4 max-h-[300px] overflow-y-auto pr-2 custom-scrollbar">
               {messages.map((msg) => (
@@ -350,7 +351,7 @@ export default function AdminDashboard() {
             <button onClick={() => setSelectedMessage(null)} className="absolute -top-4 -right-4 bg-red-600 text-white w-10 h-10 font-black text-xl border-4 border-white text-center flex items-center justify-center shadow-xl">X</button>
             <h3 className="text-2xl font-black uppercase italic text-yellow-400 mb-2 border-b-2 border-yellow-400 pb-2">{selectedMessage.name}</h3>
             <p className="text-xs font-bold text-zinc-500 uppercase mb-6">{selectedMessage.email}</p>
-            <p className="text-lg text-white leading-relaxed whitespace-pre-wrap italic">"{selectedMessage.message}"</p>
+            <p className="text-lg text-white leading-relaxed whitespace-pre-wrap italic text-left">"{selectedMessage.message}"</p>
             <button onClick={() => deleteMessage(selectedMessage.id)} className="mt-8 bg-red-600 text-white px-6 py-2 font-black uppercase text-xs border-2 border-white hover:bg-black transition-colors shadow-lg">Eliminar Mensaje</button>
           </div>
         </div>
