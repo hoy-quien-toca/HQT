@@ -8,9 +8,9 @@ import Link from 'next/link';
 export default function Home() {
   const [events, setEvents] = useState<any[]>([]);
   const [allEvents, setAllEvents] = useState<any[]>([]);
-  const [featuredEvents, setFeaturedEvent] = useState<any[]>([]);
+  const [featuredEvents, setFeaturedEvents] = useState<any[]>([]);
   const [currentHeroIndex, setCurrentHeroIndex] = useState(0);
-  const [sponsors, setSponsors] = useState<any[]>([]);
+  const [sponsors, setSponsors] = useState<any[]>([]); 
   const [currentBottomAdIndex, setCurrentBottomAdIndex] = useState(0);
   const [loading, setLoading] = useState(true);
   const [selectedEvent, setSelectedEvent] = useState<any>(null);
@@ -34,10 +34,10 @@ export default function Home() {
   }, [featuredEvents]);
 
   useEffect(() => {
-    const bottomAds = sponsors.filter(a => a.position === 'bottom');
-    if (bottomAds.length > 1) {
+    const bottomSponsors = sponsors.filter(a => a.position === 'bottom');
+    if (bottomSponsors.length > 1) {
       const timer = setInterval(() => {
-        setCurrentBottomAdIndex((prev) => (prev + 1) % bottomAds.length);
+        setCurrentBottomAdIndex((prev) => (prev + 1) % bottomSponsors.length);
       }, 10000);
       return () => clearInterval(timer);
     }
@@ -45,15 +45,19 @@ export default function Home() {
 
   async function fetchData() {
     setLoading(true);
-    const { data: eventData } = await supabase.from('events').select('*').eq('is_approved', true).order('date', { ascending: true });
-    const { data: sponsorData } = await supabase.from('sponsors').select('*').eq('is_active', true);
+    try {
+      const { data: eventData } = await supabase.from('events').select('*').eq('is_approved', true).order('date', { ascending: true });
+      const { data: sponsorData } = await supabase.from('sponsors').select('*').eq('is_active', true);
 
-    if (eventData) {
-      setAllEvents(eventData);
-      setEvents(eventData);
-      setFeaturedEvent(eventData.filter(e => e.is_featured));
+      if (eventData) {
+        setAllEvents(eventData);
+        setEvents(eventData);
+        setFeaturedEvents(eventData.filter(e => e.is_featured));
+      }
+      if (sponsorData) setSponsors(sponsorData);
+    } catch (err) {
+      console.error("Error fetching data:", err);
     }
-    if (sponsorData) setSponsors(sponsorData);
     setLoading(false);
   }
 
@@ -65,9 +69,9 @@ export default function Home() {
     setEvents(filtered);
   }
 
-  const bottomAds = sponsors.filter(a => a.position === 'bottom');
-  const activeBottomAd = bottomAds[currentBottomAdIndex];
-  const sidebarAds = sponsors.filter(a => a.position === 'sidebar');
+  const bottomSponsors = sponsors.filter(a => a.position === 'bottom');
+  const activeBottomAd = bottomSponsors[currentBottomAdIndex];
+  const sidebarSponsors = sponsors.filter(a => a.position === 'sidebar');
   
   const activeDepartments = Array.from(new Set(allEvents.map(e => e.department))).sort();
   const activeGenres = Array.from(new Set(allEvents.map(e => e.genre))).sort();
@@ -145,7 +149,7 @@ export default function Home() {
                 {activeGenres.map(g => <option key={g} value={g}>{g}</option>)}
               </select>
               <input type="date" value={date} onChange={(e) => { setDate(e.target.value); applyFilters(department, genre, e.target.value); }} className="bg-black text-white p-2 border-2 border-white focus:outline-none font-bold" />
-              <button onClick={() => {setDepartment(''); setGenre(''); setDate(''); setEvents(allEvents);}} className="text-[10px] underline hover:text-red-600 font-bold uppercase">Limpiar</button>
+              <button onClick={() => {setDepartment(''); setGenre(''); setDate(''); setEvents(allEvents);}} className="text-[10px] underline hover:text-red-600 font-bold uppercase tracking-widest ml-auto">Limpiar</button>
             </section>
 
             <section className="grid grid-cols-1 md:grid-cols-2 gap-8">
@@ -158,8 +162,8 @@ export default function Home() {
                   <div key={event.id} onClick={() => setSelectedEvent(event)} className="border-4 border-white p-4 hover:translate-x-2 hover:-translate-y-2 transition-all bg-zinc-950 shadow-[8px_8px_0px_0px_rgba(234,179,8,1)] flex flex-col group/card relative overflow-hidden cursor-pointer">
                     {event.suggestion_tag && <div className="absolute top-2 left-2 bg-yellow-400 text-black text-[8px] font-black px-2 py-0.5 z-20 shadow-md uppercase tracking-widest">{event.suggestion_tag}</div>}
                     {event.is_sold_out && <div className="absolute top-8 -right-12 bg-red-600 text-white font-black py-2 px-12 rotate-45 uppercase text-sm border-y-2 border-white z-30 shadow-xl tracking-tighter italic">¡AGOTADO!</div>}
-                    <div className="aspect-square bg-zinc-800 mb-4 border-2 border-zinc-700 flex items-center justify-center overflow-hidden shadow-[inset_0_0_20px_rgba(0,0,0,0.5)]">
-                      {event.flyer_url ? <img src={event.flyer_url} alt="Flyer" className={`object-cover w-full h-full transition-all duration-500 ${event.is_sold_out ? 'grayscale blur-[1px]' : 'group-hover/card:scale-105'}`} /> : <div className="text-zinc-600 font-black italic">FLYER DEL SHOW</div>}
+                    <div className="aspect-square bg-zinc-800 mb-4 border-2 border-zinc-700 relative flex items-center justify-center italic font-bold text-zinc-500 overflow-hidden shadow-[inset_0_0_20px_rgba(0,0,0,0.5)]">
+                      {event.flyer_url ? <img src={event.flyer_url} alt="Flyer" className={`object-cover w-full h-full transition-all duration-500 ${event.is_sold_out ? 'grayscale blur-[1px]' : 'group-hover/card:scale-105'}`} /> : <div className="text-zinc-600 font-black italic uppercase">FLYER DEL SHOW</div>}
                     </div>
                     <div className="space-y-2 flex-1">
                       <div className="flex justify-between items-start">
@@ -178,7 +182,7 @@ export default function Home() {
           <aside className="lg:w-72 space-y-8 relative z-10 text-left">
             <h3 className="text-xl font-black uppercase italic text-yellow-400 border-b-4 border-yellow-400 pb-2 tracking-widest shadow-[4px_4px_0px_0px_rgba(255,255,255,1)] inline-block px-2 bg-zinc-950">Auspician</h3>
             <div className="space-y-6">
-              {sidebarAds.map(ad => (
+              {sidebarSponsors.map(ad => (
                 <div key={ad.id} onClick={() => setSelectedAd(ad)} className="block border-4 border-white bg-zinc-950 p-2 shadow-[8px_8px_0px_0px_rgba(234,179,8,1)] hover:-translate-x-1 transition-transform group cursor-pointer">
                   <div className="aspect-[4/5] overflow-hidden border-2 border-zinc-800">
                     <img src={ad.image_url} alt={ad.client_name} className="w-full h-full object-cover transition-all duration-500" />
@@ -215,11 +219,11 @@ export default function Home() {
                   <span className="bg-red-600 text-white px-3 py-1 text-xs font-black uppercase italic tracking-widest">{selectedEvent.genre}</span>
                   <h2 className="text-4xl md:text-5xl font-black uppercase italic tracking-tighter mt-2 text-yellow-400 leading-none">{selectedEvent.band_name}</h2>
                 </div>
-                <div className="space-y-1">
-                  <p className="text-xl font-bold text-white uppercase">{selectedEvent.date} - {selectedEvent.time}hs</p>
+                <div className="space-y-1 text-white">
+                  <p className="text-xl font-bold uppercase">{selectedEvent.date} - {selectedEvent.time}hs</p>
                   <p className="text-sm font-black text-zinc-400 uppercase italic">{selectedEvent.venue} - {selectedEvent.city}, {selectedEvent.department}</p>
                 </div>
-                <div className="border-t-2 border-zinc-800 pt-6">
+                <div className="border-t-2 border-zinc-800 pt-6 text-left">
                   <h4 className="text-xs font-black uppercase text-zinc-500 mb-2 italic">Reseña / Bio del Show</h4>
                   <div className="text-zinc-200 leading-relaxed font-medium space-y-4 max-h-48 overflow-y-auto pr-4 text-sm uppercase custom-scrollbar">
                     {selectedEvent.description?.split('\n').map((p: string, i: number) => <p key={i}>{p}</p>) || <p className="italic text-zinc-600">No hay reseña disponible.</p>}
@@ -242,13 +246,13 @@ export default function Home() {
         {selectedAd && (
           <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
             <div className="absolute inset-0 bg-black/95 backdrop-blur" onClick={() => setSelectedAd(null)} />
-            <div className="relative max-w-2xl w-full bg-zinc-900 border-8 border-white p-4 shadow-[20px_20px_0px_0px_rgba(255,255,255,0.1)]">
+            <div className="relative max-w-2xl w-full bg-zinc-900 border-8 border-white p-4 shadow-[20px_20px_0px_0px_rgba(255,255,255,0.1)] text-left">
               <button onClick={() => setSelectedAd(null)} className="absolute -top-4 -right-4 bg-red-600 text-white w-12 h-12 font-black text-2xl border-4 border-white hover:bg-black transition-colors z-[110]">X</button>
               <img src={selectedAd.image_url} alt={selectedAd.client_name} className="w-full h-auto border-4 border-zinc-800" />
               <div className="p-6 text-center space-y-4">
                 <h3 className="text-4xl font-black uppercase italic text-yellow-400 tracking-tighter">{selectedAd.client_name}</h3>
                 {selectedAd.link && (
-                  <a href={selectedAd.link} target="_blank" className="inline-block bg-white text-black px-10 py-3 font-black uppercase hover:bg-yellow-400 transition-all shadow-[6px_6px_0px_0px_rgba(234,179,8,1)]">Visitar Web</a>
+                  <a href={selectedAd.link} target="_blank" className="inline-block bg-white text-black px-10 py-3 font-black uppercase hover:bg-yellow-400 transition-all shadow-[6px_6px_0px_0px_rgba(234,179,8,1)] uppercase">Visitar Web</a>
                 )}
               </div>
             </div>
@@ -259,6 +263,11 @@ export default function Home() {
           <p className="text-zinc-500 font-bold uppercase text-[10px] max-w-2xl mx-auto tracking-tighter leading-relaxed italic">AVISO: HOY QUIEN TOCA NO VENDE ENTRADAS. SOMOS UNA PLATAFORMA INFORMATIVA. LA VENTA Y ORGANIZACIÓN ES RESPONSABILIDAD DE LOS ORGANIZADORES.</p>
         </footer>
       </main>
+      <style jsx global>{`
+        .custom-scrollbar::-webkit-scrollbar { width: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: #1a1a1a; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #facc15; }
+      `}</style>
     </div>
   );
 }
