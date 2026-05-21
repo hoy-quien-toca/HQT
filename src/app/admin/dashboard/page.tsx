@@ -1,6 +1,6 @@
 'use client';
 
-// FINAL FIX FOR DEPLOYMENT
+// FINAL FIX FOR DEPLOYMENT - WITH TOP SPONSOR OPTION
 import { useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabase';
 import { useRouter } from 'next/navigation';
@@ -168,7 +168,7 @@ export default function AdminDashboard() {
   return (
     <div className="min-h-screen bg-zinc-900 text-white p-4 md:p-6 font-sans relative text-left overflow-x-hidden">
       <header className="flex flex-col md:flex-row justify-between items-center mb-8 border-b-4 border-yellow-400 pb-6 bg-zinc-950 p-4 sticky top-0 z-50 gap-4">
-        <h1 className="text-3xl md:text-4xl font-black uppercase italic text-yellow-400">ADMINISTRADOR HQT</h1>
+        <h1 className="text-3xl md:text-4xl font-black uppercase italic text-yellow-400 text-left">ADMINISTRADOR HQT</h1>
         <div className="flex gap-4">
           <button onClick={() => router.push('/')} className="bg-white text-black px-4 py-1 font-black uppercase text-xs hover:bg-yellow-400 transition-colors">Web</button>
           <button onClick={() => supabase.auth.signOut().then(() => router.push('/admin'))} className="bg-red-600 px-4 py-1 font-black uppercase text-xs hover:bg-white hover:text-black transition-colors">Salir</button>
@@ -183,16 +183,16 @@ export default function AdminDashboard() {
           {editingEvent && (
             <div className="border-4 border-blue-600 p-4 bg-zinc-950 space-y-4 mb-8">
               <h3 className="font-black uppercase text-blue-500">Editando: {editingEvent.band_name}</h3>
-              <form onSubmit={handleSaveEvent} className="grid grid-cols-2 gap-2 text-xs">
-                <input value={editingEvent.band_name} onChange={e => setEditingEvent({...editingEvent, band_name: e.target.value})} className="col-span-2 bg-black border p-2 text-white uppercase font-bold" />
-                <input type="date" value={editingEvent.date} onChange={e => setEditingEvent({...editingEvent, date: e.target.value})} className="bg-black border p-2 text-white" />
-                <input type="time" value={editingEvent.time} onChange={e => setEditingEvent({...editingEvent, time: e.target.value})} className="bg-black border p-2 text-white" />
-                <select value={editingEvent.age_rating} onChange={e => setEditingEvent({...editingEvent, age_rating: e.target.value})} className="bg-black border p-2 text-white">
+              <form onSubmit={handleSaveEvent} className="grid grid-cols-2 gap-2 text-xs text-white">
+                <input value={editingEvent.band_name} onChange={e => setEditingEvent({...editingEvent, band_name: e.target.value})} className="col-span-2 bg-black border p-2 uppercase font-bold" />
+                <input type="date" value={editingEvent.date} onChange={e => setEditingEvent({...editingEvent, date: e.target.value})} className="bg-black border p-2" />
+                <input type="time" value={editingEvent.time} onChange={e => setEditingEvent({...editingEvent, time: e.target.value})} className="bg-black border p-2" />
+                <select value={editingEvent.age_rating} onChange={e => setEditingEvent({...editingEvent, age_rating: e.target.value})} className="bg-black border p-2">
                    <option value="ATP">ATP</option>
                    <option value="+5">+5</option><option value="+7">+7</option><option value="+10">+10</option>
                    <option value="+12">+12</option><option value="+15">+15</option><option value="+18">+18</option>
                 </select>
-                <div className="col-span-2 flex gap-2 pt-2">
+                <div className="col-span-2 flex gap-2 pt-2 text-white">
                   <button type="submit" className="flex-1 bg-blue-600 py-2 font-black">ACTUALIZAR</button>
                   <button type="button" onClick={() => setEditingEvent(null)} className="bg-zinc-700 px-4 font-black">X</button>
                 </div>
@@ -238,13 +238,14 @@ export default function AdminDashboard() {
 
         {/* SPONSORS, ENTREVISTAS, MENSAJES */}
         <section className="space-y-12">
-          <div className="space-y-6">
-            <h2 className="text-2xl font-black uppercase italic text-yellow-400 border-l-8 border-yellow-400 pl-4 bg-zinc-950 py-2">Publicidad</h2>
+          {/* Publicidad */}
+          <div className="space-y-6 text-left">
+            <h2 className="text-2xl font-black uppercase italic text-yellow-400 border-l-8 border-yellow-400 pl-4 bg-zinc-950 py-2 text-left">Publicidad</h2>
             <form onSubmit={handleSaveSponsor} className="bg-zinc-950 p-4 md:p-6 border-4 border-white space-y-4 shadow-xl text-left">
               <span className="text-[10px] font-black uppercase text-zinc-500">{newSponsor.id ? 'EDITANDO' : 'NUEVO'}</span>
               <input placeholder="Cliente" className="w-full bg-black border-2 border-white p-2 font-bold uppercase text-xs text-white outline-none focus:border-yellow-400" value={newSponsor.client_name} onChange={e => setNewSponsor({...newSponsor, client_name: e.target.value})} required />
               <div className="flex gap-4 items-center border-2 border-dashed border-zinc-700 p-2 relative">
-                <p className="text-[10px] font-black uppercase text-zinc-500 flex-1">{uploading ? 'Cargando...' : (newSponsor.image_url ? 'Imagen OK ✅' : 'Imagen/GIF')}</p>
+                <p className="text-[10px] font-black uppercase text-zinc-500 flex-1">{uploading ? 'Cargando...' : (newSponsor.image_url ? 'Imagen OK ✅' : 'Subir Imagen/GIF')}</p>
                 <input type="file" className="absolute inset-0 opacity-0 cursor-pointer" onChange={async (e) => {
                   const file = e.target.files?.[0]; if (file) { const url = await handleFileUpload(file, 'sponsors'); if (url) setNewSponsor({...newSponsor, image_url: url}); }
                 }} />
@@ -253,11 +254,12 @@ export default function AdminDashboard() {
               <div className="flex gap-2 text-white font-black">
                 <input placeholder="Link" className="flex-1 bg-black border-2 border-white p-2 text-xs" value={newSponsor.link} onChange={e => setNewSponsor({...newSponsor, link: e.target.value})} />
                 <select className="bg-black border-2 border-white p-2 text-xs uppercase" value={newSponsor.position} onChange={e => setNewSponsor({...newSponsor, position: e.target.value})}>
+                  <option value="top">SUPERIOR</option>
                   <option value="sidebar">LATERAL</option>
                   <option value="bottom">INFERIOR</option>
                 </select>
               </div>
-              <div className="flex gap-2">
+              <div className="flex gap-2 text-white font-black">
                 <button type="submit" disabled={uploading} className={`flex-1 font-black uppercase py-2 text-sm ${newSponsor.id ? 'bg-blue-600 text-white' : 'bg-yellow-400 text-black'}`}>{newSponsor.id ? 'ACTUALIZAR' : 'GUARDAR'}</button>
                 {newSponsor.id && <button type="button" onClick={() => setNewSponsor({id:null, client_name:'', image_url:'', link:'', position:'sidebar'})} className="bg-zinc-700 px-4 font-black">X</button>}
               </div>
@@ -269,13 +271,14 @@ export default function AdminDashboard() {
                   <div className="flex flex-wrap gap-1">
                     <button onClick={() => setNewSponsor(sp)} className="px-2 py-0.5 bg-blue-600 text-white text-[7px] font-black border border-white">EDITAR</button>
                     <button onClick={() => toggleSponsorStatus(sp.id, sp.is_active)} className={`px-2 py-0.5 text-white text-[7px] font-black border border-white ${sp.is_active ? 'bg-green-600' : 'bg-zinc-700'}`}>{sp.is_active ? 'PAUSAR' : 'ACTIVAR'}</button>
-                    <button onClick={() => deleteSponsor(sp.id)} className="px-2 py-0.5 bg-red-600 text-white text-[7px] font-black border border-white">ELIMINAR</button>
+                    <button onClick={() => deleteSponsor(sp.id)} className="px-2 py-0.5 bg-red-600 text-white text-[7px] font-black border border-white">BORRAR</button>
                   </div>
                 </div>
               ))}
             </div>
           </div>
 
+          {/* Entrevistas */}
           <div className="space-y-6 border-t-4 border-zinc-800 pt-8 text-left">
             <h2 className="text-2xl font-black uppercase italic text-yellow-400 border-l-8 border-yellow-400 pl-4 bg-zinc-950 py-2">Entrevistas</h2>
             <form onSubmit={handleSaveInterview} className="bg-zinc-950 p-4 md:p-6 border-4 border-white space-y-4 shadow-xl text-left">
@@ -318,7 +321,7 @@ export default function AdminDashboard() {
           {/* Mensajes */}
           <div className="space-y-6 border-t-4 border-zinc-800 pt-8 text-left">
             <h2 className="text-2xl font-black uppercase italic text-yellow-400 border-l-8 border-yellow-400 pl-4 bg-zinc-950 py-2">Mensajes</h2>
-            <div className="space-y-4 max-h-[300px] overflow-y-auto pr-2 custom-scrollbar">
+            <div className="space-y-4 max-h-[300px] overflow-y-auto pr-2 custom-scrollbar text-white font-black">
               {messages.map((msg) => (
                 <div key={msg.id} className={`border-2 p-3 flex justify-between items-center ${msg.is_read ? 'border-zinc-800 bg-zinc-950/50 opacity-60' : 'border-white bg-zinc-900'}`}>
                   <div onClick={() => setSelectedMessage(msg)} className="cursor-pointer flex-1">
