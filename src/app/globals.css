@@ -1,21 +1,29 @@
 @import "tailwindcss";
 
+@import url('https://fonts.googleapis.com/css2?family=Permanent+Marker&family=Inter:wght@400;700;900&display=swap');
+
 :root {
-  --background: #27272a; /* Zinc-800 - Un poco más claro */
+  --background: #18181b; /* Zinc-900 */
   --foreground: #ffffff;
-  --accent-blue: #3b82f6; /* Azul moderno */
+  --accent-red: #dc2626; /* Rojo vibrante */
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --color-accent-blue: var(--accent-blue);
+  --color-accent-red: var(--accent-red);
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
   font-family: 'Inter', system-ui, -apple-system, sans-serif;
+}
+
+/* Brusher / Marker Style for Titles */
+.font-brusher {
+  font-family: 'Permanent Marker', cursive;
+  letter-spacing: -0.02em;
 }
 
 /* Watermark global */
@@ -26,24 +34,26 @@ body {
   align-items: center;
   justify-content: center;
   pointer-events: none;
-  opacity: 0.04;
+  opacity: 0.03;
   z-index: 0;
 }
 
-.content-wrapper {
-  position: relative;
-  z-index: 10;
-}
-
-@keyframes pulse-blue {
-  0%, 100% { opacity: 1; border-color: #3b82f6; box-shadow: 0 0 15px rgba(59, 130, 246, 0.5); }
+@keyframes pulse-red {
+  0%, 100% { opacity: 1; border-color: #dc2626; box-shadow: 0 0 15px rgba(220, 38, 38, 0.5); }
   50% { opacity: 0.8; border-color: white; box-shadow: none; }
 }
 
-.animate-pulse-blue {
-  animation: pulse-blue 2s infinite;
+.animate-pulse-red {
+  animation: pulse-red 2s infinite;
 }
 
 .custom-scrollbar::-webkit-scrollbar { width: 6px; }
 .custom-scrollbar::-webkit-scrollbar-track { background: #1a1a1a; }
-.custom-scrollbar::-webkit-scrollbar-thumb { background: #3b82f6; border-radius: 10px; }
+.custom-scrollbar::-webkit-scrollbar-thumb { background: #dc2626; border-radius: 10px; }
+
+/* Glassmorphism subtle effect */
+.glass-panel {
+  background: rgba(24, 24, 27, 0.8);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
