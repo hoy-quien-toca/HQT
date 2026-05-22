@@ -49,7 +49,6 @@ export default function Home() {
   async function fetchData() {
     setLoading(true);
     try {
-      // ORDEN: DEL MÁS CERCANO AL MÁS LEJANO (Ascending)
       const { data: eventData } = await supabase
         .from('events')
         .select('*')
@@ -108,13 +107,20 @@ export default function Home() {
   const priceMapping: Record<string, string> = { 'range': 'PAGO', 'free': 'LIBRE', 'gorra': 'GORRA', 'sobre': 'SOBRE' };
   const activePriceTypes = Array.from(new Set(allEvents.map(e => priceMapping[e.price_type] || e.price_type))).filter(Boolean).sort();
 
+  // Helper for DD/MM/YY
+  const formatDate = (dateStr: string) => {
+    if (!dateStr) return '';
+    const [year, month, day] = dateStr.split('-');
+    return `${day}/${month}/${year.substring(2)}`;
+  };
+
   const formatTime = (timeStr: string) => {
     if (!timeStr) return '';
     return timeStr.substring(0, 5);
   };
 
   const shareOnWhatsApp = (event: any) => {
-    const text = `¡Mirá esto que encontré en Hoy Quien Toca! ¿Vamos?\n\n${event.band_name} en ${event.venue}\nFecha: ${event.date}\nLink: ${window.location.origin}`;
+    const text = `¡Mirá esto que encontré en Hoy Quien Toca! ¿Vamos?\n\n${event.band_name} en ${event.venue}\nFecha: ${formatDate(event.date)}\nLink: ${window.location.origin}`;
     window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
   };
 
@@ -156,7 +162,7 @@ export default function Home() {
           <nav className="hidden md:flex gap-6 font-bold uppercase tracking-widest text-sm items-center">
             <Link href="/" className="text-red-600 underline decoration-2 underline-offset-4 font-black">Fechas</Link>
             <Link href="/interviews" className="hover:text-red-600 transition-colors">Entrevistas</Link>
-            <Link href="/contact" className="hover:text-red-600 transition-colors font-black">Contacto</Link>
+            <Link href="/contact" className="hover:text-red-600 transition-colors">Contacto</Link>
             <Link href="/submit" className="border-2 border-red-600 text-red-600 px-4 py-1 bg-black rounded-full animate-pulse hover:bg-red-600 hover:text-white transition-colors">Subir Fecha</Link>
           </nav>
 
@@ -209,7 +215,7 @@ export default function Home() {
                 {featuredEvents[currentHeroIndex].band_name}
               </h2>
               <p className="text-xs md:text-2xl font-bold text-white uppercase tracking-widest border-l-4 md:border-l-8 border-red-600 pl-4 mt-2 md:mt-4">
-                {featuredEvents[currentHeroIndex].date} @ {featuredEvents[currentHeroIndex].venue} {featuredEvents[currentHeroIndex].address && `- ${featuredEvents[currentHeroIndex].address}`}
+                {formatDate(featuredEvents[currentHeroIndex].date)} @ {featuredEvents[currentHeroIndex].venue} {featuredEvents[currentHeroIndex].address && `- ${featuredEvents[currentHeroIndex].address}`}
               </p>
               <button onClick={() => setSelectedEvent(featuredEvents[currentHeroIndex])} className="mt-4 md:mt-8 bg-white text-black font-black uppercase px-4 py-1.5 md:px-8 md:py-3 hover:bg-red-600 hover:text-white transition-all text-[10px] md:text-base rounded-full shadow-lg">Ver Detalles</button>
             </div>
@@ -266,7 +272,6 @@ export default function Home() {
                 events.map((event) => (
                   <div key={event.id} onClick={() => setSelectedEvent(event)} className="border-4 border-white p-2 md:p-4 hover:translate-x-1 hover:-translate-y-1 transition-all bg-zinc-950 shadow-[6px_6px_0px_0px_rgba(220,38,38,0.5)] flex flex-row md:flex-col items-center md:items-stretch gap-3 md:gap-4 group/card relative overflow-hidden cursor-pointer rounded-[24px] md:rounded-[32px] h-32 md:h-auto">
                     
-                    {/* Ribbons / Tags - Small on mobile */}
                     {event.suggestion_tag && (
                       <div className={`absolute top-2 -left-12 w-32 text-center py-0.5 font-black text-[7px] md:text-[10px] uppercase -rotate-45 z-30 border-y shadow-xl tracking-tighter ${getTagStyle(event.suggestion_tag)}`}>
                         {event.suggestion_tag}
@@ -284,7 +289,7 @@ export default function Home() {
                         <h3 className="text-base md:text-2xl font-black uppercase leading-none truncate group-hover/card:text-red-600 transition-colors font-black">{event.band_name}</h3>
                         <span className="hidden md:inline-block text-[8px] bg-red-600 text-white px-2 py-0.5 uppercase font-black italic rounded-sm font-black">{event.genre || 'Show'}</span>
                       </div>
-                      <p className="font-black text-red-600 tracking-tighter uppercase text-[10px] md:text-sm">{event.date} - {formatTime(event.time)}hs</p>
+                      <p className="font-black text-red-600 tracking-tighter uppercase text-[10px] md:text-sm">{formatDate(event.date)} - {formatTime(event.time)}hs</p>
                       <p className="text-[9px] md:text-[10px] uppercase tracking-tight text-zinc-400 font-bold leading-none md:leading-tight truncate font-black">{event.venue}, {event.city}</p>
                       <div className="md:hidden">
                          <span className="text-[8px] bg-zinc-800 text-zinc-400 px-2 py-0.5 uppercase font-black rounded-full border border-zinc-700">{event.genre || 'Show'}</span>
@@ -332,13 +337,13 @@ export default function Home() {
               <div className="md:w-1/2 p-6 md:p-8 space-y-6 text-left font-black">
                 <div>
                   <div className="flex gap-2 font-black">
-                    <span className="bg-red-600 text-white px-2 py-1 text-[10px] font-black uppercase italic rounded-md shadow-sm">{selectedEvent.genre}</span>
+                    <span className="bg-red-600 text-white px-2 py-1 text-[10px] font-black uppercase italic rounded-md shadow-sm font-black">{selectedEvent.genre}</span>
                     <span className="bg-white text-black px-2 py-1 text-[10px] font-black uppercase italic rounded-md shadow-sm border border-red-600">{selectedEvent.age_rating || 'ATP'}</span>
                   </div>
                   <h2 className="text-3xl md:text-5xl font-brusher tracking-tighter mt-2 text-white leading-none uppercase">{selectedEvent.band_name}</h2>
                 </div>
                 <div className="space-y-1 text-white">
-                  <p className="text-xl font-bold uppercase">{selectedEvent.date} - {formatTime(selectedEvent.time)}hs</p>
+                  <p className="text-xl font-bold uppercase">{formatDate(selectedEvent.date)} - {formatTime(selectedEvent.time)}hs</p>
                   <p className="text-sm font-black text-zinc-400 uppercase italic">{selectedEvent.venue} - {selectedEvent.address} - {selectedEvent.city}, {selectedEvent.department}</p>
                 </div>
                 <div className="border-t-2 border-zinc-800 pt-6 font-black">
