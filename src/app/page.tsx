@@ -26,7 +26,6 @@ export default function Home() {
     fetchData();
   }, []);
 
-  // Rotation timers
   useEffect(() => {
     if (featuredEvents.length > 1) {
       const timer = setInterval(() => {
@@ -61,7 +60,6 @@ export default function Home() {
         .eq('is_active', true);
 
       if (eventData) {
-        // Normalize for unique filters
         const normalized = eventData.map(e => ({
           ...e,
           department: e.department?.trim().toUpperCase(),
@@ -69,7 +67,8 @@ export default function Home() {
         }));
         setAllEvents(normalized);
         setFeaturedEvents(normalized.filter(e => e.is_featured === true));
-        setEvents(normalized); 
+        // Use normalized data directly for the first render
+        setEvents(normalized);
       }
       if (sponsorData) setSponsors(sponsorData);
     } catch (err) {
@@ -78,6 +77,7 @@ export default function Home() {
     setLoading(false);
   }
 
+  // Filter function using 4 arguments (matching calls in select elements)
   function applyFilters(dep: string, gen: string, age: string, price: string) {
     let filtered = [...allEvents];
     if (dep) filtered = filtered.filter(e => e.department === dep);
@@ -197,38 +197,39 @@ export default function Home() {
 
         <div className="flex flex-col lg:flex-row gap-8 md:gap-12">
           <div className="flex-1 space-y-12">
-            <section className="bg-yellow-400 text-black p-4 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 items-center font-black uppercase italic shadow-[8px_8px_0px_0px_rgba(255,255,255,1)]">
+            <section className="bg-yellow-400 text-black p-4 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 items-center font-black uppercase italic shadow-[8px_8px_0px_0px_rgba(255,255,255,1)] text-left">
               <div className="flex flex-col gap-1">
-                <span className="text-[10px] opacity-70">Departamento</span>
+                <span className="text-[10px] opacity-70 uppercase">Departamento</span>
                 <select value={department} onChange={(e) => { setDepartment(e.target.value); applyFilters(e.target.value, genre, ageRating, priceType); }} className="bg-black text-white p-2 border-2 border-white focus:outline-none font-bold text-xs uppercase">
                   <option value="">Cualquier Depto</option>
                   {activeDepartments.map(d => <option key={d} value={d}>{d}</option>)}
                 </select>
               </div>
               <div className="flex flex-col gap-1">
-                <span className="text-[10px] opacity-70">Género</span>
+                <span className="text-[10px] opacity-70 uppercase">Género</span>
                 <select value={genre} onChange={(e) => { setGenre(e.target.value); applyFilters(department, e.target.value, ageRating, priceType); }} className="bg-black text-white p-2 border-2 border-white focus:outline-none font-bold text-xs uppercase">
                   <option value="">Cualquier Género</option>
                   {activeGenres.map(g => <option key={g} value={g}>{g}</option>)}
                 </select>
               </div>
               <div className="flex flex-col gap-1">
-                <span className="text-[10px] opacity-70">Edad</span>
+                <span className="text-[10px] opacity-70 uppercase">Edad</span>
                 <select value={ageRating} onChange={(e) => { setAgeRating(e.target.value); applyFilters(department, genre, e.target.value, priceType); }} className="bg-black text-white p-2 border-2 border-white focus:outline-none font-bold text-xs uppercase">
                   <option value="">Cualquier Edad</option>
                   {activeAgeRatings.map(a => <option key={a} value={a}>{a}</option>)}
                 </select>
               </div>
               <div className="flex flex-col gap-1">
-                <span className="text-[10px] opacity-70">Tipo Entrada</span>
+                <span className="text-[10px] opacity-70 uppercase">Tipo Entrada</span>
                 <select value={priceType} onChange={(e) => { setPriceType(e.target.value); applyFilters(department, genre, ageRating, e.target.value); }} className="bg-black text-white p-2 border-2 border-white focus:outline-none font-bold text-xs uppercase">
-                  <option value="">Tipo Entrada</option>
+                  <option value="">Cualquier Tipo</option>
                   <option value="PAGO">PAGO</option><option value="LIBRE">LIBRE</option><option value="GORRA">A LA GORRA</option><option value="SOBRE">SOBRE ARTÍSTICO</option>
                 </select>
               </div>
-              <button onClick={() => {setDepartment(''); setGenre(''); setAgeRating(''); setPriceType(''); setEvents(allEvents);}} className="sm:col-span-full text-[10px] underline hover:text-red-600 font-bold uppercase tracking-widest text-center">Limpiar Filtros</button>
+              <button onClick={() => {setDepartment(''); setGenre(''); setAgeRating(''); setPriceType(''); setEvents(allEvents);}} className="sm:col-span-full text-[10px] underline hover:text-red-600 font-black uppercase tracking-widest text-center">Limpiar Filtros</button>
             </section>
 
+            {/* Event Feed */}
             <section className="grid grid-cols-1 sm:grid-cols-2 gap-6 md:gap-8">
               {loading ? (
                 <p className="col-span-full text-center text-4xl font-black animate-pulse text-yellow-400 uppercase italic">Cargando...</p>
@@ -246,7 +247,7 @@ export default function Home() {
                       {event.flyer_url ? <img src={event.flyer_url} alt="Flyer" className={`object-cover w-full h-full transition-all duration-500 ${event.is_sold_out ? 'grayscale blur-[1px]' : 'group-hover/card:scale-105'}`} /> : <div className="text-zinc-600 font-black italic uppercase text-center">FLYER DEL SHOW</div>}
                     </div>
                     <div className="space-y-2 flex-1">
-                      <div className="flex justify-between items-start text-left">
+                      <div className="flex justify-between items-start">
                         <h3 className="text-xl md:text-2xl font-black uppercase leading-[0.9] break-words max-w-[70%] group-hover/card:text-yellow-400 transition-colors uppercase">{event.band_name}</h3>
                         <span className="text-[10px] bg-red-600 text-white px-2 py-1 uppercase font-black italic">{event.genre || 'Show'}</span>
                       </div>
@@ -285,7 +286,6 @@ export default function Home() {
         </section>
         )}
 
-        {/* Modal Event */}
         {selectedEvent && (
           <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
             <div className="absolute inset-0 bg-black/90 backdrop-blur-sm" onClick={() => setSelectedEvent(null)} />
@@ -302,7 +302,7 @@ export default function Home() {
                   </div>
                   <h2 className="text-3xl md:text-5xl font-black uppercase italic tracking-tighter mt-2 text-yellow-400 leading-none uppercase">{selectedEvent.band_name}</h2>
                 </div>
-                <div className="space-y-1 text-white">
+                <div className="space-y-1 text-white text-left font-black">
                   <p className="text-xl font-bold uppercase">{selectedEvent.date} - {formatTime(selectedEvent.time)}hs</p>
                   <p className="text-sm font-black text-zinc-400 uppercase italic">{selectedEvent.venue} - {selectedEvent.city}, {selectedEvent.department}</p>
                 </div>
@@ -312,12 +312,12 @@ export default function Home() {
                     {selectedEvent.description?.split('\n').map((p: string, i: number) => <p key={i}>{p}</p>) || <p className="italic text-zinc-600 text-sm">No hay reseña disponible.</p>}
                   </div>
                 </div>
-                <div className="pt-6 border-t-2 border-zinc-800 space-y-4">
+                <div className="pt-6 border-t-2 border-zinc-800 space-y-4 text-left">
                   <p className="text-2xl md:text-3xl font-black italic text-yellow-400 tracking-tighter uppercase">
                     {selectedEvent.price_type === 'free' ? 'ENTRADA LIBRE' : selectedEvent.price_type === 'gorra' ? 'A LA GORRA' : selectedEvent.price_type === 'sobre' ? 'SOBRE ARTÍSTICO' : `$${selectedEvent.price_min}${selectedEvent.price_max ? ` - $${selectedEvent.price_max}` : ''}`}
                   </p>
                   <div className="flex gap-4">
-                    <button onClick={() => !selectedEvent.is_sold_out && handleTicketAction(selectedEvent)} disabled={selectedEvent.is_sold_out} className={`flex-1 font-black uppercase py-4 text-lg md:text-xl border-4 border-black shadow-[6px_6px_0px_0px_rgba(255,255,255,1)] transition-all ${selectedEvent.is_sold_out ? 'bg-zinc-800 text-zinc-600 cursor-not-allowed shadow-none' : 'bg-yellow-400 text-black hover:bg-white'}`}>{selectedEvent.is_sold_out ? 'AGOTADO' : (selectedEvent.ticket_type === 'whatsapp' ? 'WhatsApp' : 'Entradas')}</button>
+                    <button onClick={() => !selectedEvent.is_sold_out && handleTicketAction(selectedEvent)} disabled={selectedEvent.is_sold_out} className={`flex-1 font-black uppercase py-4 text-lg md:text-xl border-4 border-black shadow-[6px_6px_0px_0px_rgba(255,255,255,1)] transition-all ${selectedEvent.is_sold_out ? 'bg-zinc-800 text-zinc-600 cursor-not-allowed shadow-none' : 'bg-yellow-400 text-black hover:bg-white'}`}>{selectedEvent.is_sold_out ? 'AGOTADO' : (selectedEvent.ticket_type === 'whatsapp' ? 'WhatsApp' : 'Comprar Entradas')}</button>
                     <button onClick={() => shareOnWhatsApp(selectedEvent)} className="bg-green-600 text-white p-4 border-4 border-black shadow-[6px_6px_0px_0px_rgba(255,255,255,1)] hover:bg-black transition-colors flex items-center justify-center">
                       <svg className="w-8 h-8" fill="currentColor" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/></svg>
                     </button>
