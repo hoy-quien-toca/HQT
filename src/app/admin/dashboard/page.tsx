@@ -85,7 +85,15 @@ export default function AdminDashboard() {
     e.preventDefault();
     if (!editingEvent) return;
     const { id, created_at, ...data } = editingEvent;
-    const { error } = await supabase.from('events').update(data).eq('id', id);
+    
+    // Ensure numbers are numbers
+    const finalData = {
+      ...data,
+      price_min: data.price_min ? parseInt(data.price_min) : null,
+      price_max: data.price_max ? parseInt(data.price_max) : null,
+    };
+
+    const { error } = await supabase.from('events').update(finalData).eq('id', id);
     if (error) alert('Error: ' + error.message);
     else { setEditingEvent(null); fetchData(); }
   }
@@ -198,7 +206,7 @@ export default function AdminDashboard() {
               <h3 className="font-black uppercase text-blue-500">Editando: {editingEvent.band_name}</h3>
               <form onSubmit={handleSaveEvent} className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs text-white font-black">
                 <div className="md:col-span-2 space-y-1">
-                  <label className="text-[10px] text-zinc-500">BANDA</label>
+                  <label className="text-[10px] text-zinc-500">BANDA / ARTISTA</label>
                   <input value={editingEvent.band_name} onChange={e => setEditingEvent({...editingEvent, band_name: e.target.value})} className="w-full bg-black border-2 border-white p-2 uppercase font-black rounded-xl" />
                 </div>
                 <div className="space-y-1">
@@ -210,7 +218,7 @@ export default function AdminDashboard() {
                   <input type="time" value={editingEvent.time} onChange={e => setEditingEvent({...editingEvent, time: e.target.value})} className="w-full bg-black border-2 border-white p-2 rounded-xl" />
                 </div>
                 <div className="space-y-1">
-                  <label className="text-[10px] text-zinc-500">LUGAR</label>
+                  <label className="text-[10px] text-zinc-500">LUGAR / LOCAL</label>
                   <input value={editingEvent.venue} onChange={e => setEditingEvent({...editingEvent, venue: e.target.value})} className="w-full bg-black border-2 border-white p-2 uppercase font-black rounded-xl" />
                 </div>
                 <div className="space-y-1">
@@ -241,31 +249,53 @@ export default function AdminDashboard() {
                     <option value="+12">+12</option><option value="+15">+15</option><option value="+18">+18</option>
                   </select>
                 </div>
-                <div className="space-y-1">
-                  <label className="text-[10px] text-zinc-500">TIPO ENTRADA</label>
-                  <select value={editingEvent.price_type} onChange={e => setEditingEvent({...editingEvent, price_type: e.target.value})} className="w-full bg-black border-2 border-white p-2 uppercase font-black rounded-xl">
-                    <option value="range">PAGO</option><option value="free">LIBRE</option><option value="gorra">GORRA</option><option value="sobre">SOBRE</option>
-                  </select>
-                </div>
-                {editingEvent.price_type === 'range' && (
-                  <div className="grid grid-cols-2 gap-2">
-                    <div className="space-y-1">
-                      <label className="text-[10px] text-zinc-500">MIN $</label>
-                      <input type="number" value={editingEvent.price_min || ''} onChange={e => setEditingEvent({...editingEvent, price_min: e.target.value})} className="w-full bg-black border-2 border-white p-2 rounded-xl" />
-                    </div>
-                    <div className="space-y-1">
-                      <label className="text-[10px] text-zinc-500">MAX $</label>
-                      <input type="number" value={editingEvent.price_max || ''} onChange={e => setEditingEvent({...editingEvent, price_max: e.target.value})} className="w-full bg-black border-2 border-white p-2 rounded-xl" />
-                    </div>
+
+                <div className="md:col-span-2 border-t border-zinc-800 pt-4 grid grid-cols-2 gap-4">
+                  <div className="space-y-1">
+                    <label className="text-[10px] text-zinc-500 uppercase">Tipo Entrada</label>
+                    <select value={editingEvent.price_type} onChange={e => setEditingEvent({...editingEvent, price_type: e.target.value})} className="w-full bg-black border-2 border-white p-2 uppercase font-black rounded-xl">
+                      <option value="range">PAGO (Entradas)</option>
+                      <option value="free">ENTRADA LIBRE</option>
+                      <option value="gorra">A LA GORRA</option>
+                      <option value="sobre">SOBRE ARTÍSTICO</option>
+                    </select>
                   </div>
-                )}
-                <div className="md:col-span-2 space-y-1">
-                  <label className="text-[10px] text-zinc-500">VENTA (Link o Celular)</label>
-                  <input value={editingEvent.ticket_contact} onChange={e => setEditingEvent({...editingEvent, ticket_contact: e.target.value})} className="w-full bg-black border-2 border-white p-2 font-black rounded-xl" />
+                  {editingEvent.price_type === 'range' && (
+                    <div className="grid grid-cols-2 gap-2">
+                      <div className="space-y-1">
+                        <label className="text-[10px] text-zinc-500 uppercase">Precio Min $</label>
+                        <input type="number" value={editingEvent.price_min || ''} onChange={e => setEditingEvent({...editingEvent, price_min: e.target.value})} className="w-full bg-black border-2 border-white p-2 font-black rounded-xl" placeholder="Ej: 500" />
+                      </div>
+                      <div className="space-y-1">
+                        <label className="text-[10px] text-zinc-500 uppercase">Precio Max $</label>
+                        <input type="number" value={editingEvent.price_max || ''} onChange={e => setEditingEvent({...editingEvent, price_max: e.target.value})} className="w-full bg-black border-2 border-white p-2 font-black rounded-xl" placeholder="Vacio = Unico" />
+                      </div>
+                    </div>
+                  )}
                 </div>
+
+                <div className="md:col-span-2 grid grid-cols-2 gap-4">
+                  <div className="space-y-1">
+                    <label className="text-[10px] text-zinc-500 uppercase">Venta vía</label>
+                    <select value={editingEvent.ticket_type} onChange={e => setEditingEvent({...editingEvent, ticket_type: e.target.value})} className="w-full bg-black border-2 border-white p-2 font-black rounded-xl">
+                      <option value="link">Link Web</option>
+                      <option value="whatsapp">WhatsApp</option>
+                    </select>
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-[10px] text-zinc-500 uppercase">{editingEvent.ticket_type === 'whatsapp' ? 'Celular' : 'URL Link'}</label>
+                    <input value={editingEvent.ticket_contact} onChange={e => setEditingEvent({...editingEvent, ticket_contact: e.target.value})} className="w-full bg-black border-2 border-white p-2 font-black rounded-xl" placeholder="Ej: 099..." />
+                  </div>
+                </div>
+
+                <div className="md:col-span-2 space-y-1">
+                  <label className="text-[10px] text-zinc-500 uppercase">Bio / Reseña</label>
+                  <textarea value={editingEvent.description || ''} onChange={e => setEditingEvent({...editingEvent, description: e.target.value})} className="w-full bg-black border-2 border-white p-2 font-black rounded-xl h-24" />
+                </div>
+
                 <div className="md:col-span-2 flex gap-4 pt-4">
-                  <button type="submit" className="flex-1 bg-blue-600 py-3 font-black border-2 border-white rounded-full">GUARDAR CAMBIOS</button>
-                  <button type="button" onClick={() => setEditingEvent(null)} className="bg-zinc-700 px-6 font-black border-2 border-white rounded-full">X</button>
+                  <button type="submit" className="flex-1 bg-blue-600 py-3 font-black border-2 border-white rounded-full text-white">GUARDAR CAMBIOS</button>
+                  <button type="button" onClick={() => setEditingEvent(null)} className="bg-zinc-700 px-6 font-black border-2 border-white rounded-full text-white">X</button>
                 </div>
               </form>
             </div>
