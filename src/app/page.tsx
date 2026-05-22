@@ -26,6 +26,7 @@ export default function Home() {
     fetchData();
   }, []);
 
+  // Rotation timers
   useEffect(() => {
     if (featuredEvents.length > 1) {
       const timer = setInterval(() => {
@@ -48,38 +49,37 @@ export default function Home() {
   async function fetchData() {
     setLoading(true);
     try {
-      const { data: eventData, error: eErr } = await supabase
+      const { data: eventData } = await supabase
         .from('events')
         .select('*')
         .eq('is_approved', true)
         .order('date', { ascending: true });
 
-      const { data: sponsorData, error: sErr } = await supabase
+      const { data: sponsorData } = await supabase
         .from('sponsors')
         .select('*')
         .eq('is_active', true);
 
       if (eventData) {
-        // Normalize data to avoid duplicates due to casing or spaces
+        // Normalize for unique filters
         const normalized = eventData.map(e => ({
           ...e,
           department: e.department?.trim().toUpperCase(),
-          genre: e.genre?.trim().toUpperCase(),
-          city: e.city?.trim().toUpperCase()
+          genre: e.genre?.trim().toUpperCase()
         }));
         setAllEvents(normalized);
         setFeaturedEvents(normalized.filter(e => e.is_featured === true));
-        applyFilters(normalized, department, genre, ageRating, priceType);
+        setEvents(normalized); 
       }
       if (sponsorData) setSponsors(sponsorData);
     } catch (err) {
-      console.error("Critical fetch error:", err);
+      console.error("Fetch error:", err);
     }
     setLoading(false);
   }
 
-  function applyFilters(data: any[], dep: string, gen: string, age: string, price: string) {
-    let filtered = [...data];
+  function applyFilters(dep: string, gen: string, age: string, price: string) {
+    let filtered = [...allEvents];
     if (dep) filtered = filtered.filter(e => e.department === dep);
     if (gen) filtered = filtered.filter(e => e.genre === gen);
     if (age) filtered = filtered.filter(e => e.age_rating === age);
@@ -97,7 +97,6 @@ export default function Home() {
   const activeBottomAd = bottomSponsors[currentBottomAdIndex];
   const sidebarSponsors = sponsors.filter(a => a.position === 'sidebar');
   
-  // Dynamic unique lists for filters
   const activeDepartments = Array.from(new Set(allEvents.map(e => e.department))).filter(Boolean).sort();
   const activeGenres = Array.from(new Set(allEvents.map(e => e.genre))).filter(Boolean).sort();
   const activeAgeRatings = Array.from(new Set(allEvents.map(e => e.age_rating || 'ATP'))).sort();
@@ -123,7 +122,7 @@ export default function Home() {
   return (
     <div className="min-h-screen text-white font-sans relative overflow-x-hidden text-left">
       <div className="fixed inset-0 flex items-center justify-center pointer-events-none opacity-[0.05] z-0">
-        <Image src="/logo.jpg" alt="Watermark" width={1000} height={1000} className="grayscale" />
+        <Image src="/logo.jpg" alt="Watermark" width={1000} height={1000} className="grayscale" priority />
       </div>
 
       <header className="border-b-4 border-yellow-400 p-4 md:p-6 bg-zinc-950 sticky top-0 z-50 shadow-xl">
@@ -139,7 +138,7 @@ export default function Home() {
           <nav className="hidden md:flex gap-6 font-bold uppercase tracking-widest text-sm items-center">
             <Link href="/" className="hover:text-yellow-400 underline decoration-2 underline-offset-4">Fechas</Link>
             <Link href="/interviews" className="hover:text-yellow-400">Entrevistas</Link>
-            <Link href="/contact" className="hover:text-yellow-400">Contacto</Link>
+            <Link href="/contact" className="hover:text-yellow-400 font-black">Contacto</Link>
             <Link href="/submit" className="border-2 border-yellow-400 text-yellow-400 px-4 py-1 bg-black animate-[pulse_2s_infinite] hover:bg-yellow-400 hover:text-black transition-colors">Subir Fecha</Link>
           </nav>
 
@@ -154,7 +153,7 @@ export default function Home() {
           <button onClick={() => setIsMenuOpen(false)} className="absolute top-6 right-6 text-white text-4xl font-black">X</button>
           <Link href="/" onClick={() => setIsMenuOpen(false)} className="text-4xl font-black uppercase text-yellow-400 italic">Fechas</Link>
           <Link href="/interviews" onClick={() => setIsMenuOpen(false)} className="text-4xl font-black uppercase text-white italic">Entrevistas</Link>
-          <Link href="/contact" onClick={() => setIsMenuOpen(false)} className="text-4xl font-black uppercase text-white italic">Contacto</Link>
+          <Link href="/contact" onClick={() => setIsMenuOpen(false)} className="text-4xl font-black uppercase text-white italic font-black">Contacto</Link>
           <Link href="/submit" onClick={() => setIsMenuOpen(false)} className="text-3xl font-black uppercase border-4 border-yellow-400 text-yellow-400 px-8 py-4 animate-pulse">Subir Fecha</Link>
         </div>
       )}
@@ -170,7 +169,7 @@ export default function Home() {
 
         {featuredEvents.length > 0 && (
           <section className="relative h-[400px] md:h-[500px] border-4 md:border-8 border-white bg-zinc-800 flex items-end p-6 md:p-10 overflow-hidden shadow-[12px_12px_0px_0px_rgba(234,179,8,1)] group">
-            <div className="absolute inset-0">
+            <div className="absolute inset-0 transition-opacity duration-1000">
                {featuredEvents[currentHeroIndex].flyer_url && (
                  <img src={featuredEvents[currentHeroIndex].flyer_url} className="absolute inset-0 w-full h-full object-cover opacity-60" alt="Hero" />
                )}
@@ -180,7 +179,7 @@ export default function Home() {
               <span className="bg-red-600 text-white px-4 py-1 text-xs md:text-sm font-black uppercase italic tracking-widest shadow-md">
                 {featuredEvents[currentHeroIndex].suggestion_tag || 'DESTACADO'}
               </span>
-              <h2 className="text-4xl md:text-8xl font-black uppercase italic leading-[0.8] tracking-tighter mt-4 drop-shadow-2xl text-yellow-400">
+              <h2 className="text-4xl md:text-8xl font-black uppercase italic leading-[0.8] tracking-tighter mt-4 drop-shadow-2xl text-yellow-400 uppercase">
                 {featuredEvents[currentHeroIndex].band_name}
               </h2>
               <p className="text-lg md:text-2xl font-bold text-white uppercase tracking-widest border-l-4 md:border-l-8 border-red-600 pl-4 mt-4">
@@ -198,40 +197,38 @@ export default function Home() {
 
         <div className="flex flex-col lg:flex-row gap-8 md:gap-12">
           <div className="flex-1 space-y-12">
-            {/* Filters */}
             <section className="bg-yellow-400 text-black p-4 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 items-center font-black uppercase italic shadow-[8px_8px_0px_0px_rgba(255,255,255,1)]">
               <div className="flex flex-col gap-1">
-                <span className="text-[10px] opacity-70 uppercase">Departamento</span>
+                <span className="text-[10px] opacity-70">Departamento</span>
                 <select value={department} onChange={(e) => { setDepartment(e.target.value); applyFilters(e.target.value, genre, ageRating, priceType); }} className="bg-black text-white p-2 border-2 border-white focus:outline-none font-bold text-xs uppercase">
                   <option value="">Cualquier Depto</option>
                   {activeDepartments.map(d => <option key={d} value={d}>{d}</option>)}
                 </select>
               </div>
               <div className="flex flex-col gap-1">
-                <span className="text-[10px] opacity-70 uppercase">Género</span>
+                <span className="text-[10px] opacity-70">Género</span>
                 <select value={genre} onChange={(e) => { setGenre(e.target.value); applyFilters(department, e.target.value, ageRating, priceType); }} className="bg-black text-white p-2 border-2 border-white focus:outline-none font-bold text-xs uppercase">
                   <option value="">Cualquier Género</option>
                   {activeGenres.map(g => <option key={g} value={g}>{g}</option>)}
                 </select>
               </div>
               <div className="flex flex-col gap-1">
-                <span className="text-[10px] opacity-70 uppercase">Edad</span>
+                <span className="text-[10px] opacity-70">Edad</span>
                 <select value={ageRating} onChange={(e) => { setAgeRating(e.target.value); applyFilters(department, genre, e.target.value, priceType); }} className="bg-black text-white p-2 border-2 border-white focus:outline-none font-bold text-xs uppercase">
                   <option value="">Cualquier Edad</option>
                   {activeAgeRatings.map(a => <option key={a} value={a}>{a}</option>)}
                 </select>
               </div>
               <div className="flex flex-col gap-1">
-                <span className="text-[10px] opacity-70 uppercase">Tipo Entrada</span>
+                <span className="text-[10px] opacity-70">Tipo Entrada</span>
                 <select value={priceType} onChange={(e) => { setPriceType(e.target.value); applyFilters(department, genre, ageRating, e.target.value); }} className="bg-black text-white p-2 border-2 border-white focus:outline-none font-bold text-xs uppercase">
-                  <option value="">Cualquier Tipo</option>
+                  <option value="">Tipo Entrada</option>
                   <option value="PAGO">PAGO</option><option value="LIBRE">LIBRE</option><option value="GORRA">A LA GORRA</option><option value="SOBRE">SOBRE ARTÍSTICO</option>
                 </select>
               </div>
-              <button onClick={() => {setDepartment(''); setGenre(''); setAgeRating(''); setPriceType(''); setEvents(allEvents);}} className="sm:col-span-full text-[10px] underline hover:text-red-600 font-bold uppercase tracking-widest text-center mt-2">Limpiar Filtros</button>
+              <button onClick={() => {setDepartment(''); setGenre(''); setAgeRating(''); setPriceType(''); setEvents(allEvents);}} className="sm:col-span-full text-[10px] underline hover:text-red-600 font-bold uppercase tracking-widest text-center">Limpiar Filtros</button>
             </section>
 
-            {/* Event Feed */}
             <section className="grid grid-cols-1 sm:grid-cols-2 gap-6 md:gap-8">
               {loading ? (
                 <p className="col-span-full text-center text-4xl font-black animate-pulse text-yellow-400 uppercase italic">Cargando...</p>
@@ -249,8 +246,8 @@ export default function Home() {
                       {event.flyer_url ? <img src={event.flyer_url} alt="Flyer" className={`object-cover w-full h-full transition-all duration-500 ${event.is_sold_out ? 'grayscale blur-[1px]' : 'group-hover/card:scale-105'}`} /> : <div className="text-zinc-600 font-black italic uppercase text-center">FLYER DEL SHOW</div>}
                     </div>
                     <div className="space-y-2 flex-1">
-                      <div className="flex justify-between items-start">
-                        <h3 className="text-xl md:text-2xl font-black uppercase leading-[0.9] break-words max-w-[70%] group-hover/card:text-yellow-400 transition-colors">{event.band_name}</h3>
+                      <div className="flex justify-between items-start text-left">
+                        <h3 className="text-xl md:text-2xl font-black uppercase leading-[0.9] break-words max-w-[70%] group-hover/card:text-yellow-400 transition-colors uppercase">{event.band_name}</h3>
                         <span className="text-[10px] bg-red-600 text-white px-2 py-1 uppercase font-black italic">{event.genre || 'Show'}</span>
                       </div>
                       <p className="font-bold text-yellow-400 tracking-tighter uppercase text-sm">{event.date} - {formatTime(event.time)}hs</p>
@@ -288,15 +285,16 @@ export default function Home() {
         </section>
         )}
 
+        {/* Modal Event */}
         {selectedEvent && (
           <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
             <div className="absolute inset-0 bg-black/90 backdrop-blur-sm" onClick={() => setSelectedEvent(null)} />
             <div className="relative w-full max-w-4xl bg-zinc-900 border-4 md:border-8 border-white shadow-[20px_20px_0px_0px_rgba(234,179,8,1)] flex flex-col md:flex-row overflow-y-auto max-h-[90vh]">
-              <button onClick={() => setSelectedEvent(null)} className="absolute top-4 right-4 bg-red-600 text-white w-10 h-10 font-black text-xl border-4 border-white z-50 hover:bg-black transition-colors text-center">X</button>
+              <button onClick={() => setSelectedEvent(null)} className="absolute top-4 right-4 bg-red-600 text-white w-10 h-10 font-black text-xl border-4 border-white z-50 hover:bg-black transition-colors text-center flex items-center justify-center">X</button>
               <div className="md:w-1/2 bg-zinc-800 border-b-4 md:border-b-0 md:border-r-4 border-white flex items-center justify-center p-4">
                 {selectedEvent.flyer_url ? <img src={selectedEvent.flyer_url} alt="Flyer" className="max-w-full h-auto shadow-2xl border-4 border-white" /> : <p className="font-black italic text-zinc-600 uppercase text-center">SIN FLYER</p>}
               </div>
-              <div className="md:w-1/2 p-6 md:p-8 space-y-6">
+              <div className="md:w-1/2 p-6 md:p-8 space-y-6 text-left">
                 <div>
                   <div className="flex gap-2">
                     <span className="bg-red-600 text-white px-2 py-1 text-[10px] font-black uppercase italic">{selectedEvent.genre}</span>
@@ -308,10 +306,10 @@ export default function Home() {
                   <p className="text-xl font-bold uppercase">{selectedEvent.date} - {formatTime(selectedEvent.time)}hs</p>
                   <p className="text-sm font-black text-zinc-400 uppercase italic">{selectedEvent.venue} - {selectedEvent.city}, {selectedEvent.department}</p>
                 </div>
-                <div className="border-t-2 border-zinc-800 pt-6 text-left">
+                <div className="border-t-2 border-zinc-800 pt-6">
                   <h4 className="text-xs font-black uppercase text-zinc-500 mb-2 italic">Reseña / Bio del Show</h4>
                   <div className="text-zinc-200 leading-relaxed font-medium space-y-4 max-h-48 overflow-y-auto pr-4 text-xs uppercase custom-scrollbar">
-                    {selectedEvent.description?.split('\n').map((p: string, i: number) => <p key={i}>{p}</p>) || <p className="italic text-zinc-600">No hay reseña disponible.</p>}
+                    {selectedEvent.description?.split('\n').map((p: string, i: number) => <p key={i}>{p}</p>) || <p className="italic text-zinc-600 text-sm">No hay reseña disponible.</p>}
                   </div>
                 </div>
                 <div className="pt-6 border-t-2 border-zinc-800 space-y-4">
@@ -347,7 +345,7 @@ export default function Home() {
         )}
 
         <footer className="border-t-4 border-zinc-800 pt-8 pb-16 text-center">
-          <p className="text-zinc-500 font-bold uppercase text-[10px] max-w-2xl mx-auto tracking-tighter leading-relaxed italic">AVISO: HOY QUIEN TOCA NO VENDE ENTRADAS. SOMOS UNA PLATAFORMA INFORMATIVA. LA VENTA Y ORGANIZACIÓN ES RESPONSABILIDAD DE LOS ORGANIZADORES.</p>
+          <p className="text-zinc-500 font-bold uppercase text-[10px] max-w-2xl mx-auto tracking-tighter leading-relaxed italic uppercase">AVISO: HOY QUIEN TOCA NO VENDE ENTRADAS. SOMOS UNA PLATAFORMA INFORMATIVA. LA VENTA Y ORGANIZACIÓN ES RESPONSABILIDAD DE LOS ORGANIZADORES.</p>
         </footer>
       </main>
       <style jsx global>{`
