@@ -144,7 +144,7 @@ export default function Home() {
     if (event.price_type === 'free') return 'LIBRE';
     if (event.price_type === 'gorra') return 'GORRA';
     if (event.price_type === 'sobre') return 'SOBRE';
-    return `PAGO: $${event.price_min}${event.price_max ? ` - $${event.price_max}` : ''}`;
+    return `$${event.price_min}${event.price_max ? `-$${event.price_max}` : ''}`;
   };
 
   return (
@@ -160,8 +160,8 @@ export default function Home() {
                <Image src="/logo-rojo.jpg" alt="Logo Rojo" width={70} height={70} className="border-2 border-white rounded-2xl md:w-[90px] md:h-[90px] shadow-lg shadow-red-600/30" />
             </button>
             <div>
-              <h1 className="text-2xl md:text-5xl font-brusher tracking-tighter uppercase text-red-600 leading-none font-black">Hoy Quien Toca</h1>
-              <p className="text-[10px] md:text-xs font-bold text-white uppercase tracking-widest mt-1 font-black">Descubri recitales, toques y eventos musicales en tu Ciudad</p>
+              <h1 className="text-2xl md:text-5xl font-franklin tracking-tighter text-red-600 leading-none">Hoy Quien Toca</h1>
+              <p className="text-[10px] md:text-xs font-black text-white uppercase tracking-widest mt-1">Descubri recitales, toques y eventos musicales en tu Ciudad</p>
             </div>
           </div>
           
@@ -173,18 +173,18 @@ export default function Home() {
           </nav>
 
           <button onClick={() => setIsMenuOpen(!isMenuOpen)} className="md:hidden text-red-600">
-            <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d={isMenuOpen ? "M6 18L18 6M6 6l12 12" : "M4 6h16M4 12h16M4 18h16"}></path></svg>
+            <svg className="w-8 h-8 font-black" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d={isMenuOpen ? "M6 18L18 6M6 6l12 12" : "M4 6h16M4 12h16M4 18h16"}></path></svg>
           </button>
         </div>
       </header>
 
       {isMenuOpen && (
         <div className="fixed inset-0 z-[60] bg-black/95 flex flex-col items-center justify-center space-y-8 md:hidden text-center font-black">
-          <button onClick={() => setIsMenuOpen(false)} className="absolute top-6 right-6 text-white text-4xl font-black">X</button>
-          <Link href="/" onClick={() => setIsMenuOpen(false)} className="text-4xl uppercase text-red-600 italic font-black font-brusher">Fechas</Link>
-          <Link href="/interviews" onClick={() => setIsMenuOpen(false)} className="text-4xl uppercase text-white italic font-black font-brusher">Entrevistas</Link>
-          <Link href="/contact" onClick={() => setIsMenuOpen(false)} className="text-4xl uppercase text-white italic font-black font-brusher">Contacto</Link>
-          <Link href="/submit" onClick={() => setIsMenuOpen(false)} className="text-3xl uppercase border-4 border-red-600 text-red-600 px-8 py-4 rounded-full animate-pulse font-black font-brusher">Subir Fecha</Link>
+          <button onClick={() => setIsMenuOpen(false)} className="absolute top-6 right-6 text-white text-4xl font-black font-black">X</button>
+          <Link href="/" onClick={() => setIsMenuOpen(false)} className="text-4xl font-franklin text-red-600 italic">Fechas</Link>
+          <Link href="/interviews" onClick={() => setIsMenuOpen(false)} className="text-4xl font-franklin text-white italic">Entrevistas</Link>
+          <Link href="/contact" onClick={() => setIsMenuOpen(false)} className="text-4xl font-franklin text-white italic">Contacto</Link>
+          <Link href="/submit" onClick={() => setIsMenuOpen(false)} className="text-3xl font-franklin border-4 border-red-600 text-red-600 px-8 py-4 rounded-full animate-pulse">Subir Fecha</Link>
         </div>
       )}
 
@@ -222,7 +222,7 @@ export default function Home() {
                    {renderPriceLabel(featuredEvents[currentHeroIndex])}
                 </span>
               </div>
-              <h2 className="text-3xl md:text-8xl font-brusher tracking-tighter mt-2 md:mt-4 drop-shadow-2xl text-white uppercase leading-none font-black">
+              <h2 className="text-3xl md:text-8xl font-franklin tracking-tighter mt-2 md:mt-4 drop-shadow-2xl text-white uppercase leading-none font-black">
                 {featuredEvents[currentHeroIndex].band_name}
               </h2>
               <p className="text-xs md:text-2xl font-bold text-white uppercase tracking-widest border-l-4 md:border-l-8 border-red-600 pl-4 mt-2 md:mt-4 font-black">
@@ -235,7 +235,6 @@ export default function Home() {
 
         <div className="flex flex-col lg:flex-row gap-8 md:gap-12">
           <div className="flex-1 space-y-8 md:space-y-12">
-            {/* Dynamic Filters */}
             <section className="bg-red-600 text-white p-3 md:p-4 grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4 items-center font-black uppercase italic shadow-[8px_8px_0px_0px_rgba(255,255,255,1)] rounded-2xl md:rounded-3xl">
               <div className="flex flex-col gap-1">
                 <span className="text-[8px] md:text-[10px] opacity-80 uppercase font-black">Dpto</span>
@@ -265,13 +264,12 @@ export default function Home() {
                   {activePriceTypes.map(p => <option key={p} value={p}>{p}</option>)}
                 </select>
               </div>
-              <button onClick={() => {setDepartment(''); setGenre(''); setAgeRating(''); setPriceType(''); setEvents(allEvents);}} className="col-span-full text-[10px] underline hover:text-black font-black uppercase text-center font-black">Limpiar Filtros</button>
+              <button onClick={() => {setDepartment(''); setGenre(''); setAgeRating(''); setPriceType(''); setEvents(allEvents);}} className="col-span-full text-[10px] underline hover:text-black font-black uppercase text-center font-black font-franklin">Limpiar Filtros</button>
             </section>
 
-            {/* Event Feed - 1/3 Compact for Mobile */}
             <section className="grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-8 font-black">
               {loading ? (
-                <p className="col-span-full text-center text-3xl font-brusher animate-pulse text-red-600 uppercase font-black">Cargando...</p>
+                <p className="col-span-full text-center text-3xl font-franklin animate-pulse text-red-600 uppercase font-black">Cargando...</p>
               ) : events.length === 0 ? (
                 <div className="col-span-full text-center py-20 border-4 border-dashed border-zinc-700 text-zinc-500 font-black uppercase rounded-3xl font-black">No hay resultados...</div>
               ) : (
@@ -285,20 +283,19 @@ export default function Home() {
                     )}
 
                     <div className="w-24 h-24 md:w-full md:aspect-square bg-zinc-800 shrink-0 border-2 border-zinc-700 relative flex items-center justify-center overflow-hidden rounded-xl md:rounded-2xl shadow-[inset_0_0_15px_rgba(0,0,0,0.5)] font-black">
-                      {event.flyer_url ? <img src={event.flyer_url} alt="Flyer" className={`object-cover w-full h-full transition-all duration-500 ${(event.is_sold_out || event.is_suspended) ? 'grayscale blur-[1px]' : 'group-hover/card:scale-105'}`} /> : <div className="text-zinc-600 font-black italic uppercase text-center text-[10px] font-brusher font-black">FLYER</div>}
+                      {event.flyer_url ? <img src={event.flyer_url} alt="Flyer" className={`object-cover w-full h-full transition-all duration-500 ${(event.is_sold_out || event.is_suspended) ? 'grayscale blur-[1px]' : 'group-hover/card:scale-105'}`} /> : <div className="text-zinc-600 font-black italic uppercase text-center text-[10px] font-franklin font-black">FLYER</div>}
                       {event.is_sold_out && <div className="absolute inset-0 bg-red-600/60 flex items-center justify-center text-white font-black uppercase text-[10px] rotate-12 font-black">AGOTADO</div>}
                       {event.is_suspended && <div className="absolute inset-0 bg-zinc-700/60 flex items-center justify-center text-white font-black uppercase text-[10px] rotate-12 font-black">SUSPENDIDO</div>}
                     </div>
 
                     <div className="flex-1 min-w-0 flex flex-col justify-center text-left space-y-0.5 md:space-y-2 font-black">
                       <div className="flex justify-between items-start font-black">
-                        <h3 className="text-base md:text-2xl font-black uppercase leading-none truncate group-hover/card:text-red-600 transition-colors font-black">{event.band_name}</h3>
+                        <h3 className="text-base md:text-2xl font-franklin leading-none truncate group-hover/card:text-red-600 transition-colors font-black">{event.band_name}</h3>
                         <span className="hidden md:inline-block text-[8px] bg-red-600 text-white px-2 py-0.5 uppercase font-black italic rounded-sm font-black">{event.genre || 'Show'}</span>
                       </div>
                       <p className="font-black text-red-600 tracking-tighter uppercase text-[10px] md:text-sm font-black">{formatDate(event.date)} - {formatTime(event.time)}hs</p>
                       <p className="text-[9px] md:text-[10px] uppercase tracking-tight text-zinc-400 font-bold leading-none md:leading-tight truncate font-black">{event.venue}, {event.city}</p>
                       
-                      {/* Price and Genre info for mobile card */}
                       <div className="flex gap-2 mt-1 flex-wrap font-black">
                          <span className="text-[7px] md:text-[8px] bg-white text-black px-2 py-0.5 uppercase font-black rounded-full border border-red-600 font-black">{renderPriceLabel(event)}</span>
                          <span className="text-[7px] md:text-[8px] bg-zinc-800 text-zinc-400 px-2 py-0.5 uppercase font-black rounded-full border border-zinc-700 font-black">{event.genre || 'Show'}</span>
@@ -320,7 +317,7 @@ export default function Home() {
                 </div>
               ))}
               <Link href="/contact" className="block border-4 border-dashed border-zinc-700 p-8 text-center hover:border-red-600 hover:text-red-600 transition-colors group text-zinc-500 lg:col-span-1 col-span-full rounded-2xl font-black">
-                <span className="text-xs font-black uppercase group-hover:text-red-600 text-center block tracking-widest italic font-brusher font-black">Publicá acá</span>
+                <span className="text-xs font-black uppercase group-hover:text-red-600 text-center block tracking-widest italic font-franklin font-black">Publicá acá</span>
               </Link>
             </div>
           </aside>
@@ -330,7 +327,7 @@ export default function Home() {
           <section className="pt-8 md:pt-12 font-black">
              <div onClick={() => setSelectedAd(activeBottomAd)} className="cursor-pointer block w-full h-32 md:h-64 bg-zinc-950 border-4 md:border-8 border-white overflow-hidden shadow-[12px_12px_0px_0px_rgba(220,38,38,0.5)] group relative rounded-[32px] md:rounded-[40px]">
                 <img src={activeBottomAd.image_url} alt="Sponsor" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-1000" />
-                <div className="absolute top-4 left-4 bg-black/80 text-white text-[8px] md:text-[10px] font-black px-4 py-1 border-2 border-red-600 uppercase tracking-widest rounded-full italic font-black">Auspiciante Destacado</div>
+                <div className="absolute top-4 left-4 bg-black/80 text-white text-[8px] md:text-[10px] font-black px-4 py-1 border-2 border-red-600 uppercase tracking-widest rounded-full font-black">Auspiciante Destacado</div>
              </div>
         </section>
         )}
@@ -341,7 +338,7 @@ export default function Home() {
             <div className="relative w-full max-w-4xl bg-zinc-900 border-4 md:border-8 border-white shadow-[20px_20px_0px_0px_rgba(220,38,38,0.5)] flex flex-col md:flex-row overflow-y-auto max-h-[90vh] rounded-[32px] md:rounded-[40px] font-black">
               <button onClick={() => setSelectedEvent(null)} className="absolute top-4 right-4 bg-red-600 text-white w-10 h-10 font-black text-xl border-4 border-white z-50 hover:bg-black transition-colors text-center flex items-center justify-center rounded-full shadow-lg font-black">X</button>
               <div className="md:w-1/2 bg-zinc-800 border-b-4 md:border-b-0 md:border-r-4 border-white flex items-center justify-center p-4 font-black">
-                {selectedEvent.flyer_url ? <img src={selectedEvent.flyer_url} alt="Flyer" className="max-w-full h-auto shadow-2xl border-4 border-white rounded-2xl font-black" /> : <p className="font-black italic text-zinc-600 uppercase text-center font-brusher font-black">SIN FLYER</p>}
+                {selectedEvent.flyer_url ? <img src={selectedEvent.flyer_url} alt="Flyer" className="max-w-full h-auto shadow-2xl border-4 border-white rounded-2xl font-black" /> : <p className="font-black italic text-zinc-600 uppercase text-center font-franklin font-black">SIN FLYER</p>}
               </div>
               <div className="md:w-1/2 p-6 md:p-8 space-y-6 text-left font-black">
                 <div>
@@ -349,7 +346,7 @@ export default function Home() {
                     <span className="bg-red-600 text-white px-2 py-1 text-[10px] font-black uppercase italic rounded-md shadow-sm font-black font-black">{selectedEvent.genre}</span>
                     <span className="bg-white text-black px-2 py-1 text-[10px] font-black uppercase italic rounded-md shadow-sm border border-red-600 font-black font-black">{selectedEvent.age_rating || 'ATP'}</span>
                   </div>
-                  <h2 className="text-3xl md:text-5xl font-brusher tracking-tighter mt-2 text-white leading-none uppercase font-black font-black">{selectedEvent.band_name}</h2>
+                  <h2 className="text-3xl md:text-5xl font-franklin tracking-tighter mt-2 text-white leading-none uppercase font-black font-black">{selectedEvent.band_name}</h2>
                 </div>
                 <div className="space-y-1 text-white font-black font-black">
                   <p className="text-xl font-bold uppercase font-black">{formatDate(selectedEvent.date)} - {formatTime(selectedEvent.time)}hs</p>
@@ -362,14 +359,14 @@ export default function Home() {
                   </div>
                 </div>
                 <div className="pt-6 border-t-2 border-zinc-800 space-y-4 font-black">
-                  <p className="text-2xl md:text-3xl font-black italic text-red-600 tracking-tighter uppercase font-brusher font-black">
+                  <p className="text-2xl md:text-3xl font-franklin text-red-600 tracking-tighter uppercase font-black">
                     {selectedEvent.price_type === 'free' ? 'ENTRADA LIBRE' : selectedEvent.price_type === 'gorra' ? 'A LA GORRA' : selectedEvent.price_type === 'sobre' ? 'SOBRE ARTÍSTICO' : `$${selectedEvent.price_min}${selectedEvent.price_max ? ` - $${selectedEvent.price_max}` : ''}`}
                   </p>
                   <div className="flex gap-4 font-black font-black">
                     <button 
                       onClick={() => (!selectedEvent.is_sold_out && !selectedEvent.is_suspended) && handleTicketAction(selectedEvent)} 
                       disabled={selectedEvent.is_sold_out || selectedEvent.is_suspended} 
-                      className={`flex-1 font-black uppercase py-4 text-lg md:text-xl border-4 border-black shadow-[6px_6px_0px_0px_rgba(255,255,255,1)] transition-all rounded-full font-black ${selectedEvent.is_sold_out || selectedEvent.is_suspended ? 'bg-zinc-800 text-zinc-600 cursor-not-allowed shadow-none border-zinc-700' : 'bg-red-600 text-white hover:bg-white hover:text-black'}`}
+                      className={`flex-1 font-black uppercase py-4 text-lg md:text-xl border-4 border-black shadow-[6px_6px_0px_0px_rgba(255,255,255,1)] transition-all rounded-full font-black ${selectedEvent.is_sold_out || selectedEvent.is_suspended ? 'bg-zinc-800 text-zinc-600 cursor-not-allowed shadow-none border-zinc-700' : 'bg-red-600 text-white hover:bg-white hover:text-black font-black'}`}
                     >
                       {selectedEvent.is_suspended ? 'SUSPENDIDO' : selectedEvent.is_sold_out ? 'AGOTADO' : (selectedEvent.ticket_type === 'whatsapp' ? 'WhatsApp' : 'Entradas')}
                     </button>
@@ -406,7 +403,7 @@ export default function Home() {
               <button onClick={() => setShowLogoModal(false)} className="absolute -top-4 -right-4 bg-red-600 text-white w-14 h-14 font-black text-3xl border-4 border-white hover:bg-black transition-colors z-[110] text-center flex items-center justify-center shadow-2xl rounded-full font-black font-black">X</button>
               <Image src="/logo-rojo.jpg" alt="Logo Grande" width={800} height={800} className="w-full h-auto rounded-[40px] border-4 border-zinc-800 shadow-2xl font-black font-black" />
               <div className="p-6 font-black font-black">
-                <h3 className="text-4xl font-brusher uppercase text-red-600 leading-none font-black">Hoy Quien Toca</h3>
+                <h3 className="text-4xl font-franklin text-red-600 leading-none font-black">Hoy Quien Toca</h3>
                 <p className="text-xs font-black uppercase tracking-widest text-white/60 mt-2 italic font-black">Descubri recitales, toques y eventos musicales en tu Ciudad</p>
               </div>
             </div>
