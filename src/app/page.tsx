@@ -67,7 +67,7 @@ export default function Home() {
         }));
         setAllEvents(normalized);
         setFeaturedEvents(normalized.filter(e => e.is_featured === true));
-        applyFilters(normalized, department, genre, ageRating, priceType);
+        setEvents(normalized);
       }
       if (sponsorData) setSponsors(sponsorData);
     } catch (err) {
@@ -76,8 +76,9 @@ export default function Home() {
     setLoading(false);
   }
 
-  function applyFilters(data: any[], dep: string, gen: string, age: string, price: string) {
-    let filtered = [...data];
+  // Definitive 4-argument filter function
+  function applyFilters(dep: string, gen: string, age: string, price: string) {
+    let filtered = [...allEvents];
     if (dep) filtered = filtered.filter(e => e.department === dep);
     if (gen) filtered = filtered.filter(e => e.genre === gen);
     if (age) filtered = filtered.filter(e => e.age_rating === age);
@@ -129,7 +130,7 @@ export default function Home() {
             <Image src="/logo-azul.jpg" alt="Logo" width={50} height={50} className="border-2 border-white rounded-2xl md:w-[60px] md:h-[60px]" />
             <div>
               <h1 className="text-2xl md:text-5xl font-black tracking-tighter uppercase italic text-blue-500 leading-none">Hoy Quien Toca</h1>
-              <p className="text-[10px] md:text-xs font-bold text-white/80 uppercase tracking-widest mt-1">Descubri recitales, toques y eventos musicales en tu Ciudad</p>
+              <p className="text-[10px] md:text-xs font-bold text-white uppercase tracking-widest mt-1">Descubri recitales, toques y eventos musicales en tu Ciudad</p>
             </div>
           </div>
           
@@ -137,7 +138,7 @@ export default function Home() {
             <Link href="/" className="hover:text-blue-500 underline decoration-2 underline-offset-4">Fechas</Link>
             <Link href="/interviews" className="hover:text-blue-500">Entrevistas</Link>
             <Link href="/contact" className="hover:text-blue-500">Contacto</Link>
-            <Link href="/submit" className="border-2 border-blue-500 text-blue-500 px-4 py-1 bg-black rounded-full animate-pulse-blue hover:bg-blue-500 hover:text-white transition-colors">Subir Fecha</Link>
+            <Link href="/submit" className="border-2 border-blue-500 text-blue-500 px-4 py-1 bg-black rounded-full animate-[pulse_2s_infinite] hover:bg-blue-500 hover:text-white transition-colors">Subir Fecha</Link>
           </nav>
 
           <button onClick={() => setIsMenuOpen(!isMenuOpen)} className="md:hidden text-blue-500">
@@ -167,14 +168,14 @@ export default function Home() {
 
         {featuredEvents.length > 0 && (
           <section className="relative h-[400px] md:h-[500px] border-4 md:border-8 border-white bg-zinc-800 flex items-end p-6 md:p-10 overflow-hidden shadow-[12px_12px_0px_0px_rgba(59,130,246,0.3)] group rounded-[40px]">
-            <div className="absolute inset-0 transition-opacity duration-1000">
+            <div className="absolute inset-0">
                {featuredEvents[currentHeroIndex].flyer_url && (
                  <img src={featuredEvents[currentHeroIndex].flyer_url} className="absolute inset-0 w-full h-full object-cover opacity-60" alt="Hero" />
                )}
             </div>
             <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent z-10" />
             <div className="relative z-20 w-full">
-              <span className="bg-blue-600 text-white px-4 py-1 text-xs md:text-sm font-black uppercase italic tracking-widest shadow-md rounded-full">
+              <span className="bg-red-600 text-white px-4 py-1 text-xs md:text-sm font-black uppercase italic tracking-widest shadow-md rounded-full">
                 {featuredEvents[currentHeroIndex].suggestion_tag || 'DESTACADO'}
               </span>
               <h2 className="text-4xl md:text-8xl font-black uppercase italic leading-[0.8] tracking-tighter mt-4 drop-shadow-2xl text-blue-500 uppercase">
@@ -194,7 +195,7 @@ export default function Home() {
         )}
 
         <div className="flex flex-col lg:flex-row gap-8 md:gap-12">
-          <div className="flex-1 space-y-12">
+          <div className="flex-1 space-y-12 text-left">
             {/* Filters */}
             <section className="bg-blue-500 text-black p-4 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 items-center font-black uppercase italic shadow-[8px_8px_0px_0px_rgba(255,255,255,1)] rounded-3xl">
               <div className="flex flex-col gap-1">
@@ -229,7 +230,7 @@ export default function Home() {
             </section>
 
             {/* Event Feed */}
-            <section className="grid grid-cols-1 sm:grid-cols-2 gap-6 md:gap-8 text-left">
+            <section className="grid grid-cols-1 sm:grid-cols-2 gap-6 md:gap-8">
               {loading ? (
                 <p className="col-span-full text-center text-4xl font-black animate-pulse text-blue-500 uppercase italic">Cargando...</p>
               ) : events.length === 0 ? (
@@ -243,12 +244,12 @@ export default function Home() {
                     </div>
                     {event.is_sold_out && <div className="absolute top-8 -right-12 bg-red-600 text-white font-black py-2 px-12 rotate-45 uppercase text-sm border-y-2 border-white z-30 shadow-xl tracking-tighter italic">¡AGOTADO!</div>}
                     {event.is_suspended && <div className="absolute top-8 -right-12 bg-zinc-700 text-white font-black py-2 px-12 rotate-45 uppercase text-sm border-y-2 border-white z-30 shadow-xl tracking-tighter italic">SUSPENDIDO</div>}
-                    <div className="aspect-square bg-zinc-800 mb-4 border-2 border-zinc-700 relative flex items-center justify-center overflow-hidden rounded-2xl shadow-[inset_0_0_20px_rgba(0,0,0,0.5)]">
+                    <div className="aspect-square bg-zinc-800 mb-4 border-2 border-zinc-700 relative flex items-center justify-center overflow-hidden rounded-2xl">
                       {event.flyer_url ? <img src={event.flyer_url} alt="Flyer" className={`object-cover w-full h-full transition-all duration-500 ${(event.is_sold_out || event.is_suspended) ? 'grayscale blur-[1px]' : 'group-hover/card:scale-105'}`} /> : <div className="text-zinc-600 font-black italic uppercase text-center">FLYER DEL SHOW</div>}
                     </div>
                     <div className="space-y-2 flex-1">
                       <div className="flex justify-between items-start text-left">
-                        <h3 className="text-xl md:text-2xl font-black uppercase leading-[0.9] break-words max-w-[70%] group-hover/card:text-blue-500 transition-colors uppercase font-black">{event.band_name}</h3>
+                        <h3 className="text-xl md:text-2xl font-black uppercase leading-[0.9] break-words max-w-[70%] group-hover/card:text-blue-500 transition-colors uppercase">{event.band_name}</h3>
                         <span className="text-[10px] bg-blue-600 text-white px-2 py-1 uppercase font-black italic rounded-md shadow-sm">{event.genre || 'Show'}</span>
                       </div>
                       <p className="font-bold text-blue-500 tracking-tighter uppercase text-sm">{event.date} - {formatTime(event.time)}hs</p>
@@ -260,7 +261,7 @@ export default function Home() {
             </section>
           </div>
 
-          <aside className="lg:w-72 space-y-8 relative z-10 text-left uppercase font-black">
+          <aside className="lg:w-72 space-y-8 relative z-10 text-left uppercase">
             <h3 className="text-xl font-black uppercase italic text-blue-500 border-b-4 border-blue-500 pb-2 tracking-widest shadow-[4px_4px_0px_0px_rgba(255,255,255,1)] inline-block px-2 bg-zinc-950 rounded-xl">Auspician</h3>
             <div className="grid grid-cols-2 lg:grid-cols-1 gap-4 lg:space-y-6">
               {sidebarSponsors.map(ad => (
@@ -300,7 +301,7 @@ export default function Home() {
                     <span className="bg-blue-600 text-white px-2 py-1 text-[10px] font-black uppercase italic rounded-md shadow-sm">{selectedEvent.genre}</span>
                     <span className="bg-white text-black px-2 py-1 text-[10px] font-black uppercase italic rounded-md shadow-sm">{selectedEvent.age_rating || 'ATP'}</span>
                   </div>
-                  <h2 className="text-3xl md:text-5xl font-black uppercase italic tracking-tighter mt-2 text-blue-500 leading-none uppercase">{selectedEvent.band_name}</h2>
+                  <h2 className="text-3xl md:text-5xl font-black uppercase italic tracking-tighter mt-2 text-yellow-400 leading-none uppercase font-black">{selectedEvent.band_name}</h2>
                 </div>
                 <div className="space-y-1 text-white font-black">
                   <p className="text-xl font-bold uppercase">{selectedEvent.date} - {formatTime(selectedEvent.time)}hs</p>
@@ -343,7 +344,7 @@ export default function Home() {
               <div className="p-6 text-center space-y-4">
                 <h3 className="text-4xl font-black uppercase italic text-blue-500 tracking-tighter uppercase">{selectedAd.client_name}</h3>
                 {selectedAd.link && (
-                  <a href={selectedAd.link} target="_blank" className="inline-block bg-white text-black px-10 py-3 font-black uppercase hover:bg-blue-500 hover:text-white transition-all shadow-[6px_6px_0px_0px_rgba(59,130,246,0.5)] uppercase rounded-full">Visitar Web</a>
+                  <a href={selectedAd.link} target="_blank" className="inline-block bg-white text-black px-10 py-3 font-black uppercase hover:bg-blue-500 hover:text-white transition-all shadow-[6px_6px_0px_0px_rgba(234,179,8,1)] uppercase rounded-full">Visitar Web</a>
                 )}
               </div>
             </div>
