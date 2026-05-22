@@ -9,6 +9,7 @@ export default function InterviewsPage() {
   const [interviews, setInterviews] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [showLogoModal, setShowLogoModal] = useState(false);
 
   useEffect(() => {
     fetchInterviews();
@@ -37,7 +38,13 @@ export default function InterviewsPage() {
       <header className="border-b-4 border-red-600 p-4 md:p-6 bg-zinc-950 sticky top-0 z-50 shadow-xl text-left">
         <div className="max-w-6xl mx-auto flex justify-between items-center">
           <div className="flex items-center gap-6">
-            <Image src="/logo-rojo.jpg" alt="Logo Rojo" width={70} height={70} className="border-2 border-white rounded-2xl md:w-[85px] md:h-[85px] shadow-lg shadow-red-600/20" />
+            <button 
+              onClick={() => setShowLogoModal(true)} 
+              className="hover:scale-110 transition-transform cursor-pointer focus:outline-none"
+              title="Ver Logo Grande"
+            >
+               <Image src="/logo-rojo.jpg" alt="Logo Rojo" width={70} height={70} className="border-2 border-white rounded-2xl md:w-[85px] md:h-[85px] shadow-lg shadow-red-600/30" />
+            </button>
             <div>
               <h1 className="text-2xl md:text-5xl font-brusher tracking-tighter uppercase text-red-600 leading-none">Hoy Quien Toca</h1>
               <p className="text-[10px] md:text-xs font-bold text-white uppercase tracking-widest mt-1">Descubri recitales, toques y eventos musicales en tu Ciudad</p>
@@ -48,7 +55,7 @@ export default function InterviewsPage() {
             <Link href="/" className="hover:text-red-600">Fechas</Link>
             <Link href="/interviews" className="text-red-600 underline decoration-2 underline-offset-4 font-black">Entrevistas</Link>
             <Link href="/contact" className="hover:text-red-600">Contacto</Link>
-            <Link href="/submit" className="border-2 border-red-600 text-red-600 px-4 py-1 bg-black rounded-full animate-pulse hover:bg-red-600 hover:text-white transition-colors">Subir Fecha</Link>
+            <Link href="/submit" className="border-2 border-red-600 text-red-600 px-4 py-1 bg-black rounded-full animate-pulse hover:bg-red-600 hover:text-white transition-colors font-black">Subir Fecha</Link>
           </nav>
 
           <button onClick={() => setIsMenuOpen(!isMenuOpen)} className="md:hidden text-red-600">
@@ -92,8 +99,8 @@ export default function InterviewsPage() {
                   )}
                 </div>
                 <div className="space-y-3">
-                  <span className="bg-red-600 text-white px-3 py-1 text-xs font-black uppercase tracking-widest italic rounded-full">BANDA: {interview.band_name}</span>
-                  <h3 className="text-3xl font-brusher uppercase leading-none group-hover:text-red-600 transition-colors text-white">{interview.title}</h3>
+                  <span className="bg-red-600 text-white px-3 py-1 text-xs font-black uppercase tracking-widest italic rounded-full font-black">BANDA: {interview.band_name}</span>
+                  <h3 className="text-3xl font-brusher uppercase leading-none group-hover:text-red-600 transition-colors text-white font-black">{interview.title}</h3>
                   <div className="flex justify-between items-center text-zinc-500 font-bold text-[10px] uppercase tracking-tighter font-black">
                     <p>Publicado: {new Date(interview.published_at).toLocaleDateString()}</p>
                     {interview.author && <p className="text-red-600">Por: {interview.author}</p>}
@@ -101,6 +108,21 @@ export default function InterviewsPage() {
                 </div>
               </Link>
             ))}
+          </div>
+        )}
+
+        {/* Logo Modal */}
+        {showLogoModal && (
+          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+            <div className="absolute inset-0 bg-black/95 backdrop-blur-xl" onClick={() => setShowLogoModal(false)} />
+            <div className="relative max-w-lg w-full bg-zinc-900 border-8 border-white p-4 shadow-[30px_30px_0px_0px_rgba(220,38,38,0.5)] text-center rounded-[50px] transform hover:scale-105 transition-transform duration-500">
+              <button onClick={() => setShowLogoModal(false)} className="absolute -top-4 -right-4 bg-red-600 text-white w-14 h-14 font-black text-3xl border-4 border-white hover:bg-black transition-colors z-[110] text-center flex items-center justify-center shadow-2xl rounded-full">X</button>
+              <Image src="/logo-rojo.jpg" alt="Logo Grande" width={800} height={800} className="w-full h-auto rounded-[40px] border-4 border-zinc-800 shadow-2xl" />
+              <div className="p-6">
+                <h3 className="text-4xl font-brusher uppercase text-red-600 leading-none">Hoy Quien Toca</h3>
+                <p className="text-xs font-black uppercase tracking-widest text-white/60 mt-2 italic">Descubri recitales, toques y eventos musicales en tu Ciudad</p>
+              </div>
+            </div>
           </div>
         )}
       </main>
