@@ -1,6 +1,7 @@
 @import "tailwindcss";
 
-@import url('https://fonts.googleapis.com/css2?family=Permanent+Marker&family=Inter:wght@400;700;900&display=swap');
+/* FUENTES: Brusher (Permanent Marker) y Bauhaus Modern (Lexend) */
+@import url('https://fonts.googleapis.com/css2?family=Permanent+Marker&family=Lexend:wght@300;400;700;900&display=swap');
 
 :root {
   --background: #18181b; /* Zinc-900 */
@@ -17,7 +18,7 @@
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  font-family: 'Lexend', system-ui, sans-serif; /* Bauhaus Style Modern */
 }
 
 /* Brusher / Marker Style for Titles */
@@ -51,9 +52,17 @@ body {
 .custom-scrollbar::-webkit-scrollbar-track { background: #1a1a1a; }
 .custom-scrollbar::-webkit-scrollbar-thumb { background: #dc2626; border-radius: 10px; }
 
-/* Glassmorphism subtle effect */
-.glass-panel {
-  background: rgba(24, 24, 27, 0.8);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+/* Global Rounding and High Impact Styles */
+.hqt-card {
+  border-radius: 32px;
+  background: #09090b; /* Zinc-950 */
+  border: 4px solid white;
+  transition: all 0.3s ease;
+}
+
+.hqt-button {
+  border-radius: 9999px;
+  font-weight: 900;
+  text-transform: uppercase;
+  transition: all 0.2s ease;
 }
