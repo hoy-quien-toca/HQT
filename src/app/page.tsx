@@ -76,7 +76,6 @@ export default function Home() {
     setLoading(false);
   }
 
-  // Definitive 4-argument filter function
   function applyFilters(dep: string, gen: string, age: string, price: string) {
     let filtered = [...allEvents];
     if (dep) filtered = filtered.filter(e => e.department === dep);
@@ -90,6 +89,9 @@ export default function Home() {
     }
     setEvents(filtered);
   }
+
+  const nextHero = () => setCurrentHeroIndex((prev) => (prev + 1) % featuredEvents.length);
+  const prevHero = () => setCurrentHeroIndex((prev) => (prev - 1 + featuredEvents.length) % featuredEvents.length);
 
   const topSponsor = sponsors.find(a => a.position === 'top');
   const bottomSponsors = sponsors.filter(a => a.position === 'bottom');
@@ -138,7 +140,7 @@ export default function Home() {
             <Link href="/" className="hover:text-blue-500 underline decoration-2 underline-offset-4">Fechas</Link>
             <Link href="/interviews" className="hover:text-blue-500">Entrevistas</Link>
             <Link href="/contact" className="hover:text-blue-500">Contacto</Link>
-            <Link href="/submit" className="border-2 border-blue-500 text-blue-500 px-4 py-1 bg-black rounded-full animate-[pulse_2s_infinite] hover:bg-blue-500 hover:text-white transition-colors">Subir Fecha</Link>
+            <Link href="/submit" className="border-2 border-blue-500 text-blue-500 px-4 py-1 bg-black rounded-full animate-pulse-blue hover:bg-blue-500 hover:text-white transition-colors">Subir Fecha</Link>
           </nav>
 
           <button onClick={() => setIsMenuOpen(!isMenuOpen)} className="md:hidden text-blue-500">
@@ -153,7 +155,7 @@ export default function Home() {
           <Link href="/" onClick={() => setIsMenuOpen(false)} className="text-4xl uppercase text-blue-500 italic">Fechas</Link>
           <Link href="/interviews" onClick={() => setIsMenuOpen(false)} className="text-4xl uppercase text-white italic">Entrevistas</Link>
           <Link href="/contact" onClick={() => setIsMenuOpen(false)} className="text-4xl uppercase text-white italic font-black">Contacto</Link>
-          <Link href="/submit" onClick={() => setIsMenuOpen(false)} className="text-3xl uppercase border-4 border-blue-500 text-blue-500 px-8 py-4 rounded-full animate-pulse">Subir Fecha</Link>
+          <Link href="/submit" onClick={() => setIsMenuOpen(false)} className="text-3xl uppercase border-4 border-yellow-400 text-yellow-400 px-8 py-4 rounded-full animate-pulse">Subir Fecha</Link>
         </div>
       )}
 
@@ -174,8 +176,17 @@ export default function Home() {
                )}
             </div>
             <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent z-10" />
+            
+            {/* Manual Controls */}
+            <button onClick={prevHero} className="absolute left-4 top-1/2 -translate-y-1/2 z-30 bg-black/50 text-white w-12 h-12 flex items-center justify-center rounded-full border-2 border-white hover:bg-blue-500 transition-colors opacity-0 group-hover:opacity-100">
+               <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7"></path></svg>
+            </button>
+            <button onClick={nextHero} className="absolute right-4 top-1/2 -translate-y-1/2 z-30 bg-black/50 text-white w-12 h-12 flex items-center justify-center rounded-full border-2 border-white hover:bg-blue-500 transition-colors opacity-0 group-hover:opacity-100">
+               <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7"></path></svg>
+            </button>
+
             <div className="relative z-20 w-full">
-              <span className="bg-red-600 text-white px-4 py-1 text-xs md:text-sm font-black uppercase italic tracking-widest shadow-md rounded-full">
+              <span className="bg-blue-600 text-white px-4 py-1 text-xs md:text-sm font-black uppercase italic tracking-widest shadow-md rounded-full">
                 {featuredEvents[currentHeroIndex].suggestion_tag || 'DESTACADO'}
               </span>
               <h2 className="text-4xl md:text-8xl font-black uppercase italic leading-[0.8] tracking-tighter mt-4 drop-shadow-2xl text-blue-500 uppercase">
@@ -195,7 +206,7 @@ export default function Home() {
         )}
 
         <div className="flex flex-col lg:flex-row gap-8 md:gap-12">
-          <div className="flex-1 space-y-12 text-left">
+          <div className="flex-1 space-y-12">
             {/* Filters */}
             <section className="bg-blue-500 text-black p-4 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 items-center font-black uppercase italic shadow-[8px_8px_0px_0px_rgba(255,255,255,1)] rounded-3xl">
               <div className="flex flex-col gap-1">
@@ -230,7 +241,7 @@ export default function Home() {
             </section>
 
             {/* Event Feed */}
-            <section className="grid grid-cols-1 sm:grid-cols-2 gap-6 md:gap-8">
+            <section className="grid grid-cols-1 sm:grid-cols-2 gap-6 md:gap-8 text-left">
               {loading ? (
                 <p className="col-span-full text-center text-4xl font-black animate-pulse text-blue-500 uppercase italic">Cargando...</p>
               ) : events.length === 0 ? (
@@ -244,16 +255,16 @@ export default function Home() {
                     </div>
                     {event.is_sold_out && <div className="absolute top-8 -right-12 bg-red-600 text-white font-black py-2 px-12 rotate-45 uppercase text-sm border-y-2 border-white z-30 shadow-xl tracking-tighter italic">¡AGOTADO!</div>}
                     {event.is_suspended && <div className="absolute top-8 -right-12 bg-zinc-700 text-white font-black py-2 px-12 rotate-45 uppercase text-sm border-y-2 border-white z-30 shadow-xl tracking-tighter italic">SUSPENDIDO</div>}
-                    <div className="aspect-square bg-zinc-800 mb-4 border-2 border-zinc-700 relative flex items-center justify-center overflow-hidden rounded-2xl">
+                    <div className="aspect-square bg-zinc-800 mb-4 border-2 border-zinc-700 relative flex items-center justify-center overflow-hidden rounded-2xl shadow-[inset_0_0_20px_rgba(0,0,0,0.5)]">
                       {event.flyer_url ? <img src={event.flyer_url} alt="Flyer" className={`object-cover w-full h-full transition-all duration-500 ${(event.is_sold_out || event.is_suspended) ? 'grayscale blur-[1px]' : 'group-hover/card:scale-105'}`} /> : <div className="text-zinc-600 font-black italic uppercase text-center">FLYER DEL SHOW</div>}
                     </div>
                     <div className="space-y-2 flex-1">
                       <div className="flex justify-between items-start text-left">
-                        <h3 className="text-xl md:text-2xl font-black uppercase leading-[0.9] break-words max-w-[70%] group-hover/card:text-blue-500 transition-colors uppercase">{event.band_name}</h3>
+                        <h3 className="text-xl md:text-2xl font-black uppercase leading-[0.9] break-words max-w-[70%] group-hover/card:text-blue-500 transition-colors uppercase font-black">{event.band_name}</h3>
                         <span className="text-[10px] bg-blue-600 text-white px-2 py-1 uppercase font-black italic rounded-md shadow-sm">{event.genre || 'Show'}</span>
                       </div>
                       <p className="font-bold text-blue-500 tracking-tighter uppercase text-sm">{event.date} - {formatTime(event.time)}hs</p>
-                      <p className="text-[10px] uppercase tracking-tight text-zinc-400 font-bold leading-tight">{event.venue}, {event.city}</p>
+                      <p className="text-[10px] uppercase tracking-tight text-zinc-400 font-bold leading-tight text-left">{event.venue}, {event.city}</p>
                     </div>
                   </div>
                 ))
@@ -262,8 +273,8 @@ export default function Home() {
           </div>
 
           <aside className="lg:w-72 space-y-8 relative z-10 text-left uppercase">
-            <h3 className="text-xl font-black uppercase italic text-blue-500 border-b-4 border-blue-500 pb-2 tracking-widest shadow-[4px_4px_0px_0px_rgba(255,255,255,1)] inline-block px-2 bg-zinc-950 rounded-xl">Auspician</h3>
-            <div className="grid grid-cols-2 lg:grid-cols-1 gap-4 lg:space-y-6">
+            {/* "Auspician" label removed */}
+            <div className="grid grid-cols-2 lg:grid-cols-1 gap-4 lg:space-y-6 pt-4">
               {sidebarSponsors.map(ad => (
                 <div key={ad.id} onClick={() => setSelectedAd(ad)} className="block border-4 border-white bg-zinc-950 p-2 shadow-[8px_8px_0px_0px_rgba(59,130,246,0.3)] hover:-translate-x-1 transition-transform group cursor-pointer rounded-2xl">
                   <div className="aspect-[4/5] overflow-hidden border-2 border-zinc-800 rounded-xl">
@@ -272,7 +283,7 @@ export default function Home() {
                 </div>
               ))}
               <Link href="/contact" className="block border-4 border-dashed border-zinc-700 p-8 text-center hover:border-white hover:text-white transition-colors group text-zinc-500 lg:col-span-1 col-span-full rounded-2xl">
-                <span className="text-xs font-black uppercase group-hover:text-white text-center block uppercase">Publicá acá</span>
+                <span className="text-xs font-black uppercase group-hover:text-white text-center block uppercase tracking-widest">Publicá acá</span>
               </Link>
             </div>
           </aside>
@@ -342,9 +353,9 @@ export default function Home() {
               <button onClick={() => setSelectedAd(null)} className="absolute -top-4 -right-4 bg-red-600 text-white w-12 h-12 font-black text-2xl border-4 border-white hover:bg-black transition-colors z-[110] text-center flex items-center justify-center shadow-xl rounded-full">X</button>
               <img src={selectedAd.image_url} alt="Sponsor" className="w-full h-auto border-4 border-zinc-800 shadow-2xl rounded-3xl" />
               <div className="p-6 text-center space-y-4">
-                <h3 className="text-4xl font-black uppercase italic text-blue-500 tracking-tighter uppercase">{selectedAd.client_name}</h3>
+                {/* Title removed as requested */}
                 {selectedAd.link && (
-                  <a href={selectedAd.link} target="_blank" className="inline-block bg-white text-black px-10 py-3 font-black uppercase hover:bg-blue-500 hover:text-white transition-all shadow-[6px_6px_0px_0px_rgba(234,179,8,1)] uppercase rounded-full">Visitar Web</a>
+                  <a href={selectedAd.link} target="_blank" className="inline-block bg-white text-black px-10 py-3 font-black uppercase hover:bg-blue-500 hover:text-white transition-all shadow-[6px_6px_0px_0px_rgba(59,130,246,0.5)] uppercase rounded-full">Visitar Web</a>
                 )}
               </div>
             </div>
@@ -359,6 +370,10 @@ export default function Home() {
         .custom-scrollbar::-webkit-scrollbar { width: 4px; }
         .custom-scrollbar::-webkit-scrollbar-track { background: #1a1a1a; }
         .custom-scrollbar::-webkit-scrollbar-thumb { background: #3b82f6; }
+        @keyframes pulse {
+          0%, 100% { opacity: 1; border-color: #facc15; box-shadow: 0 0 10px #facc15; }
+          50% { opacity: 0.7; border-color: white; box-shadow: none; }
+        }
       `}</style>
     </div>
   );
