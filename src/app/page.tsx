@@ -49,11 +49,13 @@ export default function Home() {
   async function fetchData() {
     setLoading(true);
     try {
+      // ORDEN POR FECHA DESCENDENTE Y HORA DESCENDENTE
       const { data: eventData } = await supabase
         .from('events')
         .select('*')
         .eq('is_approved', true)
-        .order('date', { ascending: false }); // ORDENADO DE MAS NUEVA A ULTIMA
+        .order('date', { ascending: false })
+        .order('time', { ascending: false });
 
       const { data: sponsorData } = await supabase
         .from('sponsors')
@@ -139,8 +141,13 @@ export default function Home() {
       <header className="border-b-4 border-red-600 p-4 md:p-6 bg-zinc-950 sticky top-0 z-50 shadow-xl">
         <div className="max-w-6xl mx-auto flex justify-between items-center">
           <div className="flex items-center gap-6">
-            <button onClick={() => setShowLogoModal(true)} className="hover:scale-105 transition-transform">
-               <Image src="/logo-rojo.jpg" alt="Logo Rojo" width={70} height={70} className="border-2 border-white rounded-2xl md:w-[85px] md:h-[85px] shadow-lg shadow-red-600/20" />
+            {/* LOGO SUPERIOR CLICKABLE */}
+            <button 
+              onClick={(e) => { e.preventDefault(); setShowLogoModal(true); }} 
+              className="hover:scale-110 transition-transform cursor-pointer focus:outline-none"
+              title="Ver Logo Grande"
+            >
+               <Image src="/logo-rojo.jpg" alt="Logo Rojo" width={75} height={75} className="border-2 border-white rounded-2xl md:w-[95px] md:h-[95px] shadow-lg shadow-red-600/30" />
             </button>
             <div>
               <h1 className="text-2xl md:text-5xl font-brusher tracking-tighter uppercase text-red-600 leading-none">Hoy Quien Toca</h1>
@@ -150,8 +157,8 @@ export default function Home() {
           
           <nav className="hidden md:flex gap-6 font-bold uppercase tracking-widest text-sm items-center">
             <Link href="/" className="text-red-600 underline decoration-2 underline-offset-4 font-black">Fechas</Link>
-            <Link href="/interviews" className="hover:text-red-600">Entrevistas</Link>
-            <Link href="/contact" className="hover:text-red-600">Contacto</Link>
+            <Link href="/interviews" className="hover:text-red-600 transition-colors">Entrevistas</Link>
+            <Link href="/contact" className="hover:text-red-600 transition-colors">Contacto</Link>
             <Link href="/submit" className="border-2 border-red-600 text-red-600 px-4 py-1 bg-black rounded-full animate-pulse hover:bg-red-600 hover:text-white transition-colors">Subir Fecha</Link>
           </nav>
 
@@ -265,7 +272,7 @@ export default function Home() {
                       </div>
                     )}
                     
-                    <div className="absolute top-2 right-2 flex flex-col gap-1 z-20">
+                    <div className="absolute top-2 right-2 flex flex-col gap-1 z-20 font-black">
                       <div className="bg-white text-black text-[8px] font-black px-2 py-0.5 shadow-md uppercase rounded-sm border border-red-600">{event.age_rating || 'ATP'}</div>
                     </div>
                     {event.is_sold_out && <div className="absolute top-8 -right-12 bg-red-600 text-white font-black py-2 px-12 rotate-45 uppercase text-sm border-y-2 border-white z-30 shadow-xl tracking-tighter italic">¡AGOTADO!</div>}
@@ -277,9 +284,9 @@ export default function Home() {
                     <div className="space-y-2 flex-1">
                       <div className="flex justify-between items-start text-left">
                         <h3 className="text-xl md:text-2xl font-black uppercase leading-[0.9] break-words max-w-[70%] group-hover/card:text-red-600 transition-colors uppercase font-black">{event.band_name}</h3>
-                        <span className="text-[10px] bg-red-600 text-white px-2 py-1 uppercase font-black italic rounded-md shadow-sm">{event.genre || 'Show'}</span>
+                        <span className="text-[10px] bg-red-600 text-white px-2 py-1 uppercase font-black italic rounded-md shadow-sm font-black">{event.genre || 'Show'}</span>
                       </div>
-                      <p className="font-bold text-red-600 tracking-tighter uppercase text-sm">{event.date} - {formatTime(event.time)}hs</p>
+                      <p className="font-bold text-red-600 tracking-tighter uppercase text-sm font-black">{event.date} - {formatTime(event.time)}hs</p>
                       <p className="text-[10px] uppercase tracking-tight text-zinc-400 font-bold leading-tight text-left font-black">{event.venue}, {event.city}</p>
                     </div>
                   </div>
@@ -369,7 +376,7 @@ export default function Home() {
               <img src={selectedAd.image_url} alt="Sponsor" className="w-full h-auto border-4 border-zinc-800 shadow-2xl rounded-3xl" />
               <div className="p-6 text-center space-y-4">
                 {selectedAd.link && (
-                  <a href={selectedAd.link} target="_blank" className="inline-block bg-white text-black px-10 py-3 font-black uppercase hover:bg-red-600 hover:text-white transition-all shadow-[6px_6px_0px_0px_rgba(220,38,38,0.5)] uppercase rounded-full border-2 border-black italic">Visitar Web</a>
+                  <a href={selectedAd.link} target="_blank" className="inline-block bg-white text-black px-10 py-3 font-black uppercase hover:bg-red-600 hover:text-white transition-all shadow-[6px_6px_0px_0px_rgba(220,38,38,0.5)] uppercase rounded-full border-2 border-black italic font-black">Visitar Web</a>
                 )}
               </div>
             </div>
