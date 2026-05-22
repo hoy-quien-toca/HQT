@@ -1,6 +1,5 @@
 'use client';
 
-// VERSION: 4.0 - DEFINITIVE UPDATE WITH STAR BUTTON
 import { useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabase';
 import { useRouter } from 'next/navigation';
@@ -90,6 +89,10 @@ export default function AdminDashboard() {
     await supabase.from('events').update({ is_sold_out: !currentStatus }).eq('id', id);
     fetchData();
   }
+  async function toggleSuspended(id: string, currentStatus: boolean) {
+    await supabase.from('events').update({ is_suspended: !currentStatus }).eq('id', id);
+    fetchData();
+  }
   async function deleteEvent(id: string) {
     if (confirm('¿Borrar toque definitivamente?')) {
       await supabase.from('events').delete().eq('id', id);
@@ -164,7 +167,7 @@ export default function AdminDashboard() {
       <header className="flex flex-col md:flex-row justify-between items-center mb-8 border-b-4 border-yellow-400 pb-6 bg-zinc-950 p-4 sticky top-0 z-50 gap-4">
         <div>
            <h1 className="text-3xl md:text-4xl font-black uppercase italic text-yellow-400 leading-none">ADMINISTRADOR HQT</h1>
-           <p className="text-[10px] md:text-xs font-bold text-zinc-500 uppercase tracking-widest mt-1 italic">Descubri recitales, toques y eventos mucicales en tu Ciudad</p>
+           <p className="text-[10px] md:text-xs font-bold text-zinc-500 uppercase tracking-widest mt-1 italic">Descubri recitales, toques y eventos musicales en tu Ciudad</p>
         </div>
         <div className="flex gap-4">
           <button onClick={() => router.push('/')} className="bg-white text-black px-4 py-1 font-black uppercase text-xs hover:bg-yellow-400 transition-colors">Web</button>
@@ -174,14 +177,14 @@ export default function AdminDashboard() {
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 md:gap-10">
         {/* LADO IZQUIERDO: FECHAS */}
-        <section className="space-y-6">
+        <section className="space-y-6 text-left">
           <h2 className="text-2xl font-black uppercase italic text-yellow-400 border-l-8 border-yellow-400 pl-4 bg-zinc-950 py-2">Gestión de Fechas</h2>
           
           {editingEvent && (
             <div className="border-4 border-blue-600 p-4 bg-zinc-950 space-y-4 mb-8 shadow-[10px_10px_0px_0px_rgba(37,99,235,1)]">
               <h3 className="font-black uppercase text-blue-500">Editando: {editingEvent.band_name}</h3>
-              <form onSubmit={handleSaveEvent} className="grid grid-cols-2 gap-2 text-xs text-white">
-                <input value={editingEvent.band_name} onChange={e => setEditingEvent({...editingEvent, band_name: e.target.value})} className="col-span-2 bg-black border p-2 uppercase font-bold" />
+              <form onSubmit={handleSaveEvent} className="grid grid-cols-2 gap-2 text-xs text-white font-black">
+                <input value={editingEvent.band_name} onChange={e => setEditingEvent({...editingEvent, band_name: e.target.value})} className="col-span-2 bg-black border p-2 uppercase" />
                 <input type="date" value={editingEvent.date} onChange={e => setEditingEvent({...editingEvent, date: e.target.value})} className="bg-black border p-2" />
                 <input type="time" value={editingEvent.time} onChange={e => setEditingEvent({...editingEvent, time: e.target.value})} className="bg-black border p-2" />
                 <select value={editingEvent.age_rating} onChange={e => setEditingEvent({...editingEvent, age_rating: e.target.value})} className="bg-black border p-2">
@@ -189,9 +192,9 @@ export default function AdminDashboard() {
                    <option value="+5">+5</option><option value="+7">+7</option><option value="+10">+10</option>
                    <option value="+12">+12</option><option value="+15">+15</option><option value="+18">+18</option>
                 </select>
-                <div className="col-span-2 flex gap-2 pt-2 text-white">
+                <div className="col-span-2 flex gap-2 pt-2">
                   <button type="submit" className="flex-1 bg-blue-600 py-2 font-black border-2 border-white">ACTUALIZAR</button>
-                  <button type="button" onClick={() => setEditingEvent(null)} className="bg-zinc-700 px-4 font-black border-2 border-white">X</button>
+                  <button type="button" onClick={() => setEditingEvent(null)} className="bg-zinc-700 px-4 font-black">X</button>
                 </div>
               </form>
             </div>
@@ -203,10 +206,13 @@ export default function AdminDashboard() {
                 <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 text-left">
                   <div className="flex gap-4 items-center">
                     {event.flyer_url && <img src={event.flyer_url} className="w-16 h-16 object-cover border-2 border-white shadow-md" />}
-                    <div className="text-left">
+                    <div className="text-left font-black">
                       <h3 className="text-xl font-black uppercase leading-none">{event.band_name}</h3>
                       <p className="text-[10px] font-bold text-yellow-400 uppercase">{event.date} - {event.time.substring(0,5)}hs</p>
-                      <p className="text-[8px] text-white uppercase opacity-50 bg-zinc-800 px-2 py-0.5 inline-block rounded mt-1">{!event.is_approved ? 'PENDIENTE' : event.is_featured ? '★ DESTACADO' : 'APROBADO'}</p>
+                      <div className="flex gap-1 mt-1">
+                        <p className="text-[8px] text-white uppercase opacity-50 bg-zinc-800 px-2 py-0.5 rounded-sm">{!event.is_approved ? 'PENDIENTE' : event.is_featured ? '★ DESTACADO' : 'APROBADO'}</p>
+                        {event.is_suspended && <p className="text-[8px] bg-white text-black font-black uppercase px-2 py-0.5 rounded-sm italic">SUSPENDIDO</p>}
+                      </div>
                     </div>
                   </div>
                   <div className="flex gap-2 w-full md:w-auto">
@@ -230,7 +236,11 @@ export default function AdminDashboard() {
                       <button onClick={() => updateEventTag(event.id, 'NO FALLA')} className={`px-2 py-1 text-[8px] font-black border-2 ${event.suggestion_tag === 'NO FALLA' ? 'bg-white border-black text-black' : 'border-white text-white'}`}>NO FALLA</button>
                       <button onClick={() => updateEventTag(event.id, '')} className="text-[7px] font-black uppercase text-zinc-500 underline ml-auto">QUITAR TAG</button>
                     </div>
-                    <button onClick={() => toggleSoldOut(event.id, event.is_sold_out)} className={`w-full py-1 text-[9px] font-black border-2 ${event.is_sold_out ? 'bg-red-600 border-white text-white shadow-lg animate-pulse' : 'border-zinc-700 text-zinc-500'}`}>{event.is_sold_out ? 'VENDER DE NUEVO' : 'MARCAR AGOTADO'}</button>
+                    
+                    <div className="flex gap-2">
+                       <button onClick={() => toggleSoldOut(event.id, event.is_sold_out)} className={`flex-1 py-1 text-[9px] font-black uppercase border-2 ${event.is_sold_out ? 'bg-red-600 border-white text-white shadow-lg animate-pulse' : 'border-zinc-700 text-zinc-500'}`}>{event.is_sold_out ? 'VENDER DE NUEVO' : 'AGOTADO'}</button>
+                       <button onClick={() => toggleSuspended(event.id, event.is_suspended)} className={`flex-1 py-1 text-[9px] font-black uppercase border-2 ${event.is_suspended ? 'bg-white text-black border-black shadow-lg animate-pulse' : 'border-zinc-700 text-zinc-500'}`}>{event.is_suspended ? 'ACTIVAR TOQUE' : 'SUSPENDER'}</button>
+                    </div>
                   </div>
                 )}
               </div>
@@ -241,12 +251,12 @@ export default function AdminDashboard() {
         {/* DERECHO: SPONSORS, ENTREVISTAS, MENSAJES */}
         <section className="space-y-12">
           {/* Publicidad */}
-          <div className="space-y-6">
-            <h2 className="text-2xl font-black uppercase italic text-yellow-400 border-l-8 border-yellow-400 pl-4 bg-zinc-950 py-2 text-left">Publicidad</h2>
-            <form onSubmit={handleSaveSponsor} className="bg-zinc-950 p-4 md:p-6 border-4 border-white space-y-4 shadow-xl text-left">
+          <div className="space-y-6 text-left">
+            <h2 className="text-2xl font-black uppercase italic text-yellow-400 border-l-8 border-yellow-400 pl-4 bg-zinc-950 py-2">Publicidad</h2>
+            <form onSubmit={handleSaveSponsor} className="bg-zinc-950 p-4 md:p-6 border-4 border-white space-y-4 shadow-xl">
               <span className="text-[10px] font-black uppercase text-zinc-500">{newSponsor.id ? 'EDITANDO' : 'NUEVO ANUNCIO'}</span>
               <input placeholder="Nombre Cliente" className="w-full bg-black border-2 border-white p-2 font-bold uppercase text-xs text-white outline-none focus:border-yellow-400" value={newSponsor.client_name} onChange={e => setNewSponsor({...newSponsor, client_name: e.target.value})} required />
-              <div className="flex gap-4 items-center border-2 border-dashed border-zinc-700 p-2 relative text-left">
+              <div className="flex gap-4 items-center border-2 border-dashed border-zinc-700 p-2 relative">
                 <p className="text-[10px] font-black uppercase text-zinc-500 flex-1">{uploading ? 'Cargando...' : (newSponsor.image_url ? 'Imagen OK ✅' : 'Subir Imagen/GIF')}</p>
                 <input type="file" className="absolute inset-0 opacity-0 cursor-pointer" onChange={async (e) => {
                   const file = e.target.files?.[0]; if (file) { const url = await handleFileUpload(file, 'sponsors'); if (url) setNewSponsor({...newSponsor, image_url: url}); }
@@ -256,9 +266,9 @@ export default function AdminDashboard() {
               <div className="grid grid-cols-2 gap-2 text-white font-black">
                 <input placeholder="Link" className="bg-black border-2 border-white p-2 text-xs" value={newSponsor.link} onChange={e => setNewSponsor({...newSponsor, link: e.target.value})} />
                 <select className="bg-black border-2 border-white p-2 text-xs uppercase" value={newSponsor.position} onChange={e => setNewSponsor({...newSponsor, position: e.target.value})}>
-                  <option value="top">SUPERIOR (Banner Arriba)</option>
-                  <option value="sidebar">LATERAL (Costado)</option>
-                  <option value="bottom">INFERIOR (Banner Abajo)</option>
+                  <option value="top">SUPERIOR</option>
+                  <option value="sidebar">LATERAL</option>
+                  <option value="bottom">INFERIOR</option>
                 </select>
               </div>
               <div className="flex gap-2">
@@ -268,7 +278,7 @@ export default function AdminDashboard() {
             </form>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-h-[300px] overflow-y-auto pr-2 custom-scrollbar">
               {sponsors.map(sp => (
-                <div key={sp.id} className={`border-2 p-2 flex flex-col gap-2 ${sp.is_active ? 'border-yellow-400 bg-zinc-950' : 'border-zinc-800 opacity-50 bg-zinc-900'}`}>
+                <div key={sp.id} className={`border-2 p-3 flex flex-col gap-2 ${sp.is_active ? 'border-yellow-400 bg-zinc-950 shadow-md' : 'border-zinc-800 opacity-50 bg-zinc-900'}`}>
                   <div className="flex justify-between items-start">
                     <span className="text-[9px] font-black uppercase truncate text-white">{sp.client_name}</span>
                     <div className="flex gap-1">
@@ -286,9 +296,9 @@ export default function AdminDashboard() {
           {/* Entrevistas */}
           <div className="space-y-6 border-t-4 border-zinc-800 pt-8 text-left">
             <h2 className="text-2xl font-black uppercase italic text-yellow-400 border-l-8 border-yellow-400 pl-4 bg-zinc-950 py-2">Entrevistas</h2>
-            <form onSubmit={handleSaveInterview} className="bg-zinc-950 p-4 md:p-6 border-4 border-white space-y-4 shadow-xl">
-              <input placeholder="Título" className="w-full bg-black border-2 border-white p-2 font-bold uppercase text-xs text-white outline-none focus:border-yellow-400" value={newInterview.title} onChange={e => setNewInterview({...newInterview, title: e.target.value})} required />
-              <input placeholder="Banda" className="w-full bg-black border-2 border-white p-2 font-bold uppercase text-xs text-white outline-none focus:border-yellow-400" value={newInterview.band_name} onChange={e => setNewInterview({...newInterview, band_name: e.target.value})} required />
+            <form onSubmit={handleSaveInterview} className="bg-zinc-950 p-4 md:p-6 border-4 border-white space-y-4 shadow-xl text-left">
+              <input placeholder="Título" className="w-full bg-black border-2 border-white p-2 font-bold uppercase text-xs text-white focus:border-yellow-400 outline-none" value={newInterview.title} onChange={e => setNewInterview({...newInterview, title: e.target.value})} required />
+              <input placeholder="Banda" className="w-full bg-black border-2 border-white p-2 font-bold uppercase text-xs text-white focus:border-yellow-400 outline-none" value={newInterview.band_name} onChange={e => setNewInterview({...newInterview, band_name: e.target.value})} required />
               <div className="grid grid-cols-2 gap-2 text-[10px] text-white">
                 <input placeholder="Autor Texto" className="bg-black border p-2 uppercase font-black" value={newInterview.author} onChange={e => setNewInterview({...newInterview, author: e.target.value})} />
                 <input placeholder="Crédito Foto" className="bg-black border p-2 uppercase font-black" value={newInterview.photo_credit} onChange={e => setNewInterview({...newInterview, photo_credit: e.target.value})} />
@@ -308,10 +318,10 @@ export default function AdminDashboard() {
             </form>
             <div className="grid grid-cols-1 gap-2 max-h-[300px] overflow-y-auto custom-scrollbar">
               {interviews.map(int => (
-                <div key={int.id} className={`border-2 p-3 flex justify-between items-center ${int.is_active ? 'border-zinc-700 bg-zinc-900 shadow-md' : 'border-red-600 bg-zinc-950 opacity-40 grayscale italic text-left'}`}>
-                  <div className="truncate pr-4">
+                <div key={int.id} className={`border-2 p-3 flex justify-between items-center ${int.is_active ? 'border-zinc-700 bg-zinc-900 shadow-md' : 'border-red-600 bg-zinc-950 opacity-40 grayscale italic'}`}>
+                  <div className="truncate pr-4 text-left">
                     <span className="text-[10px] font-black uppercase text-yellow-400">{int.title}</span>
-                    <p className="text-[8px] text-zinc-500 uppercase font-bold text-left">{int.band_name} {int.is_active ? '' : '(PAUSADA)'}</p>
+                    <p className="text-[8px] text-zinc-500 uppercase font-bold">{int.band_name} {int.is_active ? '' : '(PAUSADA)'}</p>
                   </div>
                   <div className="flex gap-1 shrink-0">
                     <button onClick={() => setNewInterview(int)} className="px-2 py-0.5 bg-blue-600 text-white text-[7px] font-black border border-white shadow-sm">EDITAR</button>
@@ -347,11 +357,11 @@ export default function AdminDashboard() {
       {selectedMessage && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
           <div className="absolute inset-0 bg-black/90 backdrop-blur-sm" onClick={() => setSelectedMessage(null)} />
-          <div className="relative w-full max-w-xl bg-zinc-900 border-8 border-white p-8 shadow-[20px_20px_0px_0px_rgba(234,179,8,1)] text-left">
+          <div className="relative w-full max-w-xl bg-zinc-900 border-8 border-white p-8 shadow-[20px_20px_0px_0px_rgba(234,179,8,1)] text-left font-black uppercase">
             <button onClick={() => setSelectedMessage(null)} className="absolute -top-4 -right-4 bg-red-600 text-white w-10 h-10 font-black text-xl border-4 border-white text-center flex items-center justify-center shadow-xl">X</button>
             <h3 className="text-2xl font-black uppercase italic text-yellow-400 mb-2 border-b-2 border-yellow-400 pb-2">{selectedMessage.name}</h3>
-            <p className="text-xs font-bold text-zinc-500 uppercase mb-6">{selectedMessage.email}</p>
-            <p className="text-lg text-white leading-relaxed whitespace-pre-wrap italic text-left">"{selectedMessage.message}"</p>
+            <p className="text-xs font-bold text-zinc-500 uppercase mb-6 italic">{selectedMessage.email}</p>
+            <p className="text-lg text-white leading-relaxed whitespace-pre-wrap">"{selectedMessage.message}"</p>
             <button onClick={() => deleteMessage(selectedMessage.id)} className="mt-8 bg-red-600 text-white px-6 py-2 font-black uppercase text-xs border-2 border-white hover:bg-black transition-colors shadow-lg">Eliminar Mensaje</button>
           </div>
         </div>
