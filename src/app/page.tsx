@@ -67,8 +67,7 @@ export default function Home() {
         }));
         setAllEvents(normalized);
         setFeaturedEvents(normalized.filter(e => e.is_featured === true));
-        // Use normalized data directly for the first render
-        setEvents(normalized);
+        applyFilters(normalized, department, genre, ageRating, priceType);
       }
       if (sponsorData) setSponsors(sponsorData);
     } catch (err) {
@@ -77,9 +76,8 @@ export default function Home() {
     setLoading(false);
   }
 
-  // Filter function using 4 arguments (matching calls in select elements)
-  function applyFilters(dep: string, gen: string, age: string, price: string) {
-    let filtered = [...allEvents];
+  function applyFilters(data: any[], dep: string, gen: string, age: string, price: string) {
+    let filtered = [...data];
     if (dep) filtered = filtered.filter(e => e.department === dep);
     if (gen) filtered = filtered.filter(e => e.genre === gen);
     if (age) filtered = filtered.filter(e => e.age_rating === age);
@@ -149,12 +147,12 @@ export default function Home() {
       </header>
 
       {isMenuOpen && (
-        <div className="fixed inset-0 z-[60] bg-black/95 flex flex-col items-center justify-center space-y-8 md:hidden text-center">
-          <button onClick={() => setIsMenuOpen(false)} className="absolute top-6 right-6 text-white text-4xl font-black">X</button>
-          <Link href="/" onClick={() => setIsMenuOpen(false)} className="text-4xl font-black uppercase text-yellow-400 italic">Fechas</Link>
-          <Link href="/interviews" onClick={() => setIsMenuOpen(false)} className="text-4xl font-black uppercase text-white italic">Entrevistas</Link>
-          <Link href="/contact" onClick={() => setIsMenuOpen(false)} className="text-4xl font-black uppercase text-white italic font-black">Contacto</Link>
-          <Link href="/submit" onClick={() => setIsMenuOpen(false)} className="text-3xl font-black uppercase border-4 border-yellow-400 text-yellow-400 px-8 py-4 animate-pulse">Subir Fecha</Link>
+        <div className="fixed inset-0 z-[60] bg-black/95 flex flex-col items-center justify-center space-y-8 md:hidden text-center font-black">
+          <button onClick={() => setIsMenuOpen(false)} className="absolute top-6 right-6 text-white text-4xl">X</button>
+          <Link href="/" onClick={() => setIsMenuOpen(false)} className="text-4xl uppercase text-yellow-400 italic">Fechas</Link>
+          <Link href="/interviews" onClick={() => setIsMenuOpen(false)} className="text-4xl uppercase text-white italic">Entrevistas</Link>
+          <Link href="/contact" onClick={() => setIsMenuOpen(false)} className="text-4xl uppercase text-white italic">Contacto</Link>
+          <Link href="/submit" onClick={() => setIsMenuOpen(false)} className="text-3xl uppercase border-4 border-yellow-400 text-yellow-400 px-8 py-4 animate-pulse">Subir Fecha</Link>
         </div>
       )}
 
@@ -169,7 +167,7 @@ export default function Home() {
 
         {featuredEvents.length > 0 && (
           <section className="relative h-[400px] md:h-[500px] border-4 md:border-8 border-white bg-zinc-800 flex items-end p-6 md:p-10 overflow-hidden shadow-[12px_12px_0px_0px_rgba(234,179,8,1)] group">
-            <div className="absolute inset-0 transition-opacity duration-1000">
+            <div className="absolute inset-0">
                {featuredEvents[currentHeroIndex].flyer_url && (
                  <img src={featuredEvents[currentHeroIndex].flyer_url} className="absolute inset-0 w-full h-full object-cover opacity-60" alt="Hero" />
                )}
@@ -179,7 +177,7 @@ export default function Home() {
               <span className="bg-red-600 text-white px-4 py-1 text-xs md:text-sm font-black uppercase italic tracking-widest shadow-md">
                 {featuredEvents[currentHeroIndex].suggestion_tag || 'DESTACADO'}
               </span>
-              <h2 className="text-4xl md:text-8xl font-black uppercase italic leading-[0.8] tracking-tighter mt-4 drop-shadow-2xl text-yellow-400 uppercase">
+              <h2 className="text-4xl md:text-8xl font-black uppercase italic leading-[0.8] tracking-tighter mt-4 drop-shadow-2xl text-yellow-400">
                 {featuredEvents[currentHeroIndex].band_name}
               </h2>
               <p className="text-lg md:text-2xl font-bold text-white uppercase tracking-widest border-l-4 md:border-l-8 border-red-600 pl-4 mt-4">
@@ -197,36 +195,37 @@ export default function Home() {
 
         <div className="flex flex-col lg:flex-row gap-8 md:gap-12">
           <div className="flex-1 space-y-12">
-            <section className="bg-yellow-400 text-black p-4 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 items-center font-black uppercase italic shadow-[8px_8px_0px_0px_rgba(255,255,255,1)] text-left">
+            {/* Filters */}
+            <section className="bg-yellow-400 text-black p-4 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 items-center font-black uppercase italic shadow-[8px_8px_0px_0px_rgba(255,255,255,1)]">
               <div className="flex flex-col gap-1">
                 <span className="text-[10px] opacity-70 uppercase">Departamento</span>
-                <select value={department} onChange={(e) => { setDepartment(e.target.value); applyFilters(e.target.value, genre, ageRating, priceType); }} className="bg-black text-white p-2 border-2 border-white focus:outline-none font-bold text-xs uppercase">
+                <select value={department} onChange={(e) => { setDepartment(e.target.value); applyFilters(allEvents, e.target.value, genre, ageRating, priceType); }} className="bg-black text-white p-2 border-2 border-white focus:outline-none font-bold text-xs uppercase">
                   <option value="">Cualquier Depto</option>
                   {activeDepartments.map(d => <option key={d} value={d}>{d}</option>)}
                 </select>
               </div>
               <div className="flex flex-col gap-1">
                 <span className="text-[10px] opacity-70 uppercase">Género</span>
-                <select value={genre} onChange={(e) => { setGenre(e.target.value); applyFilters(department, e.target.value, ageRating, priceType); }} className="bg-black text-white p-2 border-2 border-white focus:outline-none font-bold text-xs uppercase">
+                <select value={genre} onChange={(e) => { setGenre(e.target.value); applyFilters(allEvents, department, e.target.value, ageRating, priceType); }} className="bg-black text-white p-2 border-2 border-white focus:outline-none font-bold text-xs uppercase">
                   <option value="">Cualquier Género</option>
                   {activeGenres.map(g => <option key={g} value={g}>{g}</option>)}
                 </select>
               </div>
               <div className="flex flex-col gap-1">
                 <span className="text-[10px] opacity-70 uppercase">Edad</span>
-                <select value={ageRating} onChange={(e) => { setAgeRating(e.target.value); applyFilters(department, genre, e.target.value, priceType); }} className="bg-black text-white p-2 border-2 border-white focus:outline-none font-bold text-xs uppercase">
+                <select value={ageRating} onChange={(e) => { setAgeRating(e.target.value); applyFilters(allEvents, department, genre, e.target.value, priceType); }} className="bg-black text-white p-2 border-2 border-white focus:outline-none font-bold text-xs uppercase">
                   <option value="">Cualquier Edad</option>
                   {activeAgeRatings.map(a => <option key={a} value={a}>{a}</option>)}
                 </select>
               </div>
               <div className="flex flex-col gap-1">
                 <span className="text-[10px] opacity-70 uppercase">Tipo Entrada</span>
-                <select value={priceType} onChange={(e) => { setPriceType(e.target.value); applyFilters(department, genre, ageRating, e.target.value); }} className="bg-black text-white p-2 border-2 border-white focus:outline-none font-bold text-xs uppercase">
+                <select value={priceType} onChange={(e) => { setPriceType(e.target.value); applyFilters(allEvents, department, genre, ageRating, e.target.value); }} className="bg-black text-white p-2 border-2 border-white focus:outline-none font-bold text-xs uppercase">
                   <option value="">Cualquier Tipo</option>
                   <option value="PAGO">PAGO</option><option value="LIBRE">LIBRE</option><option value="GORRA">A LA GORRA</option><option value="SOBRE">SOBRE ARTÍSTICO</option>
                 </select>
               </div>
-              <button onClick={() => {setDepartment(''); setGenre(''); setAgeRating(''); setPriceType(''); setEvents(allEvents);}} className="sm:col-span-full text-[10px] underline hover:text-red-600 font-black uppercase tracking-widest text-center">Limpiar Filtros</button>
+              <button onClick={() => {setDepartment(''); setGenre(''); setAgeRating(''); setPriceType(''); setEvents(allEvents);}} className="sm:col-span-full text-[10px] underline hover:text-red-600 font-bold uppercase tracking-widest text-center mt-2">Limpiar Filtros</button>
             </section>
 
             {/* Event Feed */}
@@ -243,12 +242,13 @@ export default function Home() {
                       <div className="bg-white text-black text-[8px] font-black px-2 py-0.5 shadow-md uppercase">{event.age_rating || 'ATP'}</div>
                     </div>
                     {event.is_sold_out && <div className="absolute top-8 -right-12 bg-red-600 text-white font-black py-2 px-12 rotate-45 uppercase text-sm border-y-2 border-white z-30 shadow-xl tracking-tighter italic">¡AGOTADO!</div>}
+                    {event.is_suspended && <div className="absolute top-8 -right-12 bg-zinc-700 text-white font-black py-2 px-12 rotate-45 uppercase text-sm border-y-2 border-white z-30 shadow-xl tracking-tighter italic">SUSPENDIDO</div>}
                     <div className="aspect-square bg-zinc-800 mb-4 border-2 border-zinc-700 relative flex items-center justify-center overflow-hidden">
-                      {event.flyer_url ? <img src={event.flyer_url} alt="Flyer" className={`object-cover w-full h-full transition-all duration-500 ${event.is_sold_out ? 'grayscale blur-[1px]' : 'group-hover/card:scale-105'}`} /> : <div className="text-zinc-600 font-black italic uppercase text-center">FLYER DEL SHOW</div>}
+                      {event.flyer_url ? <img src={event.flyer_url} alt="Flyer" className={`object-cover w-full h-full transition-all duration-500 ${(event.is_sold_out || event.is_suspended) ? 'grayscale blur-[1px]' : 'group-hover/card:scale-105'}`} /> : <div className="text-zinc-600 font-black italic uppercase text-center">FLYER DEL SHOW</div>}
                     </div>
                     <div className="space-y-2 flex-1">
-                      <div className="flex justify-between items-start">
-                        <h3 className="text-xl md:text-2xl font-black uppercase leading-[0.9] break-words max-w-[70%] group-hover/card:text-yellow-400 transition-colors uppercase">{event.band_name}</h3>
+                      <div className="flex justify-between items-start text-left">
+                        <h3 className="text-xl md:text-2xl font-black uppercase leading-[0.9] break-words max-w-[70%] group-hover/card:text-yellow-400 transition-colors">{event.band_name}</h3>
                         <span className="text-[10px] bg-red-600 text-white px-2 py-1 uppercase font-black italic">{event.genre || 'Show'}</span>
                       </div>
                       <p className="font-bold text-yellow-400 tracking-tighter uppercase text-sm">{event.date} - {formatTime(event.time)}hs</p>
@@ -260,8 +260,8 @@ export default function Home() {
             </section>
           </div>
 
-          <aside className="lg:w-72 space-y-8 relative z-10 text-left">
-            <h3 className="text-xl font-black uppercase italic text-yellow-400 border-b-4 border-yellow-400 pb-2 tracking-widest shadow-[4px_4px_0px_0px_rgba(255,255,255,1)] inline-block px-2 bg-zinc-950 uppercase">Auspician</h3>
+          <aside className="lg:w-72 space-y-8 relative z-10 text-left uppercase">
+            <h3 className="text-xl font-black uppercase italic text-yellow-400 border-b-4 border-yellow-400 pb-2 tracking-widest shadow-[4px_4px_0px_0px_rgba(255,255,255,1)] inline-block px-2 bg-zinc-950">Auspician</h3>
             <div className="grid grid-cols-2 lg:grid-cols-1 gap-4 lg:space-y-6">
               {sidebarSponsors.map(ad => (
                 <div key={ad.id} onClick={() => setSelectedAd(ad)} className="block border-4 border-white bg-zinc-950 p-2 shadow-[8px_8px_0px_0px_rgba(234,179,8,1)] hover:-translate-x-1 transition-transform group cursor-pointer">
@@ -271,7 +271,7 @@ export default function Home() {
                 </div>
               ))}
               <Link href="/contact" className="block border-4 border-dashed border-zinc-700 p-8 text-center hover:border-white hover:text-white transition-colors group text-zinc-500 lg:col-span-1 col-span-full">
-                <span className="text-xs font-black uppercase group-hover:text-white text-center block uppercase">Publicá acá</span>
+                <span className="text-xs font-black uppercase group-hover:text-white text-center block">Publicá acá</span>
               </Link>
             </div>
           </aside>
@@ -300,9 +300,9 @@ export default function Home() {
                     <span className="bg-red-600 text-white px-2 py-1 text-[10px] font-black uppercase italic">{selectedEvent.genre}</span>
                     <span className="bg-white text-black px-2 py-1 text-[10px] font-black uppercase italic">{selectedEvent.age_rating || 'ATP'}</span>
                   </div>
-                  <h2 className="text-3xl md:text-5xl font-black uppercase italic tracking-tighter mt-2 text-yellow-400 leading-none uppercase">{selectedEvent.band_name}</h2>
+                  <h2 className="text-3xl md:text-5xl font-black uppercase italic tracking-tighter mt-2 text-yellow-400 leading-none">{selectedEvent.band_name}</h2>
                 </div>
-                <div className="space-y-1 text-white text-left font-black">
+                <div className="space-y-1 text-white font-black">
                   <p className="text-xl font-bold uppercase">{selectedEvent.date} - {formatTime(selectedEvent.time)}hs</p>
                   <p className="text-sm font-black text-zinc-400 uppercase italic">{selectedEvent.venue} - {selectedEvent.city}, {selectedEvent.department}</p>
                 </div>
@@ -312,12 +312,18 @@ export default function Home() {
                     {selectedEvent.description?.split('\n').map((p: string, i: number) => <p key={i}>{p}</p>) || <p className="italic text-zinc-600 text-sm">No hay reseña disponible.</p>}
                   </div>
                 </div>
-                <div className="pt-6 border-t-2 border-zinc-800 space-y-4 text-left">
+                <div className="pt-6 border-t-2 border-zinc-800 space-y-4">
                   <p className="text-2xl md:text-3xl font-black italic text-yellow-400 tracking-tighter uppercase">
                     {selectedEvent.price_type === 'free' ? 'ENTRADA LIBRE' : selectedEvent.price_type === 'gorra' ? 'A LA GORRA' : selectedEvent.price_type === 'sobre' ? 'SOBRE ARTÍSTICO' : `$${selectedEvent.price_min}${selectedEvent.price_max ? ` - $${selectedEvent.price_max}` : ''}`}
                   </p>
                   <div className="flex gap-4">
-                    <button onClick={() => !selectedEvent.is_sold_out && handleTicketAction(selectedEvent)} disabled={selectedEvent.is_sold_out} className={`flex-1 font-black uppercase py-4 text-lg md:text-xl border-4 border-black shadow-[6px_6px_0px_0px_rgba(255,255,255,1)] transition-all ${selectedEvent.is_sold_out ? 'bg-zinc-800 text-zinc-600 cursor-not-allowed shadow-none' : 'bg-yellow-400 text-black hover:bg-white'}`}>{selectedEvent.is_sold_out ? 'AGOTADO' : (selectedEvent.ticket_type === 'whatsapp' ? 'WhatsApp' : 'Comprar Entradas')}</button>
+                    <button 
+                      onClick={() => (!selectedEvent.is_sold_out && !selectedEvent.is_suspended) && handleTicketAction(selectedEvent)} 
+                      disabled={selectedEvent.is_sold_out || selectedEvent.is_suspended} 
+                      className={`flex-1 font-black uppercase py-4 text-lg md:text-xl border-4 border-black shadow-[6px_6px_0px_0px_rgba(255,255,255,1)] transition-all ${selectedEvent.is_sold_out || selectedEvent.is_suspended ? 'bg-zinc-800 text-zinc-600 cursor-not-allowed shadow-none' : 'bg-yellow-400 text-black hover:bg-white'}`}
+                    >
+                      {selectedEvent.is_suspended ? 'SUSPENDIDO' : selectedEvent.is_sold_out ? 'AGOTADO' : (selectedEvent.ticket_type === 'whatsapp' ? 'WhatsApp' : 'Entradas')}
+                    </button>
                     <button onClick={() => shareOnWhatsApp(selectedEvent)} className="bg-green-600 text-white p-4 border-4 border-black shadow-[6px_6px_0px_0px_rgba(255,255,255,1)] hover:bg-black transition-colors flex items-center justify-center">
                       <svg className="w-8 h-8" fill="currentColor" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/></svg>
                     </button>
@@ -335,7 +341,7 @@ export default function Home() {
               <button onClick={() => setSelectedAd(null)} className="absolute -top-4 -right-4 bg-red-600 text-white w-12 h-12 font-black text-2xl border-4 border-white hover:bg-black transition-colors z-[110] text-center flex items-center justify-center shadow-xl">X</button>
               <img src={selectedAd.image_url} alt="Sponsor" className="w-full h-auto border-4 border-zinc-800 shadow-2xl" />
               <div className="p-6 text-center space-y-4">
-                <h3 className="text-4xl font-black uppercase italic text-yellow-400 tracking-tighter">{selectedAd.client_name}</h3>
+                <h3 className="text-4xl font-black uppercase italic text-yellow-400 tracking-tighter uppercase">{selectedAd.client_name}</h3>
                 {selectedAd.link && (
                   <a href={selectedAd.link} target="_blank" className="inline-block bg-white text-black px-10 py-3 font-black uppercase hover:bg-yellow-400 transition-all shadow-[6px_6px_0px_0px_rgba(234,179,8,1)] uppercase">Visitar Web</a>
                 )}
