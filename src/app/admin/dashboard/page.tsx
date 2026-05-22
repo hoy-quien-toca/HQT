@@ -71,7 +71,7 @@ export default function AdminDashboard() {
   async function handleSaveEvent(e: React.FormEvent) {
     e.preventDefault();
     if (!editingEvent) return;
-    const { id, ...data } = editingEvent;
+    const { id, created_at, ...data } = editingEvent; // Exclude non-editable
     const { error } = await supabase.from('events').update(data).eq('id', id);
     if (error) alert('Error: ' + error.message);
     else { setEditingEvent(null); fetchData(); }
@@ -185,7 +185,7 @@ export default function AdminDashboard() {
               <h3 className="font-black uppercase text-blue-500">Editando: {editingEvent.band_name}</h3>
               <form onSubmit={handleSaveEvent} className="grid grid-cols-2 gap-2 text-xs text-white font-black">
                 <input value={editingEvent.band_name} onChange={e => setEditingEvent({...editingEvent, band_name: e.target.value})} className="col-span-2 bg-black border p-2 uppercase" placeholder="Banda" />
-                <input value={editingEvent.address} onChange={e => setEditingEvent({...editingEvent, address: e.target.value})} className="col-span-2 bg-black border p-2 uppercase" placeholder="Dirección" />
+                <input value={editingEvent.address || ''} onChange={e => setEditingEvent({...editingEvent, address: e.target.value})} className="col-span-2 bg-black border p-2 uppercase" placeholder="Dirección" />
                 <input type="date" value={editingEvent.date} onChange={e => setEditingEvent({...editingEvent, date: e.target.value})} className="bg-black border p-2" />
                 <input type="time" value={editingEvent.time} onChange={e => setEditingEvent({...editingEvent, time: e.target.value})} className="bg-black border p-2" />
                 <select value={editingEvent.age_rating} onChange={e => setEditingEvent({...editingEvent, age_rating: e.target.value})} className="bg-black border p-2">
@@ -240,8 +240,8 @@ export default function AdminDashboard() {
                     </div>
                     
                     <div className="flex gap-2">
-                       <button onClick={() => toggleSoldOut(event.id, event.is_sold_out)} className={`flex-1 py-1 text-[9px] font-black uppercase border-2 ${event.is_sold_out ? 'bg-red-600 border-white text-white shadow-lg animate-pulse' : 'border-zinc-700 text-zinc-500'}`}>{event.is_sold_out ? 'VENDER DE NUEVO' : 'AGOTADO'}</button>
-                       <button onClick={() => toggleSuspended(event.id, event.is_suspended)} className={`flex-1 py-1 text-[9px] font-black uppercase border-2 ${event.is_suspended ? 'bg-white text-black border-black shadow-lg animate-pulse' : 'border-zinc-700 text-zinc-500'}`}>{event.is_suspended ? 'ACTIVAR TOQUE' : 'SUSPENDER'}</button>
+                       <button onClick={() => toggleSoldOut(event.id, event.is_sold_out)} className={`flex-1 py-1 text-[9px] font-black uppercase border-2 ${event.is_sold_out ? 'bg-red-600 border-white text-white shadow-lg animate-pulse' : 'border-zinc-700 text-zinc-500'}`}>{event.is_sold_out ? 'AGOTADO' : 'AGOTADO'}</button>
+                       <button onClick={() => toggleSuspended(event.id, event.is_suspended)} className={`flex-1 py-1 text-[9px] font-black uppercase border-2 ${event.is_suspended ? 'bg-white text-black border-black shadow-lg animate-pulse' : 'border-zinc-700 text-zinc-500'}`}>{event.is_suspended ? 'ACTIVAR' : 'SUSPENDER'}</button>
                     </div>
                   </div>
                 )}
@@ -255,7 +255,7 @@ export default function AdminDashboard() {
           {/* Publicidad */}
           <div className="space-y-6 text-left">
             <h2 className="text-2xl font-black uppercase italic text-yellow-400 border-l-8 border-yellow-400 pl-4 bg-zinc-950 py-2">Publicidad</h2>
-            <form onSubmit={handleSaveSponsor} className="bg-zinc-950 p-4 md:p-6 border-4 border-white space-y-4 shadow-xl">
+            <form onSubmit={handleSaveSponsor} className="bg-zinc-950 p-4 md:p-6 border-4 border-white shadow-xl">
               <span className="text-[10px] font-black uppercase text-zinc-500">{newSponsor.id ? 'EDITANDO' : 'NUEVO ANUNCIO'}</span>
               <input placeholder="Nombre Cliente" className="w-full bg-black border-2 border-white p-2 font-bold uppercase text-xs text-white outline-none focus:border-yellow-400" value={newSponsor.client_name} onChange={e => setNewSponsor({...newSponsor, client_name: e.target.value})} required />
               <div className="flex gap-4 items-center border-2 border-dashed border-zinc-700 p-2 relative">
