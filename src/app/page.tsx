@@ -78,8 +78,9 @@ export default function Home() {
     setLoading(false);
   }
 
-  function applyFilters(data: any[], dep: string, gen: string, age: string, price: string) {
-    let filtered = [...data];
+  // Unified 4-argument filter function using state 'allEvents'
+  function applyFilters(dep: string, gen: string, age: string, price: string) {
+    let filtered = [...allEvents];
     if (dep) filtered = filtered.filter(e => e.department === dep);
     if (gen) filtered = filtered.filter(e => e.genre === gen);
     if (age) filtered = filtered.filter(e => e.age_rating === age);
@@ -100,13 +101,23 @@ export default function Home() {
   const activeBottomAd = bottomSponsors[currentBottomAdIndex];
   const sidebarSponsors = sponsors.filter(a => a.position === 'sidebar');
   
+  // Dynamic Lists for Filters
   const activeDepartments = Array.from(new Set(allEvents.map(e => e.department))).filter(Boolean).sort();
   const activeGenres = Array.from(new Set(allEvents.map(e => e.genre))).filter(Boolean).sort();
   const activeAgeRatings = Array.from(new Set(allEvents.map(e => e.age_rating || 'ATP'))).sort();
+  
+  // Dynamic Price Type Filter
+  const priceMapping: Record<string, string> = { 'range': 'PAGO', 'free': 'LIBRE', 'gorra': 'GORRA', 'sobre': 'SOBRE' };
+  const activePriceTypes = Array.from(new Set(allEvents.map(e => priceMapping[e.price_type] || e.price_type))).filter(Boolean).sort();
 
   const formatTime = (timeStr: string) => {
     if (!timeStr) return '';
     return timeStr.substring(0, 5);
+  };
+
+  const shareOnWhatsApp = (event: any) => {
+    const text = `¡Mirá esto que encontré en Hoy Quien Toca! ¿Vamos?\n\n${event.band_name} en ${event.venue}\nFecha: ${event.date}\nLink: ${window.location.origin}`;
+    window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
   };
 
   const handleTicketAction = (event: any) => {
@@ -133,22 +144,22 @@ export default function Home() {
       </div>
 
       <header className="border-b-4 border-red-600 p-4 md:p-6 bg-zinc-950 sticky top-0 z-50 shadow-xl">
-        <div className="max-w-6xl mx-auto flex justify-between items-center">
+        <div className="max-w-6xl mx-auto flex justify-between items-center font-black">
           <div className="flex items-center gap-4">
-            <button onClick={() => setShowLogoModal(true)} className="hover:scale-110 transition-transform cursor-pointer">
-               <Image src="/logo-rojo.jpg" alt="Logo Rojo" width={60} height={60} className="border-2 border-white rounded-2xl md:w-[85px] md:h-[85px]" />
+            <button onClick={() => setShowLogoModal(true)} className="hover:scale-110 transition-transform cursor-pointer focus:outline-none">
+               <Image src="/logo-rojo.jpg" alt="Logo Rojo" width={70} height={70} className="border-2 border-white rounded-2xl md:w-[90px] md:h-[90px] shadow-lg shadow-red-600/30" />
             </button>
             <div>
               <h1 className="text-2xl md:text-5xl font-brusher tracking-tighter uppercase text-red-600 leading-none">Hoy Quien Toca</h1>
-              <p className="text-[8px] md:text-xs font-bold text-white uppercase tracking-widest mt-1">Descubri recitales, toques y eventos musicales en tu Ciudad</p>
+              <p className="text-[10px] md:text-xs font-bold text-white uppercase tracking-widest mt-1">Descubri recitales, toques y eventos musicales en tu Ciudad</p>
             </div>
           </div>
           
           <nav className="hidden md:flex gap-6 font-bold uppercase tracking-widest text-sm items-center">
             <Link href="/" className="text-red-600 underline decoration-2 underline-offset-4 font-black">Fechas</Link>
             <Link href="/interviews" className="hover:text-red-600 transition-colors">Entrevistas</Link>
-            <Link href="/contact" className="hover:text-red-600 transition-colors font-black">Contacto</Link>
-            <Link href="/submit" className="border-2 border-red-600 text-red-600 px-4 py-1 bg-black rounded-full animate-pulse hover:bg-red-600 hover:text-white transition-colors font-black">Subir Fecha</Link>
+            <Link href="/contact" className="hover:text-red-600 transition-colors">Contacto</Link>
+            <Link href="/submit" className="border-2 border-red-600 text-red-600 px-4 py-1 bg-black rounded-full animate-pulse hover:bg-red-600 hover:text-white transition-colors">Subir Fecha</Link>
           </nav>
 
           <button onClick={() => setIsMenuOpen(!isMenuOpen)} className="md:hidden text-red-600">
@@ -162,7 +173,7 @@ export default function Home() {
           <button onClick={() => setIsMenuOpen(false)} className="absolute top-6 right-6 text-white text-4xl">X</button>
           <Link href="/" onClick={() => setIsMenuOpen(false)} className="text-4xl uppercase text-red-600 italic">Fechas</Link>
           <Link href="/interviews" onClick={() => setIsMenuOpen(false)} className="text-4xl uppercase text-white italic">Entrevistas</Link>
-          <Link href="/contact" onClick={() => setIsMenuOpen(false)} className="text-4xl uppercase text-white italic">Contacto</Link>
+          <Link href="/contact" onClick={() => setIsMenuOpen(false)} className="text-4xl uppercase text-white italic font-black">Contacto</Link>
           <Link href="/submit" onClick={() => setIsMenuOpen(false)} className="text-3xl uppercase border-4 border-red-600 text-red-600 px-8 py-4 rounded-full animate-pulse">Subir Fecha</Link>
         </div>
       )}
@@ -177,7 +188,7 @@ export default function Home() {
         )}
 
         {featuredEvents.length > 0 && (
-          <section className="relative h-[250px] md:h-[500px] border-4 md:border-8 border-white bg-zinc-800 flex items-end p-4 md:p-10 overflow-hidden shadow-[12px_12px_0px_0px_rgba(220,38,38,0.3)] group rounded-[24px] md:rounded-[40px]">
+          <section className="relative h-[300px] md:h-[500px] border-4 md:border-8 border-white bg-zinc-800 flex items-end p-4 md:p-10 overflow-hidden shadow-[12px_12px_0px_0px_rgba(220,38,38,0.3)] group rounded-[24px] md:rounded-[40px]">
             <div className="absolute inset-0">
                {featuredEvents[currentHeroIndex].flyer_url && (
                  <img src={featuredEvents[currentHeroIndex].flyer_url} className="absolute inset-0 w-full h-full object-cover opacity-60" alt="Hero" />
@@ -204,42 +215,47 @@ export default function Home() {
               </p>
               <button onClick={() => setSelectedEvent(featuredEvents[currentHeroIndex])} className="mt-4 md:mt-8 bg-white text-black font-black uppercase px-4 py-1.5 md:px-8 md:py-3 hover:bg-red-600 hover:text-white transition-all text-[10px] md:text-base rounded-full shadow-lg">Ver Detalles</button>
             </div>
+            <div className="absolute top-6 right-8 z-30 flex gap-1 md:gap-2">
+              {featuredEvents.map((_, i) => (
+                <div key={i} className={`h-1.5 md:h-2 w-6 md:w-8 border border-white transition-all rounded-full ${i === currentHeroIndex ? 'bg-red-600 w-10 md:w-12' : 'bg-transparent opacity-50'}`} />
+              ))}
+            </div>
           </section>
         )}
 
         <div className="flex flex-col lg:flex-row gap-8 md:gap-12">
           <div className="flex-1 space-y-8 md:space-y-12">
-            {/* Filters */}
+            {/* Dynamic Filters */}
             <section className="bg-red-600 text-white p-3 md:p-4 grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4 items-center font-black uppercase italic shadow-[8px_8px_0px_0px_rgba(255,255,255,1)] rounded-2xl md:rounded-3xl">
               <div className="flex flex-col gap-1">
                 <span className="text-[8px] md:text-[10px] opacity-80 uppercase">Dpto</span>
-                <select value={department} onChange={(e) => { setDepartment(e.target.value); applyFilters(allEvents, e.target.value, genre, ageRating, priceType); }} className="bg-black text-white p-2 border-2 border-white focus:outline-none font-bold text-[10px] md:text-xs uppercase rounded-xl">
+                <select value={department} onChange={(e) => { setDepartment(e.target.value); applyFilters(e.target.value, genre, ageRating, priceType); }} className="bg-black text-white p-2 border-2 border-white focus:outline-none font-bold text-[10px] md:text-xs uppercase rounded-xl">
                   <option value="">Todos</option>
                   {activeDepartments.map(d => <option key={d} value={d}>{d}</option>)}
                 </select>
               </div>
               <div className="flex flex-col gap-1">
                 <span className="text-[8px] md:text-[10px] opacity-80 uppercase">Género</span>
-                <select value={genre} onChange={(e) => { setGenre(e.target.value); applyFilters(allEvents, department, e.target.value, ageRating, priceType); }} className="bg-black text-white p-2 border-2 border-white focus:outline-none font-bold text-[10px] md:text-xs uppercase rounded-xl">
+                <select value={genre} onChange={(e) => { setGenre(e.target.value); applyFilters(department, e.target.value, ageRating, priceType); }} className="bg-black text-white p-2 border-2 border-white focus:outline-none font-bold text-[10px] md:text-xs uppercase rounded-xl">
                   <option value="">Todos</option>
                   {activeGenres.map(g => <option key={g} value={g}>{g}</option>)}
                 </select>
               </div>
               <div className="flex flex-col gap-1">
                 <span className="text-[8px] md:text-[10px] opacity-80 uppercase">Edad</span>
-                <select value={ageRating} onChange={(e) => { setAgeRating(e.target.value); applyFilters(allEvents, department, genre, e.target.value, priceType); }} className="bg-black text-white p-2 border-2 border-white focus:outline-none font-bold text-[10px] md:text-xs uppercase rounded-xl">
+                <select value={ageRating} onChange={(e) => { setAgeRating(e.target.value); applyFilters(department, genre, e.target.value, priceType); }} className="bg-black text-white p-2 border-2 border-white focus:outline-none font-bold text-[10px] md:text-xs uppercase rounded-xl">
                   <option value="">Todas</option>
                   {activeAgeRatings.map(a => <option key={a} value={a}>{a}</option>)}
                 </select>
               </div>
               <div className="flex flex-col gap-1">
                 <span className="text-[8px] md:text-[10px] opacity-80 uppercase">Entrada</span>
-                <select value={priceType} onChange={(e) => { setPriceType(e.target.value); applyFilters(allEvents, department, genre, ageRating, e.target.value); }} className="bg-black text-white p-2 border-2 border-white focus:outline-none font-bold text-[10px] md:text-xs uppercase rounded-xl">
+                <select value={priceType} onChange={(e) => { setPriceType(e.target.value); applyFilters(department, genre, ageRating, e.target.value); }} className="bg-black text-white p-2 border-2 border-white focus:outline-none font-bold text-[10px] md:text-xs uppercase rounded-xl">
                   <option value="">Todas</option>
-                  <option value="PAGO">PAGO</option><option value="LIBRE">LIBRE</option><option value="GORRA">GORRA</option><option value="SOBRE">SOBRE</option>
+                  {activePriceTypes.map(p => <option key={p} value={p}>{p}</option>)}
                 </select>
               </div>
-              <button onClick={() => {setDepartment(''); setGenre(''); setAgeRating(''); setPriceType(''); setEvents(allEvents);}} className="col-span-full text-[10px] underline hover:text-black font-black uppercase text-center">Limpiar</button>
+              <button onClick={() => {setDepartment(''); setGenre(''); setAgeRating(''); setPriceType(''); setEvents(allEvents);}} className="col-span-full text-[10px] underline hover:text-black font-black uppercase text-center">Limpiar Filtros</button>
             </section>
 
             {/* Event Feed - 1/3 Compact for Mobile */}
@@ -252,7 +268,6 @@ export default function Home() {
                 events.map((event) => (
                   <div key={event.id} onClick={() => setSelectedEvent(event)} className="border-4 border-white p-2 md:p-4 hover:translate-x-1 hover:-translate-y-1 transition-all bg-zinc-950 shadow-[6px_6px_0px_0px_rgba(220,38,38,0.5)] flex flex-row md:flex-col items-center md:items-stretch gap-3 md:gap-4 group/card relative overflow-hidden cursor-pointer rounded-[24px] md:rounded-[32px] h-32 md:h-auto">
                     
-                    {/* Ribbons / Tags - Small on mobile */}
                     {event.suggestion_tag && (
                       <div className={`absolute top-2 -left-12 w-32 text-center py-0.5 font-black text-[7px] md:text-[10px] uppercase -rotate-45 z-30 border-y shadow-xl tracking-tighter ${getTagStyle(event.suggestion_tag)}`}>
                         {event.suggestion_tag}
@@ -271,7 +286,7 @@ export default function Home() {
                         <span className="hidden md:inline-block text-[8px] bg-red-600 text-white px-2 py-0.5 uppercase font-black italic rounded-sm">{event.genre || 'Show'}</span>
                       </div>
                       <p className="font-black text-red-600 tracking-tighter uppercase text-[10px] md:text-sm">{event.date} - {formatTime(event.time)}hs</p>
-                      <p className="text-[9px] md:text-[10px] uppercase tracking-tight text-zinc-400 font-bold leading-none md:leading-tight truncate">{event.venue}, {event.city}</p>
+                      <p className="text-[9px] md:text-[10px] uppercase tracking-tight text-zinc-400 font-bold leading-none md:leading-tight truncate font-black">{event.venue}, {event.city}</p>
                       <div className="md:hidden">
                          <span className="text-[8px] bg-zinc-800 text-zinc-400 px-2 py-0.5 uppercase font-black rounded-full border border-zinc-700">{event.genre || 'Show'}</span>
                       </div>
@@ -302,7 +317,7 @@ export default function Home() {
           <section className="pt-8 md:pt-12">
              <div onClick={() => setSelectedAd(activeBottomAd)} className="cursor-pointer block w-full h-32 md:h-64 bg-zinc-950 border-4 md:border-8 border-white overflow-hidden shadow-[12px_12px_0px_0px_rgba(220,38,38,0.5)] group relative rounded-[32px] md:rounded-[40px]">
                 <img src={activeBottomAd.image_url} alt="Sponsor" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-1000" />
-                <div className="absolute top-4 left-4 bg-black/80 text-white text-[8px] md:text-[10px] font-black px-4 py-1 border-2 border-red-600 uppercase tracking-widest rounded-full italic">Auspiciante Destacado</div>
+                <div className="absolute top-4 left-4 bg-black/80 text-white text-[10px] font-black px-4 py-1 border-2 border-red-600 uppercase tracking-widest rounded-full italic">Auspiciante Destacado</div>
              </div>
         </section>
         )}
@@ -327,7 +342,7 @@ export default function Home() {
                   <p className="text-xl font-bold uppercase">{selectedEvent.date} - {formatTime(selectedEvent.time)}hs</p>
                   <p className="text-sm font-black text-zinc-400 uppercase italic">{selectedEvent.venue} - {selectedEvent.city}, {selectedEvent.department}</p>
                 </div>
-                <div className="border-t-2 border-zinc-800 pt-6 font-black">
+                <div className="border-t-2 border-zinc-800 pt-6">
                   <h4 className="text-xs font-black uppercase text-zinc-500 mb-2 italic">Reseña / Bio del Show</h4>
                   <div className="text-zinc-200 leading-relaxed font-bold space-y-4 max-h-48 overflow-y-auto pr-4 text-xs uppercase custom-scrollbar">
                     {selectedEvent.description?.split('\n').map((p: string, i: number) => <p key={i}>{p}</p>) || <p className="italic text-zinc-600 text-sm">No hay reseña disponible.</p>}
@@ -345,6 +360,9 @@ export default function Home() {
                     >
                       {selectedEvent.is_suspended ? 'SUSPENDIDO' : selectedEvent.is_sold_out ? 'AGOTADO' : (selectedEvent.ticket_type === 'whatsapp' ? 'WhatsApp' : 'Entradas')}
                     </button>
+                    <button onClick={() => shareOnWhatsApp(selectedEvent)} className="bg-green-600 text-white p-4 border-4 border-black shadow-[6px_6px_0px_0px_rgba(255,255,255,1)] hover:bg-black transition-colors flex items-center justify-center rounded-full shadow-lg">
+                      <svg className="w-8 h-8" fill="currentColor" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/></svg>
+                    </button>
                   </div>
                 </div>
               </div>
@@ -358,7 +376,7 @@ export default function Home() {
             <div className="relative max-w-2xl w-full bg-zinc-900 border-8 border-white p-4 shadow-[20px_20px_0px_0px_rgba(220,38,38,0.3)] text-center rounded-[40px]">
               <button onClick={() => setSelectedAd(null)} className="absolute -top-4 -right-4 bg-red-600 text-white w-12 h-12 font-black text-2xl border-4 border-white hover:bg-black transition-colors z-[110] text-center flex items-center justify-center shadow-xl rounded-full">X</button>
               <img src={selectedAd.image_url} alt="Sponsor" className="w-full h-auto border-4 border-zinc-800 shadow-2xl rounded-3xl" />
-              <div className="p-6 text-center space-y-4">
+              <div className="p-6 text-center space-y-4 font-black">
                 {selectedAd.link && (
                   <a href={selectedAd.link} target="_blank" className="inline-block bg-white text-black px-10 py-3 font-black uppercase hover:bg-red-600 hover:text-white transition-all shadow-[6px_6px_0px_0px_rgba(220,38,38,0.5)] uppercase rounded-full border-2 border-black italic font-black">Visitar Web</a>
                 )}
@@ -374,7 +392,7 @@ export default function Home() {
             <div className="relative max-w-lg w-full bg-zinc-900 border-8 border-white p-4 shadow-[30px_30px_0px_0px_rgba(220,38,38,0.5)] text-center rounded-[50px] transform hover:scale-105 transition-transform duration-500">
               <button onClick={() => setShowLogoModal(false)} className="absolute -top-4 -right-4 bg-red-600 text-white w-14 h-14 font-black text-3xl border-4 border-white hover:bg-black transition-colors z-[110] text-center flex items-center justify-center shadow-2xl rounded-full">X</button>
               <Image src="/logo-rojo.jpg" alt="Logo Grande" width={800} height={800} className="w-full h-auto rounded-[40px] border-4 border-zinc-800 shadow-2xl" />
-              <div className="p-6">
+              <div className="p-6 font-black">
                 <h3 className="text-4xl font-brusher uppercase text-red-600 leading-none">Hoy Quien Toca</h3>
                 <p className="text-xs font-black uppercase tracking-widest text-white/60 mt-2 italic">Descubri recitales, toques y eventos musicales en tu Ciudad</p>
               </div>
@@ -383,7 +401,7 @@ export default function Home() {
         )}
 
         <footer className="border-t-4 border-zinc-800 pt-8 pb-16 text-center font-black">
-          <p className="text-zinc-500 font-bold uppercase text-[10px] max-w-2xl mx-auto tracking-tighter leading-relaxed italic uppercase">AVISO: HOY QUIEN TOCA NO VENDE ENTRADAS. SOMOS UNA PLATAFORMA INFORMATIVA. LA VENTA Y ORGANIZACIÓN ES RESPONSABILIDAD DE LOS ORGANIZADORES.</p>
+          <p className="text-zinc-500 font-bold uppercase text-[10px] max-w-2xl mx-auto tracking-tighter leading-relaxed italic uppercase font-black">AVISO: HOY QUIEN TOCA NO VENDE ENTRADAS. SOMOS UNA PLATAFORMA INFORMATIVA. LA VENTA Y ORGANIZACIÓN ES RESPONSABILIDAD DE LOS ORGANIZADORES.</p>
         </footer>
       </main>
       <style jsx global>{`
