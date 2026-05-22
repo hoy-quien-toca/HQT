@@ -30,17 +30,16 @@ export default function InterviewsPage() {
 
   return (
     <div className="min-h-screen text-white font-sans relative overflow-x-hidden bg-zinc-900">
-      {/* Watermark Roja */}
       <div className="fixed inset-0 flex items-center justify-center pointer-events-none opacity-[0.03] z-0">
         <Image src="/logo-rojo.jpg" alt="Watermark" width={1000} height={1000} className="grayscale" priority />
       </div>
 
       <header className="border-b-4 border-red-600 p-4 md:p-6 bg-zinc-950 sticky top-0 z-50 shadow-xl text-left">
         <div className="max-w-6xl mx-auto flex justify-between items-center">
-          <div className="flex items-center gap-4">
-            <Image src="/logo-rojo.jpg" alt="Logo Rojo" width={50} height={50} className="border-2 border-white rounded-2xl md:w-[60px] md:h-[60px]" />
+          <div className="flex items-center gap-6">
+            <Image src="/logo-rojo.jpg" alt="Logo Rojo" width={70} height={70} className="border-2 border-white rounded-2xl md:w-[85px] md:h-[85px] shadow-lg shadow-red-600/20" />
             <div>
-              <h1 className="text-2xl md:text-5xl font-black tracking-tighter uppercase italic text-red-600 leading-none">Hoy Quien Toca</h1>
+              <h1 className="text-2xl md:text-5xl font-brusher tracking-tighter uppercase text-red-600 leading-none">Hoy Quien Toca</h1>
               <p className="text-[10px] md:text-xs font-bold text-white uppercase tracking-widest mt-1">Descubri recitales, toques y eventos musicales en tu Ciudad</p>
             </div>
           </div>
@@ -69,10 +68,10 @@ export default function InterviewsPage() {
       )}
 
       <main className="max-w-6xl mx-auto p-4 md:p-6 space-y-12 relative z-10">
-        <h2 className="text-5xl md:text-8xl font-black uppercase italic tracking-tighter text-center py-10 border-b-8 border-red-600 text-white leading-none">Entrevistas</h2>
+        <h2 className="text-5xl md:text-9xl font-brusher uppercase text-center py-10 border-b-8 border-red-600 text-white leading-none">Entrevistas</h2>
 
         {loading ? (
-          <p className="text-center text-4xl font-black animate-pulse text-red-600 uppercase italic">Cargando...</p>
+          <p className="text-center text-4xl font-brusher animate-pulse text-red-600 uppercase italic">Cargando...</p>
         ) : interviews.length === 0 ? (
           <div className="text-center py-20">
             <p className="text-3xl font-black uppercase italic text-zinc-600 tracking-tighter">Próximamente nuevas entrevistas...</p>
@@ -94,8 +93,8 @@ export default function InterviewsPage() {
                 </div>
                 <div className="space-y-3">
                   <span className="bg-red-600 text-white px-3 py-1 text-xs font-black uppercase tracking-widest italic rounded-full">BANDA: {interview.band_name}</span>
-                  <h3 className="text-3xl font-black uppercase leading-none group-hover:text-red-600 transition-colors">{interview.title}</h3>
-                  <div className="flex justify-between items-center text-zinc-500 font-bold text-[10px] uppercase tracking-tighter">
+                  <h3 className="text-3xl font-brusher uppercase leading-none group-hover:text-red-600 transition-colors text-white">{interview.title}</h3>
+                  <div className="flex justify-between items-center text-zinc-500 font-bold text-[10px] uppercase tracking-tighter font-black">
                     <p>Publicado: {new Date(interview.published_at).toLocaleDateString()}</p>
                     {interview.author && <p className="text-red-600">Por: {interview.author}</p>}
                   </div>

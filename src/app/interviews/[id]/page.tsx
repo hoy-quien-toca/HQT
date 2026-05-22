@@ -30,11 +30,16 @@ export default function InterviewDetail() {
     setLoading(false);
   }
 
-  if (loading) return <div className="min-h-screen bg-black text-red-600 flex items-center justify-center font-black text-4xl animate-pulse uppercase italic">Cargando...</div>;
+  const shareOnWhatsApp = () => {
+    const text = `Mira la entrevista que encontre en Hoy Quien Toca: ${interview?.title}\n\nLink: ${window.location.href}`;
+    window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
+  };
+
+  if (loading) return <div className="min-h-screen bg-black text-red-600 flex items-center justify-center font-brusher text-4xl animate-pulse uppercase italic">Cargando...</div>;
   
   if (!interview) return (
     <div className="min-h-screen bg-zinc-900 text-white flex flex-col items-center justify-center p-6 text-center font-black">
-      <h1 className="text-6xl uppercase italic text-red-600 mb-4 tracking-tighter">404</h1>
+      <h1 className="text-6xl uppercase italic text-red-600 mb-4 tracking-tighter font-brusher">404</h1>
       <p className="text-xl uppercase tracking-widest mb-8">No encontramos la entrevista.</p>
       <Link href="/interviews" className="bg-white text-black px-8 py-3 hover:bg-red-600 transition-colors uppercase rounded-full">Volver</Link>
     </div>
@@ -48,19 +53,19 @@ export default function InterviewDetail() {
 
       <header className="border-b-4 border-red-600 p-4 md:p-6 bg-zinc-950 sticky top-0 z-50 shadow-xl">
         <div className="max-w-6xl mx-auto flex justify-between items-center">
-          <Link href="/" className="flex items-center gap-4">
-            <Image src="/logo-rojo.jpg" alt="Logo Rojo" width={40} height={40} className="border border-white rounded-xl" />
+          <Link href="/" className="flex items-center gap-6">
+            <Image src="/logo-rojo.jpg" alt="Logo Rojo" width={50} height={50} className="border border-white rounded-xl md:w-[65px] md:h-[65px]" />
             <div>
-              <h1 className="text-xl md:text-3xl font-black tracking-tighter uppercase italic text-red-600 leading-none">Hoy Quien Toca</h1>
+              <h1 className="text-xl md:text-4xl font-brusher tracking-tighter uppercase text-red-600 leading-none">Hoy Quien Toca</h1>
               <p className="text-[8px] md:text-[10px] font-bold text-white uppercase tracking-widest mt-1">Descubri recitales, toques y eventos musicales en tu Ciudad</p>
             </div>
           </Link>
 
-          <nav className="hidden md:flex gap-6 font-bold uppercase tracking-widest text-sm items-center">
-             <Link href="/" className="hover:text-red-600">Fechas</Link>
-             <Link href="/interviews" className="text-red-600 underline decoration-2 underline-offset-4 font-black">Entrevistas</Link>
-             <Link href="/contact" className="hover:text-red-600">Contacto</Link>
-             <Link href="/submit" className="border-2 border-red-600 text-red-600 px-4 py-1 bg-black animate-pulse hover:bg-red-600 hover:text-white transition-colors rounded-full font-black">Subir Fecha</Link>
+          <nav className="hidden md:flex gap-6 font-bold uppercase tracking-widest text-sm items-center font-black">
+             <Link href="/" className="hover:text-red-600 transition-colors">Fechas</Link>
+             <Link href="/interviews" className="text-red-600 underline decoration-2 underline-offset-4">Entrevistas</Link>
+             <Link href="/contact" className="hover:text-red-600 transition-colors">Contacto</Link>
+             <Link href="/submit" className="border-2 border-red-600 text-red-600 px-4 py-1 bg-black animate-pulse hover:bg-red-600 hover:text-white transition-colors rounded-full">Subir Fecha</Link>
           </nav>
 
           <button onClick={() => setIsMenuOpen(!isMenuOpen)} className="md:hidden text-red-600">
@@ -82,17 +87,17 @@ export default function InterviewDetail() {
       <article className="max-w-4xl mx-auto p-6 space-y-8 py-16 relative z-10">
         <div className="space-y-4">
           <span className="bg-red-600 text-white px-4 py-1 text-sm font-black uppercase italic tracking-widest shadow-[4px_4px_0px_0px_rgba(255,255,255,1)] rounded-full">
-            Entrevista: {interview.band_name}
+            BANDA: {interview.band_name}
           </span>
-          <h1 className="text-5xl md:text-8xl font-black uppercase leading-[0.9] tracking-tighter text-white">
+          <h1 className="text-5xl md:text-9xl font-brusher tracking-tighter text-white uppercase leading-none">
             {interview.title}
           </h1>
           <div className="flex justify-between items-center border-l-4 border-red-600 pl-3">
-             <p className="text-zinc-500 font-bold uppercase text-xs tracking-widest">
+             <p className="text-zinc-500 font-bold uppercase text-xs tracking-widest font-black">
                Publicado el {new Date(interview.published_at).toLocaleDateString()}
              </p>
              {interview.author && (
-               <p className="text-red-600 font-black uppercase text-xs italic tracking-widest">
+               <p className="text-red-600 font-black uppercase text-xs italic tracking-widest font-black">
                  Por: {interview.author}
                </p>
              )}
@@ -110,7 +115,7 @@ export default function InterviewDetail() {
           </div>
         )}
 
-        <div className="prose prose-invert max-w-none text-xl md:text-2xl leading-relaxed font-medium space-y-6 text-zinc-200">
+        <div className="prose prose-invert max-w-none text-xl md:text-2xl leading-relaxed font-bold space-y-6 text-zinc-200 uppercase tracking-tight">
           {interview.content.split('\n').map((para: string, i: number) => (
             <p key={i}>{para}</p>
           ))}
@@ -119,7 +124,7 @@ export default function InterviewDetail() {
         <div className="pt-16 border-t-4 border-zinc-800 flex justify-between items-center flex-wrap gap-4">
           <p className="text-zinc-500 font-black uppercase text-xs italic">Gracias por leer Hoy Quien Toca</p>
           <div className="flex gap-4">
-            <button className="bg-white text-black px-8 py-3 font-black uppercase text-sm hover:bg-red-600 hover:text-white shadow-[6px_6px_0px_0px_rgba(220,38,38,0.5)] transition-all rounded-full">Compartir</button>
+            <button onClick={shareOnWhatsApp} className="bg-green-600 text-white px-10 py-4 font-black uppercase text-lg hover:bg-white hover:text-green-600 shadow-[8px_8px_0px_0px_rgba(255,255,255,1)] transition-all rounded-full border-4 border-black italic tracking-tighter">Compartir en WhatsApp</button>
           </div>
         </div>
       </article>

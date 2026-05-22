@@ -120,6 +120,15 @@ export default function Home() {
     }
   };
 
+  const getTagStyle = (tag: string) => {
+    switch (tag) {
+      case 'PLANAZO': return 'bg-yellow-400 text-black border-black';
+      case 'SALIDA SEGURA': return 'bg-green-600 text-white border-white';
+      case 'NO FALLA': return 'bg-white text-black border-black';
+      default: return 'bg-red-600 text-white border-white';
+    }
+  };
+
   return (
     <div className="min-h-screen text-white font-sans relative overflow-x-hidden text-left bg-zinc-900">
       <div className="fixed inset-0 flex items-center justify-center pointer-events-none opacity-[0.03] z-0">
@@ -128,8 +137,8 @@ export default function Home() {
 
       <header className="border-b-4 border-red-600 p-4 md:p-6 bg-zinc-950 sticky top-0 z-50 shadow-xl">
         <div className="max-w-6xl mx-auto flex justify-between items-center">
-          <div className="flex items-center gap-4">
-            <Image src="/logo-rojo.jpg" alt="Logo Rojo" width={50} height={50} className="border-2 border-white rounded-2xl md:w-[60px] md:h-[60px]" />
+          <div className="flex items-center gap-6">
+            <Image src="/logo-rojo.jpg" alt="Logo Rojo" width={70} height={70} className="border-2 border-white rounded-2xl md:w-[85px] md:h-[85px] shadow-lg shadow-red-600/20" />
             <div>
               <h1 className="text-2xl md:text-5xl font-brusher tracking-tighter uppercase text-red-600 leading-none">Hoy Quien Toca</h1>
               <p className="text-[10px] md:text-xs font-bold text-white uppercase tracking-widest mt-1">Descubri recitales, toques y eventos musicales en tu Ciudad</p>
@@ -185,7 +194,7 @@ export default function Home() {
             </button>
 
             <div className="relative z-20 w-full text-left">
-              <span className="bg-red-600 text-white px-4 py-1 text-xs md:text-sm font-black uppercase italic tracking-widest shadow-md rounded-full">
+              <span className={`px-4 py-1 text-xs md:text-sm font-black uppercase italic tracking-widest shadow-md rounded-full border-2 ${getTagStyle(featuredEvents[currentHeroIndex].suggestion_tag)}`}>
                 {featuredEvents[currentHeroIndex].suggestion_tag || 'DESTACADO'}
               </span>
               <h2 className="text-4xl md:text-8xl font-brusher tracking-tighter mt-4 drop-shadow-2xl text-white uppercase leading-none">
@@ -246,12 +255,20 @@ export default function Home() {
               ) : (
                 events.map((event) => (
                   <div key={event.id} onClick={() => setSelectedEvent(event)} className="border-4 border-white p-4 hover:translate-x-1 hover:-translate-y-1 transition-all bg-zinc-950 shadow-[8px_8px_0px_0px_rgba(220,38,38,0.5)] flex flex-col group/card relative overflow-hidden cursor-pointer rounded-[32px]">
-                    <div className="absolute top-2 left-2 flex flex-col gap-1 z-20">
-                      {event.suggestion_tag && <div className="bg-red-600 text-white text-[8px] font-black px-2 py-0.5 shadow-md uppercase rounded-sm">{event.suggestion_tag}</div>}
-                      <div className="bg-white text-black text-[8px] font-black px-2 py-0.5 shadow-md uppercase rounded-sm">{event.age_rating || 'ATP'}</div>
+                    
+                    {/* Unique Highlight Tags - Diagonal Left */}
+                    {event.suggestion_tag && (
+                      <div className={`absolute top-4 -left-10 w-40 text-center py-1 font-black text-[10px] uppercase -rotate-45 z-30 border-y-2 shadow-2xl tracking-tighter ${getTagStyle(event.suggestion_tag)}`}>
+                        {event.suggestion_tag}
+                      </div>
+                    )}
+                    
+                    <div className="absolute top-2 right-2 flex flex-col gap-1 z-20">
+                      <div className="bg-white text-black text-[8px] font-black px-2 py-0.5 shadow-md uppercase rounded-sm border border-red-600">{event.age_rating || 'ATP'}</div>
                     </div>
                     {event.is_sold_out && <div className="absolute top-8 -right-12 bg-red-600 text-white font-black py-2 px-12 rotate-45 uppercase text-sm border-y-2 border-white z-30 shadow-xl tracking-tighter italic">¡AGOTADO!</div>}
                     {event.is_suspended && <div className="absolute top-8 -right-12 bg-zinc-700 text-white font-black py-2 px-12 rotate-45 uppercase text-sm border-y-2 border-white z-30 shadow-xl tracking-tighter italic">SUSPENDIDO</div>}
+                    
                     <div className="aspect-square bg-zinc-800 mb-4 border-2 border-zinc-700 relative flex items-center justify-center overflow-hidden rounded-2xl shadow-[inset_0_0_20px_rgba(0,0,0,0.5)]">
                       {event.flyer_url ? <img src={event.flyer_url} alt="Flyer" className={`object-cover w-full h-full transition-all duration-500 ${(event.is_sold_out || event.is_suspended) ? 'grayscale blur-[1px]' : 'group-hover/card:scale-105'}`} /> : <div className="text-zinc-600 font-black italic uppercase text-center">FLYER DEL SHOW</div>}
                     </div>
@@ -269,8 +286,8 @@ export default function Home() {
             </section>
           </div>
 
-          <aside className="lg:w-72 space-y-8 relative z-10 text-left uppercase">
-            <div className="grid grid-cols-2 lg:grid-cols-1 gap-4 lg:space-y-6 pt-4 font-black">
+          <aside className="lg:w-72 space-y-8 relative z-10 text-left uppercase font-black">
+            <div className="grid grid-cols-2 lg:grid-cols-1 gap-4 lg:space-y-6 pt-4">
               {sidebarSponsors.map(ad => (
                 <div key={ad.id} onClick={() => setSelectedAd(ad)} className="block border-4 border-white bg-zinc-950 p-2 shadow-[8px_8px_0px_0px_rgba(220,38,38,0.3)] hover:-translate-x-1 transition-transform group cursor-pointer rounded-2xl">
                   <div className="aspect-[4/5] overflow-hidden border-2 border-zinc-800 rounded-xl">
@@ -306,7 +323,7 @@ export default function Home() {
                 <div>
                   <div className="flex gap-2">
                     <span className="bg-red-600 text-white px-2 py-1 text-[10px] font-black uppercase italic rounded-md shadow-sm">{selectedEvent.genre}</span>
-                    <span className="bg-white text-black px-2 py-1 text-[10px] font-black uppercase italic rounded-md shadow-sm">{selectedEvent.age_rating || 'ATP'}</span>
+                    <span className="bg-white text-black px-2 py-1 text-[10px] font-black uppercase italic rounded-md shadow-sm border border-red-600">{selectedEvent.age_rating || 'ATP'}</span>
                   </div>
                   <h2 className="text-3xl md:text-5xl font-brusher tracking-tighter mt-2 text-white leading-none uppercase font-black">{selectedEvent.band_name}</h2>
                 </div>
