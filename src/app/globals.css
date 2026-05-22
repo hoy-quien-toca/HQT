@@ -1,19 +1,21 @@
 @import "tailwindcss";
 
 :root {
-  --background: #333333; /* Gris dos tonos más claro */
+  --background: #27272a; /* Zinc-800 - Un poco más claro */
   --foreground: #ffffff;
+  --accent-blue: #3b82f6; /* Azul moderno */
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+  --color-accent-blue: var(--accent-blue);
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
 }
 
 /* Watermark global */
@@ -24,7 +26,7 @@ body {
   align-items: center;
   justify-content: center;
   pointer-events: none;
-  opacity: 0.08; /* Más nítido (de 3% a 8%) */
+  opacity: 0.04;
   z-index: 0;
 }
 
@@ -32,3 +34,16 @@ body {
   position: relative;
   z-index: 10;
 }
+
+@keyframes pulse-blue {
+  0%, 100% { opacity: 1; border-color: #3b82f6; box-shadow: 0 0 15px rgba(59, 130, 246, 0.5); }
+  50% { opacity: 0.8; border-color: white; box-shadow: none; }
+}
+
+.animate-pulse-blue {
+  animation: pulse-blue 2s infinite;
+}
+
+.custom-scrollbar::-webkit-scrollbar { width: 6px; }
+.custom-scrollbar::-webkit-scrollbar-track { background: #1a1a1a; }
+.custom-scrollbar::-webkit-scrollbar-thumb { background: #3b82f6; border-radius: 10px; }
