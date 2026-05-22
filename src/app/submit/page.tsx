@@ -58,6 +58,7 @@ export default function SubmitEvent() {
       date: formData.get('date'),
       time: formData.get('time'),
       venue: formData.get('venue'),
+      address: formData.get('address'), // NUEVO CAMPO
       department: formData.get('department'),
       city: formData.get('city'),
       zone: formData.get('zone'),
@@ -72,7 +73,7 @@ export default function SubmitEvent() {
       is_approved: false,
     };
     const { error } = await supabase.from('events').insert([data]);
-    if (error) alert('Error: ' + error.message);
+    if (error) alert('Error al enviar el evento: ' + error.message);
     else setSubmitted(true);
     setLoading(false);
   }
@@ -152,14 +153,22 @@ export default function SubmitEvent() {
                 <textarea name="description" rows={3} className="w-full bg-zinc-900 border-4 border-white p-4 rounded-[32px] focus:border-red-600 outline-none" />
               </div>
               <div className="space-y-2">
-                <label className="text-xs text-red-600 font-black">Lugar</label>
-                <input required name="venue" className="w-full bg-zinc-900 border-4 border-white p-4 rounded-3xl focus:border-red-600 outline-none" />
+                <label className="text-xs text-red-600 font-black">Lugar / Local</label>
+                <input required name="venue" className="w-full bg-zinc-900 border-4 border-white p-4 rounded-3xl focus:border-red-600 outline-none shadow-inner" placeholder="Ej: Inmigrantes" />
+              </div>
+              <div className="space-y-2">
+                <label className="text-xs text-red-600 font-black">Dirección del evento</label>
+                <input required name="address" className="w-full bg-zinc-900 border-4 border-white p-4 rounded-3xl focus:border-red-600 outline-none shadow-inner" placeholder="Ej: Paullier 1234" />
               </div>
               <div className="space-y-2">
                 <label className="text-xs text-red-600 font-black">Departamento</label>
                 <select name="department" className="w-full bg-zinc-900 border-4 border-white p-4 rounded-3xl focus:border-red-600 outline-none uppercase font-black">
                   {DEPARTAMENTOS.map(d => <option key={d} value={d}>{d}</option>)}
                 </select>
+              </div>
+              <div className="space-y-2">
+                <label className="text-xs text-red-600 font-black">Ciudad</label>
+                <input required name="city" className="w-full bg-zinc-900 border-4 border-white p-4 rounded-3xl focus:border-red-600 outline-none shadow-inner" />
               </div>
               <div className="md:col-span-2 grid grid-cols-2 gap-4">
                 <div className="space-y-2">

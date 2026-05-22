@@ -184,7 +184,8 @@ export default function AdminDashboard() {
             <div className="border-4 border-blue-600 p-4 bg-zinc-950 space-y-4 mb-8 shadow-[10px_10px_0px_0px_rgba(37,99,235,1)]">
               <h3 className="font-black uppercase text-blue-500">Editando: {editingEvent.band_name}</h3>
               <form onSubmit={handleSaveEvent} className="grid grid-cols-2 gap-2 text-xs text-white font-black">
-                <input value={editingEvent.band_name} onChange={e => setEditingEvent({...editingEvent, band_name: e.target.value})} className="col-span-2 bg-black border p-2 uppercase" />
+                <input value={editingEvent.band_name} onChange={e => setEditingEvent({...editingEvent, band_name: e.target.value})} className="col-span-2 bg-black border p-2 uppercase" placeholder="Banda" />
+                <input value={editingEvent.address} onChange={e => setEditingEvent({...editingEvent, address: e.target.value})} className="col-span-2 bg-black border p-2 uppercase" placeholder="Dirección" />
                 <input type="date" value={editingEvent.date} onChange={e => setEditingEvent({...editingEvent, date: e.target.value})} className="bg-black border p-2" />
                 <input type="time" value={editingEvent.time} onChange={e => setEditingEvent({...editingEvent, time: e.target.value})} className="bg-black border p-2" />
                 <select value={editingEvent.age_rating} onChange={e => setEditingEvent({...editingEvent, age_rating: e.target.value})} className="bg-black border p-2">
@@ -209,6 +210,7 @@ export default function AdminDashboard() {
                     <div className="text-left font-black">
                       <h3 className="text-xl font-black uppercase leading-none">{event.band_name}</h3>
                       <p className="text-[10px] font-bold text-yellow-400 uppercase">{event.date} - {event.time.substring(0,5)}hs</p>
+                      <p className="text-[10px] text-zinc-400 uppercase">{event.venue} - {event.address}</p>
                       <div className="flex gap-1 mt-1">
                         <p className="text-[8px] text-white uppercase opacity-50 bg-zinc-800 px-2 py-0.5 rounded-sm">{!event.is_approved ? 'PENDIENTE' : event.is_featured ? '★ DESTACADO' : 'APROBADO'}</p>
                         {event.is_suspended && <p className="text-[8px] bg-white text-black font-black uppercase px-2 py-0.5 rounded-sm italic">SUSPENDIDO</p>}
