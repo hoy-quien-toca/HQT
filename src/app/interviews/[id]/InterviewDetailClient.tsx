@@ -15,34 +15,37 @@ export default function InterviewDetailClient({ id }: { id: string }) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   useEffect(() => {
-    if (id) {
-      fetchData();
+    if (id && id !== '[id]') {
+      fetchInterview();
     } else {
-      setErrorState("No se pudo identificar la entrevista.");
+      setErrorState("Identificador de entrevista no válido.");
       setLoading(false);
     }
   }, [id]);
 
-  async function fetchData() {
+  async function fetchInterview() {
     try {
       setLoading(true);
       setErrorState(null);
       
+      console.log("Fetching interview with ID:", id);
+
+      // Use .maybeSingle() instead of .single() to avoid PostgREST coercion errors when 0 rows are found
       const { data, error } = await supabase
         .from('interviews')
         .select('*')
         .eq('id', id)
-        .single();
+        .maybeSingle();
 
       if (error) throw error;
       
       if (data) {
         setInterview(data);
       } else {
-        setErrorState("La entrevista ya no está disponible.");
+        setErrorState("No encontramos la entrevista solicitada.");
       }
     } catch (err: any) {
-      console.error("Load error:", err);
+      console.error("Fetch failed:", err);
       setErrorState(err.message || "Error de conexión");
     } finally {
       setLoading(false);
@@ -58,7 +61,7 @@ export default function InterviewDetailClient({ id }: { id: string }) {
     return (
       <div className="min-h-screen bg-black text-red-600 flex flex-col items-center justify-center p-6 text-center font-franklin">
         <div className="w-12 h-12 border-4 border-red-600 border-t-transparent rounded-full animate-spin mb-4" />
-        <p className="text-xl uppercase italic animate-pulse">Cargando entrevista...</p>
+        <p className="text-xl uppercase italic animate-pulse">Cargando...</p>
       </div>
     );
   }
@@ -70,7 +73,7 @@ export default function InterviewDetailClient({ id }: { id: string }) {
         <p className="text-xl uppercase tracking-widest mb-8">{errorState || "Entrevista no encontrada."}</p>
         <div className="flex flex-col gap-4 w-full max-w-xs">
            <button onClick={() => window.location.reload()} className="bg-red-600 text-white py-3 rounded-full font-black uppercase text-sm">Reintentar</button>
-           <a href="/interviews" className="bg-white text-black py-3 rounded-full font-black uppercase text-sm">Volver al inicio</a>
+           <Link href="/interviews" className="bg-white text-black py-3 rounded-full font-black uppercase text-sm">Volver al inicio</Link>
         </div>
       </div>
     );
@@ -78,7 +81,6 @@ export default function InterviewDetailClient({ id }: { id: string }) {
 
   return (
     <div className="min-h-screen text-white font-sans relative overflow-x-hidden text-left bg-zinc-900">
-      {/* Fondo Agua */}
       <div className="fixed inset-0 flex items-center justify-center pointer-events-none opacity-[0.03] z-0">
         <Image src="/logo-rojo.jpg" alt="Watermark" width={1000} height={1000} className="grayscale" priority />
       </div>
@@ -110,14 +112,13 @@ export default function InterviewDetailClient({ id }: { id: string }) {
       {isMenuOpen && (
         <div className="fixed inset-0 z-[60] bg-black/95 flex flex-col items-center justify-center space-y-8 md:hidden font-black">
           <button onClick={() => setIsMenuOpen(false)} className="absolute top-6 right-6 text-white text-4xl">X</button>
-          <a href="/" className="text-4xl uppercase text-white italic font-franklin">Fechas</a>
-          <a href="/interviews" className="text-4xl uppercase text-red-600 italic font-franklin">Entrevistas</a>
-          <a href="/contact" className="text-4xl uppercase text-white italic font-franklin">Contacto</a>
+          <Link href="/" className="text-4xl uppercase text-white italic font-franklin">Fechas</Link>
+          <Link href="/interviews" className="text-4xl uppercase text-red-600 italic font-franklin">Entrevistas</Link>
+          <Link href="/contact" className="text-4xl uppercase text-white italic font-franklin">Contacto</Link>
         </div>
       )}
 
       <main className="max-w-4xl mx-auto p-4 md:p-6 py-10 relative z-10">
-        {/* BOTON VOLVER X - OPTIMIZADO PARA PULGAR EN MOVIL */}
         <button 
           onClick={() => router.push('/interviews')}
           className="fixed bottom-6 right-6 md:absolute md:top-4 md:right-4 bg-red-600 text-white w-14 h-14 md:w-16 md:h-16 flex items-center justify-center font-black text-3xl border-4 border-white rounded-full shadow-[0_0_20px_rgba(220,38,38,0.5)] z-[60]"
@@ -138,7 +139,7 @@ export default function InterviewDetailClient({ id }: { id: string }) {
           </div>
 
           {interview.image_url && (
-            <div className="flex justify-center px-1">
+            <div className="flex justify-center">
               <div className="border-4 md:border-8 border-white shadow-xl overflow-hidden relative group rounded-[24px] md:rounded-[40px] w-full max-w-3xl">
                 <img 
                   src={interview.image_url} 
