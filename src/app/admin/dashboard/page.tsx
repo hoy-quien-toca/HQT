@@ -18,6 +18,10 @@ export default function AdminDashboard() {
   const [newInterview, setNewInterview] = useState<any>({ id: null, title: '', subtitle: '', band_name: '', content: '', image_url: '', is_active: true, author: '', photo_credit: '', image_position: 'center' });
   const [selectedMessage, setSelectedMessage] = useState<any>(null);
 
+  // Magic Scraper State
+  const [magicLink, setMagicLink] = useState('');
+  const [isScraping, setIsScraping] = useState(false);
+
   const router = useRouter();
 
   useEffect(() => {
@@ -53,6 +57,43 @@ export default function AdminDashboard() {
     setLoading(false);
   }
 
+  async function handleMagicLoad() {
+    if (!magicLink) return alert("Pega un link primero");
+    setIsScraping(true);
+    try {
+      const res = await fetch('/api/scrape-event', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ url: magicLink })
+      });
+      const data = await res.json();
+      
+      if (data.success) {
+        // Abrimos el formulario de edición con los datos traídos
+        setEditingEvent({
+          id: 'new', // Flag para saber que es uno nuevo
+          band_name: data.data.title || '',
+          description: data.data.description || '',
+          venue: data.data.venue || '',
+          date: data.data.date || '',
+          time: data.data.time || '21:00',
+          price_type: data.data.price ? 'range' : 'free',
+          price_min: data.data.price || '',
+          ticket_contact: magicLink,
+          ticket_type: 'link',
+          is_approved: false
+        });
+        setMagicLink('');
+      } else {
+        alert("No pudimos extraer datos automáticamente. Intenta cargar el evento manualmente.");
+      }
+    } catch (e) {
+      alert("Error al conectar con el servidor de carga mágica.");
+    } finally {
+      setIsScraping(false);
+    }
+  }
+
   async function handleFileUpload(file: File, folder: string) {
     setUploading(true);
     const fileExt = file.name.split('.').pop();
@@ -70,9 +111,18 @@ export default function AdminDashboard() {
     e.preventDefault();
     if (!editingEvent) return;
     const { id, created_at, ...data } = editingEvent;
-    const { error } = await supabase.from('events').update(data).eq('id', id);
-    if (error) alert('Error: ' + error.message);
-    else { setEditingEvent(null); fetchData(); }
+
+    if (id === 'new') {
+       // Insertar nuevo evento desde admin
+       const { error } = await supabase.from('events').insert([data]);
+       if (error) alert('Error al crear: ' + error.message);
+       else { setEditingEvent(null); fetchData(); }
+    } else {
+       // Actualizar existente
+       const { error } = await supabase.from('events').update(data).eq('id', id);
+       if (error) alert('Error: ' + error.message);
+       else { setEditingEvent(null); fetchData(); }
+    }
   }
 
   async function updateEventTag(id: string, tag: string) {
@@ -169,7 +219,7 @@ export default function AdminDashboard() {
       <header className="flex flex-col md:flex-row justify-between items-center mb-8 border-b-4 border-red-600 pb-6 bg-zinc-950 p-4 sticky top-0 z-50 gap-4">
         <div>
            <h1 className="text-3xl md:text-4xl font-black uppercase italic text-red-600 leading-none">ADMINISTRADOR HQT</h1>
-           <p className="text-[10px] md:text-xs font-bold text-zinc-500 uppercase tracking-widest mt-1 italic">Descubri recitales, toques y eventos musicales en tu Ciudad</p>
+           <p className="text-[10px] md:text-xs font-bold text-zinc-500 uppercase tracking-widest mt-1 italic font-black">Descubri recitales, toques y eventos musicales en tu Ciudad</p>
         </div>
         <div className="flex gap-4">
           <button onClick={() => router.push('/')} className="bg-white text-black px-4 py-1 font-black uppercase text-xs hover:bg-red-600 hover:text-white transition-colors">Web</button>
@@ -180,13 +230,32 @@ export default function AdminDashboard() {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 md:gap-10">
         {/* LADO IZQUIERDO: FECHAS (ESTILO ROJO/SIMPLE) */}
         <section className="space-y-6 text-left">
-          <h2 className="text-2xl font-black uppercase italic text-red-600 border-l-8 border-red-600 pl-4 bg-zinc-950 py-2">Gestión de Fechas</h2>
+          <div className="flex flex-col md:flex-row justify-between items-center gap-4 bg-zinc-950 p-4 border-l-8 border-red-600">
+             <h2 className="text-2xl font-black uppercase italic text-red-600">Gestión de Fechas</h2>
+             
+             {/* MAGIC LOAD INPUT */}
+             <div className="flex gap-2 w-full md:w-auto">
+                <input 
+                  placeholder="Pegar link de Ticketera..." 
+                  className="bg-black border-2 border-zinc-700 p-2 text-[10px] uppercase font-bold rounded-lg flex-1 md:w-48 outline-none focus:border-red-600"
+                  value={magicLink}
+                  onChange={e => setMagicLink(e.target.value)}
+                />
+                <button 
+                  onClick={handleMagicLoad}
+                  disabled={isScraping}
+                  className="bg-red-600 text-white px-3 py-2 text-[10px] font-black uppercase rounded-lg hover:bg-white hover:text-black transition-colors"
+                >
+                  {isScraping ? '⌛' : 'CARGAR MAGIC'}
+                </button>
+             </div>
+          </div>
           
           {editingEvent && (
             <div className="border-4 border-blue-600 p-4 bg-zinc-950 space-y-4 mb-8 shadow-[10px_10px_0px_0px_rgba(37,99,235,1)] rounded-3xl">
-              <h3 className="font-black uppercase text-blue-500">Editando: {editingEvent.band_name}</h3>
+              <h3 className="font-black uppercase text-blue-500">{editingEvent.id === 'new' ? 'NUEVA FECHA RÁPIDA' : `Editando: ${editingEvent.band_name}`}</h3>
               <form onSubmit={handleSaveEvent} className="grid grid-cols-2 gap-2 text-xs text-white">
-                <input value={editingEvent.band_name} onChange={e => setEditingEvent({...editingEvent, band_name: e.target.value})} className="col-span-2 bg-black border p-2 uppercase font-bold rounded-lg" />
+                <input value={editingEvent.band_name} onChange={e => setEditingEvent({...editingEvent, band_name: e.target.value})} className="col-span-2 bg-black border p-2 uppercase font-bold rounded-lg" placeholder="Banda / Artista" />
                 <input value={editingEvent.address || ''} onChange={e => setEditingEvent({...editingEvent, address: e.target.value})} className="col-span-2 bg-black border p-2 uppercase rounded-lg" placeholder="Dirección" />
                 <input type="date" value={editingEvent.date} onChange={e => setEditingEvent({...editingEvent, date: e.target.value})} className="bg-black border p-2 rounded-lg" />
                 <input type="time" value={editingEvent.time} onChange={e => setEditingEvent({...editingEvent, time: e.target.value})} className="bg-black border p-2 rounded-lg" />
@@ -195,8 +264,11 @@ export default function AdminDashboard() {
                    <option value="+5">+5</option><option value="+7">+7</option><option value="+10">+10</option>
                    <option value="+12">+12</option><option value="+15">+15</option><option value="+18">+18</option>
                 </select>
+                <div className="col-span-2 space-y-1 font-black">
+                   <textarea value={editingEvent.description || ''} onChange={e => setEditingEvent({...editingEvent, description: e.target.value})} className="w-full bg-black border p-2 uppercase rounded-lg h-20" placeholder="Reseña" />
+                </div>
                 <div className="col-span-2 flex gap-2 pt-2 font-black">
-                  <button type="submit" className="flex-1 bg-blue-600 py-2 font-black border-2 border-white rounded-full">ACTUALIZAR</button>
+                  <button type="submit" className="flex-1 bg-blue-600 py-2 font-black border-2 border-white rounded-full uppercase">{editingEvent.id === 'new' ? 'CREAR Y PUBLICAR' : 'ACTUALIZAR'}</button>
                   <button type="button" onClick={() => setEditingEvent(null)} className="bg-zinc-700 px-4 font-black rounded-full">X</button>
                 </div>
               </form>
@@ -230,7 +302,7 @@ export default function AdminDashboard() {
                   <div className="space-y-3 border-t border-zinc-800 pt-3 font-black">
                     <button 
                       onClick={() => toggleFeatured(event.id, event.is_featured)} 
-                      className={`w-full py-1 font-black uppercase text-[10px] border-2 transition-all rounded-full ${event.is_featured ? 'bg-red-600 text-white border-white shadow-md' : 'bg-black text-red-600 border-red-600'}`}
+                      className={`w-full py-1 font-black uppercase text-[10px] border-2 transition-all rounded-full ${event.is_featured ? 'bg-red-600 text-white border-white shadow-md font-black' : 'bg-black text-red-600 border-red-600'}`}
                     >
                       {event.is_featured ? '★ EN BANNER PRINCIPAL (DESACTIVAR)' : '★ PONER EN BANNER PRINCIPAL'}
                     </button>
@@ -242,7 +314,7 @@ export default function AdminDashboard() {
                     </div>
                     
                     <div className="flex gap-2">
-                       <button onClick={() => toggleSoldOut(event.id, event.is_sold_out)} className={`flex-1 py-1 text-[9px] font-black uppercase border-2 rounded-full ${event.is_sold_out ? 'bg-red-600 border-white text-white shadow-lg animate-pulse' : 'border-zinc-700 text-zinc-500'}`}>{event.is_sold_out ? 'VENDER DE NUEVO' : 'AGOTADO'}</button>
+                       <button onClick={() => toggleSoldOut(event.id, event.is_sold_out)} className={`flex-1 py-1 text-[9px] font-black uppercase border-2 rounded-full ${event.is_sold_out ? 'bg-red-600 border-white text-white shadow-lg animate-pulse' : 'border-zinc-700 text-zinc-500'}`}>{event.is_sold_out ? 'AGOTADO' : 'MARCAR AGOTADO'}</button>
                        <button onClick={() => toggleSuspended(event.id, event.is_suspended)} className={`flex-1 py-1 text-[9px] font-black uppercase border-2 rounded-full ${event.is_suspended ? 'bg-white text-black border-black shadow-lg animate-pulse' : 'border-zinc-700 text-zinc-500'}`}>{event.is_suspended ? 'ACTIVAR TOQUE' : 'SUSPENDER'}</button>
                     </div>
                   </div>
@@ -314,7 +386,7 @@ export default function AdminDashboard() {
                 </select>
               </div>
 
-              <div className="grid grid-cols-2 gap-2 text-[10px] text-white">
+              <div className="grid grid-cols-2 gap-2 text-[10px] text-white font-black">
                 <input placeholder="Autor Texto" className="bg-black border p-2 uppercase font-black rounded-xl" value={newInterview.author} onChange={e => setNewInterview({...newInterview, author: e.target.value})} />
                 <input placeholder="Crédito Foto" className="bg-black border p-2 uppercase font-black rounded-xl" value={newInterview.photo_credit} onChange={e => setNewInterview({...newInterview, photo_credit: e.target.value})} />
               </div>
@@ -354,7 +426,7 @@ export default function AdminDashboard() {
             <div className="space-y-4 max-h-[300px] overflow-y-auto pr-2 custom-scrollbar font-black">
               {messages.map((msg) => (
                 <div key={msg.id} className={`border-2 p-3 flex justify-between items-center ${msg.is_read ? 'border-zinc-800 bg-zinc-950/50 opacity-60' : 'border-white bg-zinc-900'} rounded-2xl`}>
-                  <div onClick={() => setSelectedMessage(msg)} className="cursor-pointer flex-1">
+                  <div onClick={() => setSelectedMessage(msg)} className="cursor-pointer flex-1 font-black">
                     <h3 className="font-black uppercase text-[10px] text-red-600 font-black">{msg.name}</h3>
                     <p className="text-[9px] text-zinc-300 truncate max-w-[150px]">"{msg.message}"</p>
                   </div>
@@ -373,7 +445,7 @@ export default function AdminDashboard() {
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
           <div className="absolute inset-0 bg-black/90 backdrop-blur-sm font-black" onClick={() => setSelectedMessage(null)} />
           <div className="relative w-full max-w-xl bg-zinc-900 border-8 border-white p-8 shadow-[20px_20px_0px_0px_rgba(220,38,38,1)] text-left font-black uppercase rounded-[40px]">
-            <button onClick={() => setSelectedMessage(null)} className="absolute -top-4 -right-4 bg-red-600 text-white w-10 h-10 font-black text-xl border-4 border-white text-center flex items-center justify-center shadow-xl rounded-full">X</button>
+            <button onClick={() => setSelectedMessage(null)} className="absolute -top-4 -right-4 bg-red-600 text-white w-10 h-10 font-black text-xl border-4 border-white text-center flex items-center justify-center shadow-xl rounded-full font-black">X</button>
             <h3 className="text-2xl font-black uppercase italic text-red-600 mb-2 border-b-2 border-red-600 pb-2 font-black">{selectedMessage.name}</h3>
             <p className="text-xs font-bold text-zinc-500 uppercase mb-6 italic">{selectedMessage.email}</p>
             <p className="text-lg text-white leading-relaxed whitespace-pre-wrap font-black">"{selectedMessage.message}"</p>
