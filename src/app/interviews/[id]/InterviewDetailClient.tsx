@@ -22,44 +22,48 @@ export default function InterviewDetailClient({
   const [showLogoModal, setShowLogoModal] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
-  // FALLBACK: Si el servidor falló, intentamos una vez más en el cliente con un pequeño retraso
+  // TRIPLE-CHECK: Si el servidor falla, intentamos dos veces más en el cliente
   useEffect(() => {
-    if (!initialInterview && id) {
-      console.log("Server fetch failed, starting client-side fallback...");
-      const timer = setTimeout(() => {
-        fetchFallback();
-      }, 1000);
-      return () => clearTimeout(timer);
+    if (!initialInterview && id && id !== '[id]') {
+      console.log("Starting redundant client-side fetch for:", id);
+      fetchFallback();
     }
   }, [initialInterview, id]);
 
   async function fetchFallback() {
     try {
       setLoading(true);
+      // Intento con Supabase Client
       const { data, error } = await supabase
         .from('interviews')
         .select('*')
         .eq('id', id)
         .maybeSingle();
 
-      if (error) throw error;
       if (data) {
         setInterview(data);
         setErrorState(null);
       } else {
-        setErrorState("No encontramos la entrevista.");
+        // ULTIMO INTENTO: Búsqueda manual sin filtros
+        const { data: allData } = await supabase.from('interviews').select('*');
+        const found = allData?.find(i => i.id === id);
+        if (found) {
+          setInterview(found);
+          setErrorState(null);
+        } else {
+          setErrorState("No encontramos la entrevista.");
+        }
       }
     } catch (err: any) {
-      console.error("Fallback failed:", err);
-      setErrorState(err.message || "Error al cargar");
+      setErrorState("Error al conectar con la base de datos.");
     } finally {
       setLoading(false);
     }
   }
 
   const shareOnWhatsApp = () => {
-    const interviewData = interview || initialInterview;
-    const text = `Mira la entrevista que encontre en Hoy Quien Toca: ${interviewData?.title}\n\nLink: ${window.location.href}`;
+    const data = interview || initialInterview;
+    const text = `Mira la entrevista que encontre en Hoy Quien Toca: ${data?.title}\n\nLink: ${window.location.href}`;
     window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
   };
 
@@ -76,10 +80,10 @@ export default function InterviewDetailClient({
     return (
       <div className="min-h-screen bg-zinc-900 text-white flex flex-col items-center justify-center p-6 text-center font-black">
         <h1 className="text-6xl uppercase italic text-red-600 mb-4 tracking-tighter font-franklin">404</h1>
-        <p className="text-xl uppercase tracking-widest mb-8">{errorState || "Entrevista no encontrada."}</p>
+        <p className="text-xl uppercase tracking-widest mb-8">No encontramos la entrevista.</p>
         <div className="flex flex-col gap-4 w-full max-w-xs">
            <button onClick={() => window.location.reload()} className="bg-red-600 text-white py-3 rounded-full font-black uppercase text-sm border-2 border-white">Reintentar</button>
-           <Link href="/interviews" className="bg-white text-black py-3 rounded-full font-black uppercase text-sm">Volver al inicio</Link>
+           <Link href="/interviews" className="bg-white text-black py-3 rounded-full font-black uppercase text-sm">Volver</Link>
         </div>
       </div>
     );
@@ -126,7 +130,7 @@ export default function InterviewDetailClient({
           <Link href="/" onClick={() => setIsMenuOpen(false)} className="text-4xl uppercase text-white italic font-franklin">Fechas</Link>
           <Link href="/interviews" onClick={() => setIsMenuOpen(false)} className="text-4xl uppercase text-red-600 italic font-franklin">Entrevistas</Link>
           <Link href="/contact" onClick={() => setIsMenuOpen(false)} className="text-4xl uppercase text-white italic font-franklin">Contacto</Link>
-          <Link href="/submit" onClick={() => setIsMenuOpen(false)} className="text-3xl uppercase border-4 border-red-600 text-red-600 px-8 py-4 rounded-full animate-pulse font-franklin">Subir Fecha</Link>
+          <Link href="/submit" onClick={() => setIsMenuOpen(false)} className="text-3xl uppercase border-4 border-red-600 text-red-600 px-8 py-4 rounded-full animate-pulse font-franklin font-black">Subir Fecha</Link>
         </div>
       )}
 
@@ -168,7 +172,7 @@ export default function InterviewDetailClient({
             {activeInterview.content}
           </div>
 
-          <div className="pt-16 border-t-4 border-zinc-800 flex flex-col items-center gap-8 pb-32">
+          <div className="pt-16 border-t-4 border-zinc-800 flex flex-col items-center gap-8 pb-32 font-black">
             <p className="text-zinc-500 uppercase text-xs italic font-black">Gracias por leer Hoy Quien Toca</p>
             <button onClick={shareOnWhatsApp} className="bg-green-600 text-white px-10 py-4 font-black uppercase text-lg hover:bg-white hover:text-green-600 shadow-xl rounded-full border-4 border-black italic font-franklin">Compartir en WhatsApp</button>
           </div>

@@ -1,20 +1,20 @@
 import { supabase } from '@/lib/supabase';
 import InterviewDetailClient from './InterviewDetailClient';
 
-// Forzar renderizado dinámico absoluto
+// Forzar renderizado dinámico absoluto para evitar cachés viejos
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
 export default async function InterviewDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const resolvedParams = await params;
-  const id = resolvedParams.id;
+  const rawId = resolvedParams.id;
+  
+  // Limpiar ID por si el navegador manda basura
+  const id = rawId ? decodeURIComponent(rawId).trim() : '';
 
-  // Sanitizar ID
-  const cleanId = id?.trim();
+  console.log("Server side fetch for ID:", id);
 
-  console.log("Server side fetch for ID:", cleanId);
-
-  // FETCH EN EL SERVIDOR
+  // FETCH EN EL SERVIDOR (CAPA 1)
   let interview = null;
   let serverError = null;
 
@@ -22,7 +22,7 @@ export default async function InterviewDetailPage({ params }: { params: Promise<
     const { data, error } = await supabase
       .from('interviews')
       .select('*')
-      .eq('id', cleanId)
+      .eq('id', id)
       .maybeSingle();
       
     interview = data;
@@ -35,7 +35,7 @@ export default async function InterviewDetailPage({ params }: { params: Promise<
     <InterviewDetailClient 
       initialInterview={interview} 
       initialError={serverError} 
-      id={cleanId} 
+      id={id} 
     />
   );
 }
