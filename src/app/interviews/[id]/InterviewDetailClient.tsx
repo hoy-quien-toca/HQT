@@ -30,7 +30,7 @@ export default function InterviewDetailClient({
         <h1 className="text-6xl uppercase italic text-red-600 mb-4 tracking-tighter font-franklin">404</h1>
         <p className="text-xl uppercase tracking-widest mb-8">{initialError || "No encontramos la entrevista."}</p>
         <div className="bg-black/40 p-4 rounded-xl text-[10px] text-zinc-600 font-mono mb-8">
-           DEBUG: Servidor no devolvió datos para ID {id}
+           DEBUG: ID {id} | SERVER_STATUS: FAIL
         </div>
         <Link href="/interviews" className="bg-white text-black px-8 py-3 rounded-full font-black uppercase text-sm">Volver al inicio</Link>
       </div>
@@ -56,8 +56,10 @@ export default function InterviewDetailClient({
             </div>
           </div>
 
-          <button onClick={() => setIsMenuOpen(!isMenuOpen)} className="md:hidden text-red-600">
-            <svg className="w-8 h-8 font-black" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d={isMenuOpen ? "M6 18L18 6M6 6l12 12" : "M4 6h16M4 12h16M4 18h16"}></path></svg>
+          <button onClick={() => setIsMenuOpen(!isMenuOpen)} className="md:hidden text-red-600 focus:outline-none">
+            <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d={isMenuOpen ? "M6 18L18 6M6 6l12 12" : "M4 6h16M4 12h16M4 18h16"}></path>
+            </svg>
           </button>
           
           <nav className="hidden md:flex gap-6 font-bold uppercase text-sm items-center">

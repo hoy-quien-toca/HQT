@@ -42,7 +42,7 @@ export default function InterviewsPage() {
 
       <header className="border-b-4 border-red-600 p-4 md:p-6 bg-zinc-950 sticky top-0 z-50 shadow-xl text-left">
         <div className="max-w-6xl mx-auto flex justify-between items-center">
-          <div className="flex items-center gap-6">
+          <div className="flex items-center gap-4">
             <button onClick={() => setShowLogoModal(true)} className="hover:scale-110 transition-transform cursor-pointer focus:outline-none">
                <Image src="/logo-rojo.jpg" alt="Logo" width={70} height={70} className="border-2 border-white rounded-2xl md:w-[85px] md:h-[85px] shadow-lg shadow-red-600/30" />
             </button>
@@ -53,16 +53,27 @@ export default function InterviewsPage() {
           </div>
           
           <nav className="hidden md:flex gap-6 font-bold uppercase tracking-widest text-sm items-center">
-            <Link href="/" className="hover:text-red-600 transition-colors">Fechas</Link>
+            <Link href="/" className="hover:text-red-600 transition-colors font-black">Fechas</Link>
             <Link href="/interviews" className="text-red-600 underline decoration-2 underline-offset-4 font-black">Entrevistas</Link>
-            <Link href="/contact" className="hover:text-red-600 transition-colors">Contacto</Link>
+            <Link href="/contact" className="hover:text-red-600 transition-colors font-black">Contacto</Link>
           </nav>
 
-          <button onClick={() => setIsMenuOpen(!isMenuOpen)} className="md:hidden text-red-600">
-            <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d={isMenuOpen ? "M6 18L18 6M6 6l12 12" : "M4 6h16M4 12h16M4 18h16"}></path></svg>
+          <button onClick={() => setIsMenuOpen(!isMenuOpen)} className="md:hidden text-red-600 focus:outline-none">
+            <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d={isMenuOpen ? "M6 18L18 6M6 6l12 12" : "M4 6h16M4 12h16M4 18h16"}></path>
+            </svg>
           </button>
         </div>
       </header>
+
+      {isMenuOpen && (
+        <div className="fixed inset-0 z-[60] bg-black/95 flex flex-col items-center justify-center space-y-8 md:hidden font-black">
+          <button onClick={() => setIsMenuOpen(false)} className="absolute top-6 right-6 text-white text-4xl">X</button>
+          <Link href="/" className="text-4xl uppercase text-white italic font-franklin">Fechas</Link>
+          <Link href="/interviews" className="text-4xl uppercase text-red-600 italic font-franklin">Entrevistas</Link>
+          <Link href="/contact" className="text-4xl uppercase text-white italic font-franklin">Contacto</Link>
+        </div>
+      )}
 
       <main className="max-w-6xl mx-auto p-4 md:p-6 space-y-12 relative z-10 font-black">
         <h2 className="text-4xl md:text-6xl font-franklin text-center py-10 border-b-8 border-red-600 text-white leading-none">Entrevistas</h2>
