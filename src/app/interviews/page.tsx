@@ -35,7 +35,7 @@ export default function InterviewsPage() {
   }
 
   return (
-    <div className="min-h-screen text-white font-sans relative overflow-x-hidden bg-zinc-900">
+    <div className="min-h-screen text-white font-sans relative overflow-x-hidden bg-zinc-900 font-black">
       <div className="fixed inset-0 flex items-center justify-center pointer-events-none opacity-[0.03] z-0">
         <Image src="/logo-rojo.jpg" alt="Watermark" width={1000} height={1000} className="grayscale" priority />
       </div>
@@ -54,8 +54,9 @@ export default function InterviewsPage() {
           
           <nav className="hidden md:flex gap-6 font-bold uppercase tracking-widest text-sm items-center">
             <Link href="/" className="hover:text-red-600 transition-colors font-black">Fechas</Link>
-            <Link href="/interviews" className="text-red-600 underline decoration-2 underline-offset-4 font-black">Entrevistas</Link>
+            <Link href="/interviews" className="text-red-600 underline decoration-2 underline-offset-4 font-black font-black">Entrevistas</Link>
             <Link href="/contact" className="hover:text-red-600 transition-colors font-black">Contacto</Link>
+            <Link href="/submit" className="border-2 border-red-600 text-red-600 px-4 py-1 bg-black rounded-full animate-pulse hover:bg-red-600 hover:text-white transition-colors font-black font-black">Subir Fecha</Link>
           </nav>
 
           <button onClick={() => setIsMenuOpen(!isMenuOpen)} className="md:hidden text-red-600 focus:outline-none">
@@ -69,13 +70,15 @@ export default function InterviewsPage() {
       {isMenuOpen && (
         <div className="fixed inset-0 z-[60] bg-black/95 flex flex-col items-center justify-center space-y-8 md:hidden font-black">
           <button onClick={() => setIsMenuOpen(false)} className="absolute top-6 right-6 text-white text-4xl">X</button>
-          <Link href="/" className="text-4xl uppercase text-white italic font-franklin">Fechas</Link>
-          <Link href="/interviews" className="text-4xl uppercase text-red-600 italic font-franklin">Entrevistas</Link>
-          <Link href="/contact" className="text-4xl uppercase text-white italic font-franklin">Contacto</Link>
+          <Link href="/" onClick={() => setIsMenuOpen(false)} className="text-4xl uppercase text-white italic font-franklin">Fechas</Link>
+          <Link href="/interviews" onClick={() => setIsMenuOpen(false)} className="text-4xl uppercase text-red-600 italic font-franklin">Entrevistas</Link>
+          <Link href="/contact" onClick={() => setIsMenuOpen(false)} className="text-4xl uppercase text-white italic font-franklin">Contacto</Link>
+          {/* AGREGADO: Subir Fecha al menú movil */}
+          <Link href="/submit" onClick={() => setIsMenuOpen(false)} className="text-3xl uppercase border-4 border-red-600 text-red-600 px-8 py-4 rounded-full animate-pulse font-franklin">Subir Fecha</Link>
         </div>
       )}
 
-      <main className="max-w-6xl mx-auto p-4 md:p-6 space-y-12 relative z-10 font-black">
+      <main className="max-w-6xl mx-auto p-4 md:p-6 space-y-12 relative z-10">
         <h2 className="text-4xl md:text-6xl font-franklin text-center py-10 border-b-8 border-red-600 text-white leading-none">Entrevistas</h2>
 
         {loading ? (
@@ -100,18 +103,18 @@ export default function InterviewsPage() {
                       style={{ objectPosition: interview.image_position || 'center' }} 
                     />
                   ) : (
-                    <div className="w-full h-full flex items-center justify-center text-zinc-500 font-black italic uppercase text-center">Sin Imagen</div>
+                    <div className="w-full h-full flex items-center justify-center text-zinc-500 font-black italic uppercase text-center font-black">Sin Imagen</div>
                   )}
                 </div>
                 <div className="space-y-3 font-black">
-                  <span className="bg-red-600 text-white px-3 py-1 text-xs font-black uppercase tracking-widest italic rounded-full">BANDA: {interview.band_name}</span>
-                  <h3 className="text-3xl font-franklin leading-none group-hover:text-red-600 transition-colors text-white uppercase">{interview.title}</h3>
+                  <span className="bg-red-600 text-white px-3 py-1 text-xs font-black uppercase tracking-widest italic rounded-full font-black">BANDA: {interview.band_name}</span>
+                  <h3 className="text-3xl font-franklin leading-none group-hover:text-red-600 transition-colors text-white uppercase font-black">{interview.title}</h3>
                   {interview.subtitle && (
-                    <p className="text-zinc-400 text-sm font-bold line-clamp-2 uppercase italic">{interview.subtitle}</p>
+                    <p className="text-zinc-400 text-sm font-bold line-clamp-2 uppercase italic font-black">{interview.subtitle}</p>
                   )}
                   <div className="flex justify-between items-center text-zinc-500 font-bold text-[10px] uppercase tracking-tighter">
-                    <p>Publicado: {new Date(interview.published_at).toLocaleDateString()}</p>
-                    {interview.author && <p className="text-red-600">Por: {interview.author}</p>}
+                    <p className="font-black">Publicado: {new Date(interview.published_at).toLocaleDateString()}</p>
+                    {interview.author && <p className="text-red-600 font-black font-black">Por: {interview.author}</p>}
                   </div>
                 </div>
               </a>
@@ -124,13 +127,10 @@ export default function InterviewsPage() {
       {showLogoModal && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
           <div className="absolute inset-0 bg-black/95 backdrop-blur-xl" onClick={() => setShowLogoModal(false)} />
-          <div className="relative max-w-lg w-full bg-zinc-900 border-8 border-white p-4 rounded-[50px] shadow-2xl text-center">
-            <button onClick={() => setShowLogoModal(false)} className="absolute -top-4 -right-4 bg-red-600 text-white w-14 h-14 font-black text-3xl border-4 border-white hover:bg-black transition-colors z-[110] text-center flex items-center justify-center shadow-2xl rounded-full font-black">X</button>
-            <Image src="/logo-rojo.jpg" alt="Logo Grande" width={800} height={800} className="w-full h-auto rounded-[40px] border-4 border-zinc-800 shadow-2xl" />
-            <div className="p-6 font-black font-black">
-              <h3 className="text-4xl font-franklin text-red-600 leading-none">Hoy Quien Toca</h3>
-              <p className="text-xs font-black uppercase tracking-widest text-white/60 mt-2 italic">Descubri recitales en tu Ciudad</p>
-            </div>
+          <div className="relative max-w-lg w-full bg-zinc-900 border-8 border-white p-6 rounded-[50px] shadow-2xl text-center">
+            <button onClick={() => setShowLogoModal(false)} className="absolute -top-4 -right-4 bg-red-600 text-white w-12 h-12 font-black text-2xl border-4 border-white rounded-full">X</button>
+            <Image src="/logo-rojo.jpg" alt="Logo Grande" width={600} height={600} className="w-full h-auto rounded-[30px]" />
+            <h3 className="text-3xl font-franklin text-red-600 mt-4 leading-none">Hoy Quien Toca</h3>
           </div>
         </div>
       )}

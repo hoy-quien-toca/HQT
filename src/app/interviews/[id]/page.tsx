@@ -9,24 +9,33 @@ export default async function InterviewDetailPage({ params }: { params: Promise<
   const resolvedParams = await params;
   const id = resolvedParams.id;
 
-  console.log("Server side fetch for ID:", id);
+  // Sanitizar ID
+  const cleanId = id?.trim();
+
+  console.log("Server side fetch for ID:", cleanId);
 
   // FETCH EN EL SERVIDOR
-  const { data: interview, error } = await supabase
-    .from('interviews')
-    .select('*')
-    .eq('id', id)
-    .maybeSingle();
+  let interview = null;
+  let serverError = null;
 
-  if (error) {
-    console.error("Supabase server error:", error);
+  try {
+    const { data, error } = await supabase
+      .from('interviews')
+      .select('*')
+      .eq('id', cleanId)
+      .maybeSingle();
+      
+    interview = data;
+    serverError = error?.message;
+  } catch (e: any) {
+    serverError = e.message;
   }
 
   return (
     <InterviewDetailClient 
       initialInterview={interview} 
-      initialError={error?.message} 
-      id={id} 
+      initialError={serverError} 
+      id={cleanId} 
     />
   );
 }
