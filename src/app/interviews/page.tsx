@@ -88,6 +88,7 @@ export default function InterviewsPage() {
               <Link 
                 href={`/interviews/${interview.id}`} 
                 key={interview.id}
+                prefetch={false}
                 className="group border-4 border-white p-4 bg-zinc-950/80 hover:border-red-600 transition-all shadow-[8px_8px_0px_0px_rgba(220,38,38,0.3)] rounded-[32px] font-black font-black"
               >
                 <div className="aspect-video bg-zinc-800 mb-6 border-2 border-zinc-700 overflow-hidden rounded-2xl font-black">
@@ -123,7 +124,7 @@ export default function InterviewsPage() {
           <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 font-black font-black">
             <div className="absolute inset-0 bg-black/95 backdrop-blur-xl font-black font-black" onClick={() => setShowLogoModal(false)} />
             <div className="relative max-w-lg w-full bg-zinc-900 border-8 border-white p-4 shadow-[30px_30px_0px_0px_rgba(220,38,38,0.5)] text-center rounded-[50px] transform hover:scale-105 transition-transform duration-500 font-black font-black font-black">
-              <button onClick={() => setShowLogoModal(false)} className="absolute -top-4 -right-4 bg-red-600 text-white w-14 h-14 font-black text-3xl border-4 border-white hover:bg-black transition-colors z-[110] text-center flex items-center justify-center shadow-2xl rounded-full font-black font-black">X</button>
+              <button onClick={() => setShowLogoModal(false)} className="absolute -top-4 -right-4 bg-red-600 text-white w-14 h-14 font-black text-3xl border-4 border-white hover:bg-black transition-colors z-[110] text-center flex items-center justify-center shadow-2xl rounded-full font-black font-black font-black font-black font-black">X</button>
               <Image src="/logo-rojo.jpg" alt="Logo Grande" width={800} height={800} className="w-full h-auto rounded-[40px] border-4 border-zinc-800 shadow-2xl font-black font-black font-black" />
               <div className="p-6 font-black font-black">
                 <h3 className="text-4xl font-franklin text-red-600 leading-none font-black font-black font-black">Hoy Quien Toca</h3>
