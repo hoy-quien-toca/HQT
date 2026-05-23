@@ -15,7 +15,7 @@ export default function AdminDashboard() {
   // Forms State
   const [editingEvent, setEditingEvent] = useState<any>(null);
   const [newSponsor, setNewSponsor] = useState({ id: null, client_name: '', image_url: '', link: '', position: 'sidebar' });
-  const [newInterview, setNewInterview] = useState({ id: null, title: '', subtitle: '', band_name: '', content: '', image_url: '', is_active: true, author: '', photo_credit: '' });
+  const [newInterview, setNewInterview] = useState({ id: null, title: '', subtitle: '', band_name: '', content: '', image_url: '', is_active: true, author: '', photo_credit: '', image_position: 'center' });
   const [selectedMessage, setSelectedMessage] = useState<any>(null);
 
   const router = useRouter();
@@ -130,12 +130,12 @@ export default function AdminDashboard() {
   async function handleSaveInterview(e: React.FormEvent) {
     e.preventDefault();
     if (!newInterview.image_url) return alert('Sube foto primero');
-    const { id, ...data } = newInterview;
+    const { id, created_at, ...data } = newInterview;
     let error;
     if (id) error = (await supabase.from('interviews').update(data).eq('id', id)).error;
     else error = (await supabase.from('interviews').insert([data])).error;
     if (error) alert('Error: ' + error.message);
-    else { setNewInterview({ id: null, title: '', subtitle: '', band_name: '', content: '', image_url: '', is_active: true, author: '', photo_credit: '' }); fetchData(); }
+    else { setNewInterview({ id: null, title: '', subtitle: '', band_name: '', content: '', image_url: '', is_active: true, author: '', photo_credit: '', image_position: 'center' }); fetchData(); }
   }
 
   async function deleteInterview(id: string) {
@@ -169,14 +169,14 @@ export default function AdminDashboard() {
            <h1 className="text-3xl md:text-4xl font-black uppercase italic text-yellow-400 leading-none">ADMINISTRADOR HQT</h1>
            <p className="text-[10px] md:text-xs font-bold text-zinc-500 uppercase tracking-widest mt-1 italic">Descubri recitales, toques y eventos musicales en tu Ciudad</p>
         </div>
-        <div className="flex gap-4">
+        <div className="flex gap-4 font-black">
           <button onClick={() => router.push('/')} className="bg-white text-black px-4 py-1 font-black uppercase text-xs hover:bg-yellow-400 transition-colors">Web</button>
-          <button onClick={() => supabase.auth.signOut().then(() => router.push('/admin'))} className="bg-red-600 px-4 py-1 font-black uppercase text-xs hover:bg-white hover:text-black transition-colors">Salir</button>
+          <button onClick={() => supabase.auth.signOut().then(() => router.push('/admin'))} className="bg-red-600 px-4 py-1 font-black uppercase text-xs hover:bg-white hover:text-black transition-colors font-black">Salir</button>
         </div>
       </header>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 md:gap-10">
-        {/* LADO IZQUIERDO: FECHAS */}
+        {/* LADO IZQUIERDO: FECHAS (VOLVIÓ AL ESTILO ORIGINAL AMARILLO/SIMPLE) */}
         <section className="space-y-6 text-left">
           <h2 className="text-2xl font-black uppercase italic text-yellow-400 border-l-8 border-yellow-400 pl-4 bg-zinc-950 py-2">Gestión de Fechas</h2>
           
@@ -207,18 +207,18 @@ export default function AdminDashboard() {
                   <div className="flex gap-4 items-center">
                     {event.flyer_url && <img src={event.flyer_url} className="w-16 h-16 object-cover border-2 border-white shadow-md" />}
                     <div>
-                      <h3 className="text-xl font-black uppercase leading-none">{event.band_name}</h3>
+                      <h3 className="text-xl font-black uppercase leading-none font-black">{event.band_name}</h3>
                       <p className="text-[10px] font-bold text-yellow-400 uppercase">{event.date} - {event.time.substring(0,5)}hs</p>
                       <p className="text-[10px] text-zinc-400 uppercase">{event.venue}</p>
-                      <div className="flex gap-1 mt-1">
-                        <p className="text-[8px] text-white uppercase opacity-50 bg-zinc-800 px-2 py-0.5 rounded-sm">{!event.is_approved ? 'PENDIENTE' : event.is_featured ? '★ DESTACADO' : 'APROBADO'}</p>
-                        {event.is_suspended && <p className="text-[8px] bg-white text-black font-black uppercase px-2 py-0.5 rounded-sm italic">SUSPENDIDO</p>}
+                      <div className="flex gap-1 mt-1 font-black">
+                        <p className="text-[8px] text-white uppercase opacity-50 bg-zinc-800 px-2 py-0.5 rounded-sm font-black">{!event.is_approved ? 'PENDIENTE' : event.is_featured ? '★ DESTACADO' : 'APROBADO'}</p>
+                        {event.is_suspended && <p className="text-[8px] bg-white text-black font-black uppercase px-2 py-0.5 rounded-sm italic font-black">SUSPENDIDO</p>}
                       </div>
                     </div>
                   </div>
                   <div className="flex gap-2 w-full md:w-auto">
-                    <button onClick={() => setEditingEvent(event)} className="bg-blue-600 text-white px-3 py-1 font-black uppercase text-[10px] border-2 border-white shadow-sm">EDITAR</button>
-                    <button onClick={() => supabase.from('events').update({ is_approved: !event.is_approved }).eq('id', event.id).then(() => fetchData())} className={`flex-1 md:flex-none px-3 py-1 font-black uppercase text-[10px] border-2 border-white shadow-sm ${event.is_approved ? 'bg-zinc-800 text-zinc-400' : 'bg-green-600 text-white'}`}>{event.is_approved ? 'BAJAR' : 'APROBAR'}</button>
+                    <button onClick={() => setEditingEvent(event)} className="bg-blue-600 text-white px-3 py-1 font-black uppercase text-[10px] border-2 border-white shadow-sm font-black">EDITAR</button>
+                    <button onClick={() => supabase.from('events').update({ is_approved: !event.is_approved }).eq('id', event.id).then(() => fetchData())} className={`flex-1 md:flex-none px-3 py-1 font-black uppercase text-[10px] border-2 border-white shadow-sm ${event.is_approved ? 'bg-zinc-800 text-zinc-400' : 'bg-green-600 text-white font-black'}`}>{event.is_approved ? 'BAJAR' : 'APROBAR'}</button>
                     <button onClick={() => deleteEvent(event.id)} className="bg-red-600 text-white px-3 py-1 font-black text-[10px] border-2 border-white shadow-sm font-black">BORRAR</button>
                   </div>
                 </div>
@@ -227,11 +227,11 @@ export default function AdminDashboard() {
                   <div className="space-y-3 border-t border-zinc-800 pt-3">
                     <button 
                       onClick={() => toggleFeatured(event.id, event.is_featured)} 
-                      className={`w-full py-1 font-black uppercase text-[10px] border-2 transition-all ${event.is_featured ? 'bg-yellow-400 text-black border-white shadow-md' : 'bg-black text-yellow-400 border-yellow-400'}`}
+                      className={`w-full py-1 font-black uppercase text-[10px] border-2 transition-all ${event.is_featured ? 'bg-yellow-400 text-black border-white shadow-md font-black' : 'bg-black text-yellow-400 border-yellow-400 font-black'}`}
                     >
                       {event.is_featured ? '★ EN BANNER PRINCIPAL (DESACTIVAR)' : '★ PONER EN BANNER PRINCIPAL'}
                     </button>
-                    <div className="flex flex-wrap gap-2 items-center">
+                    <div className="flex flex-wrap gap-2 items-center font-black">
                       <button onClick={() => updateEventTag(event.id, 'PLANAZO')} className={`px-2 py-1 text-[8px] font-black border-2 ${event.suggestion_tag === 'PLANAZO' ? 'bg-red-600 border-white text-white' : 'border-red-600 text-red-600'}`}>PLANAZO</button>
                       <button onClick={() => updateEventTag(event.id, 'SALIDA SEGURA')} className={`px-2 py-1 text-[8px] font-black border-2 ${event.suggestion_tag === 'SALIDA SEGURA' ? 'bg-yellow-400 border-black text-black' : 'border-yellow-400 text-yellow-400'}`}>SALIDA SEGURA</button>
                       <button onClick={() => updateEventTag(event.id, 'NO FALLA')} className={`px-2 py-1 text-[8px] font-black border-2 ${event.suggestion_tag === 'NO FALLA' ? 'bg-white border-black text-black' : 'border-white text-white'}`}>NO FALLA</button>
@@ -257,9 +257,9 @@ export default function AdminDashboard() {
             <form onSubmit={handleSaveSponsor} className="bg-zinc-950 p-4 md:p-6 border-4 border-white space-y-4 shadow-xl">
               <span className="text-[10px] font-black uppercase text-zinc-500">{newSponsor.id ? 'EDITANDO' : 'NUEVO ANUNCIO'}</span>
               <input placeholder="Nombre Cliente" className="w-full bg-black border-2 border-white p-2 font-bold uppercase text-xs text-white outline-none focus:border-yellow-400" value={newSponsor.client_name} onChange={e => setNewSponsor({...newSponsor, client_name: e.target.value})} required />
-              <div className="flex gap-4 items-center border-2 border-dashed border-zinc-700 p-2 relative">
+              <div className="flex gap-4 items-center border-2 border-dashed border-zinc-700 p-2 relative font-black">
                 <p className="text-[10px] font-black uppercase text-zinc-500 flex-1">{uploading ? 'Cargando...' : (newSponsor.image_url ? 'Imagen OK ✅' : 'Subir Imagen/GIF')}</p>
-                <input type="file" className="absolute inset-0 opacity-0 cursor-pointer" onChange={async (e) => {
+                <input type="file" className="absolute inset-0 opacity-0 cursor-pointer font-black" onChange={async (e) => {
                   const file = e.target.files?.[0]; if (file) { const url = await handleFileUpload(file, 'sponsors'); if (url) setNewSponsor({...newSponsor, image_url: url}); }
                 }} />
                 {newSponsor.image_url && <img src={newSponsor.image_url} className="h-10 w-10 object-cover border" />}
@@ -280,11 +280,11 @@ export default function AdminDashboard() {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-h-[300px] overflow-y-auto pr-2 custom-scrollbar font-black">
               {sponsors.map(sp => (
                 <div key={sp.id} className={`border-2 p-3 flex flex-col gap-2 ${sp.is_active ? 'border-yellow-400 bg-zinc-950 shadow-md' : 'border-zinc-800 opacity-50 bg-zinc-900'}`}>
-                  <div className="flex justify-between items-start">
+                  <div className="flex justify-between items-start font-black">
                     <span className="text-[9px] font-black uppercase truncate text-white">{sp.client_name}</span>
                     <div className="flex gap-1">
                       <button onClick={() => setNewSponsor(sp)} className="px-2 py-0.5 bg-blue-600 text-white text-[7px] font-black border border-white">EDITAR</button>
-                      <button onClick={() => toggleSponsorStatus(sp.id, sp.is_active)} className={`px-2 py-0.5 text-white text-[7px] font-black border border-white ${sp.is_active ? 'bg-green-600' : 'bg-zinc-700'}`}>{sp.is_active ? 'PAUSA' : 'ACTIVO'}</button>
+                      <button onClick={() => toggleSponsorStatus(sp.id, sp.is_active)} className={`px-2 py-0.5 text-white text-[7px] font-black border border-white shadow-sm ${sp.is_active ? 'bg-green-600' : 'bg-zinc-700 font-black'}`}>{sp.is_active ? 'PAUSA' : 'ACTIVO'}</button>
                       <button onClick={() => deleteSponsor(sp.id)} className="px-2 py-0.5 bg-red-600 text-white text-[7px] font-black border border-white">BORRAR</button>
                     </div>
                   </div>
@@ -294,41 +294,51 @@ export default function AdminDashboard() {
             </div>
           </div>
 
-          {/* Entrevistas */}
+          {/* Entrevistas (CON LA MEJORA DE POSICIÓN DE FOTO Y SUBTITULO) */}
           <div className="space-y-6 border-t-4 border-zinc-800 pt-8 text-left font-black">
             <h2 className="text-2xl font-black uppercase italic text-yellow-400 border-l-8 border-yellow-400 pl-4 bg-zinc-950 py-2">Entrevistas</h2>
             <form onSubmit={handleSaveInterview} className="bg-zinc-950 p-4 md:p-6 border-4 border-white space-y-4 shadow-xl">
               <input placeholder="Título" className="w-full bg-black border-2 border-white p-2 font-bold uppercase text-xs text-white focus:border-yellow-400 outline-none" value={newInterview.title} onChange={e => setNewInterview({...newInterview, title: e.target.value})} required />
               <input placeholder="Subtítulo / Copete" className="w-full bg-black border-2 border-white p-2 font-bold uppercase text-xs text-white focus:border-yellow-400 outline-none" value={newInterview.subtitle || ''} onChange={e => setNewInterview({...newInterview, subtitle: e.target.value})} />
               <input placeholder="Banda" className="w-full bg-black border-2 border-white p-2 font-bold uppercase text-xs text-white focus:border-yellow-400 outline-none" value={newInterview.band_name} onChange={e => setNewInterview({...newInterview, band_name: e.target.value})} required />
+              
+              <div className="space-y-1 font-black">
+                <label className="text-[10px] text-zinc-500 uppercase">Centrado de Foto (Miniatura)</label>
+                <select value={newInterview.image_position} onChange={e => setNewInterview({...newInterview, image_position: e.target.value})} className="w-full bg-black border-2 border-white p-2 text-xs uppercase font-black text-white">
+                   <option value="center">Centrado</option>
+                   <option value="top">Arriba</option>
+                   <option value="bottom">Abajo</option>
+                </select>
+              </div>
+
               <div className="grid grid-cols-2 gap-2 text-[10px] text-white">
                 <input placeholder="Autor Texto" className="bg-black border p-2 uppercase font-black" value={newInterview.author} onChange={e => setNewInterview({...newInterview, author: e.target.value})} />
                 <input placeholder="Crédito Foto" className="bg-black border p-2 uppercase font-black" value={newInterview.photo_credit} onChange={e => setNewInterview({...newInterview, photo_credit: e.target.value})} />
               </div>
-              <div className="flex gap-4 items-center border-2 border-dashed border-zinc-700 p-2 relative">
+              <div className="flex gap-4 items-center border-2 border-dashed border-zinc-700 p-2 relative font-black">
                 <p className="text-[10px] font-black uppercase text-zinc-500 flex-1">{uploading ? 'Cargando...' : (newInterview.image_url ? 'Imagen OK ✅' : 'Subir Foto')}</p>
-                <input type="file" className="absolute inset-0 opacity-0 cursor-pointer" onChange={async (e) => {
+                <input type="file" className="absolute inset-0 opacity-0 cursor-pointer font-black" onChange={async (e) => {
                   const file = e.target.files?.[0]; if (file) { const url = await handleFileUpload(file, 'interviews'); if (url) setNewInterview({...newInterview, image_url: url}); }
                 }} />
                 {newInterview.image_url && <img src={newInterview.image_url} className="h-10 w-10 object-cover border" />}
               </div>
               <textarea placeholder="Contenido..." className="w-full bg-black border-2 border-white p-2 text-xs text-white h-24" value={newInterview.content} onChange={e => setNewInterview({...newInterview, content: e.target.value})} required />
-              <div className="flex gap-2">
+              <div className="flex gap-2 font-black">
                 <button type="submit" disabled={uploading} className={`flex-1 font-black uppercase py-2 text-sm border-2 border-white ${newInterview.id ? 'bg-blue-600 text-white' : 'bg-yellow-400 text-black'}`}>{newInterview.id ? 'ACTUALIZAR' : 'PUBLICAR'}</button>
-                {newInterview.id && <button type="button" onClick={() => setNewInterview({id:null, title:'', subtitle:'', band_name:'', content:'', image_url:'', is_active:true, author:'', photo_credit:''})} className="bg-zinc-700 px-4 font-black border-2 border-white text-white">X</button>}
+                {newInterview.id && <button type="button" onClick={() => setNewInterview({id:null, title:'', subtitle:'', band_name:'', content:'', image_url:'', is_active:true, author:'', photo_credit:'', image_position: 'center'})} className="bg-zinc-700 px-4 font-black border-2 border-white text-white font-black">X</button>}
               </div>
             </form>
             <div className="grid grid-cols-1 gap-2 max-h-[300px] overflow-y-auto custom-scrollbar font-black">
               {interviews.map(int => (
                 <div key={int.id} className={`border-2 p-3 flex justify-between items-center ${int.is_active ? 'border-zinc-700 bg-zinc-900 shadow-md' : 'border-red-600 bg-zinc-950 opacity-40 grayscale italic'}`}>
-                  <div className="truncate pr-4 text-left">
+                  <div className="truncate pr-4 text-left font-black">
                     <span className="text-[10px] font-black uppercase text-yellow-400 font-black">{int.title}</span>
                     <p className="text-[8px] text-zinc-500 uppercase font-bold">{int.band_name} {int.is_active ? '' : '(PAUSADA)'}</p>
                   </div>
                   <div className="flex gap-1 shrink-0">
                     <button onClick={() => setNewInterview(int)} className="px-2 py-0.5 bg-blue-600 text-white text-[7px] font-black border border-white">EDITAR</button>
                     <button onClick={() => toggleInterviewStatus(int.id, int.is_active)} className={`px-2 py-0.5 text-white text-[7px] font-black border border-white shadow-sm ${int.is_active ? 'bg-green-600' : 'bg-zinc-700'}`}>{int.is_active ? 'PAUSA' : 'ACTIVO'}</button>
-                    <button onClick={() => confirm('¿Borrar?') && supabase.from('interviews').delete().eq('id', int.id).then(() => fetchData())} className="px-2 py-0.5 bg-red-600 text-white text-[7px] font-black border border-white shadow-sm">BORRAR</button>
+                    <button onClick={() => confirm('¿Borrar?') && supabase.from('interviews').delete().eq('id', int.id).then(() => fetchData())} className="px-2 py-0.5 bg-red-600 text-white text-[7px] font-black border border-white shadow-sm font-black">BORRAR</button>
                   </div>
                 </div>
               ))}
@@ -360,11 +370,11 @@ export default function AdminDashboard() {
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
           <div className="absolute inset-0 bg-black/90 backdrop-blur-sm font-black" onClick={() => setSelectedMessage(null)} />
           <div className="relative w-full max-w-xl bg-zinc-900 border-8 border-white p-8 shadow-[20px_20px_0px_0px_rgba(234,179,8,1)] text-left font-black uppercase">
-            <button onClick={() => setSelectedMessage(null)} className="absolute -top-4 -right-4 bg-red-600 text-white w-10 h-10 font-black text-xl border-4 border-white text-center flex items-center justify-center shadow-xl">X</button>
-            <h3 className="text-2xl font-black uppercase italic text-yellow-400 mb-2 border-b-2 border-yellow-400 pb-2">{selectedMessage.name}</h3>
+            <button onClick={() => setSelectedMessage(null)} className="absolute -top-4 -right-4 bg-red-600 text-white w-10 h-10 font-black text-xl border-4 border-white text-center flex items-center justify-center shadow-xl font-black">X</button>
+            <h3 className="text-2xl font-black uppercase italic text-yellow-400 mb-2 border-b-2 border-yellow-400 pb-2 font-black">{selectedMessage.name}</h3>
             <p className="text-xs font-bold text-zinc-500 uppercase mb-6 italic">{selectedMessage.email}</p>
             <p className="text-lg text-white leading-relaxed whitespace-pre-wrap font-black">"{selectedMessage.message}"</p>
-            <button onClick={() => deleteMessage(selectedMessage.id)} className="mt-8 bg-red-600 text-white px-6 py-2 font-black uppercase text-xs border-2 border-white hover:bg-black transition-colors shadow-lg">Eliminar Mensaje</button>
+            <button onClick={() => deleteMessage(selectedMessage.id)} className="mt-8 bg-red-600 text-white px-6 py-2 font-black uppercase text-xs border-2 border-white hover:bg-black transition-colors shadow-lg font-black">Eliminar Mensaje</button>
           </div>
         </div>
       )}
