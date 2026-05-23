@@ -1,11 +1,24 @@
+import { supabase } from '@/lib/supabase';
 import InterviewDetailClient from './InterviewDetailClient';
 
-// Force dynamic to prevent caching issues on mobile browsers
+// Forzar renderizado dinamico para que siempre busque los datos frescos
 export const dynamic = 'force-dynamic';
 
 export default async function InterviewDetailPage({ params }: { params: Promise<{ id: string }> }) {
-  const resolvedParams = await params;
-  const id = resolvedParams.id;
-  
-  return <InterviewDetailClient id={id} />;
+  const { id } = await params;
+
+  // FETCH EN EL SERVIDOR: Esto evita problemas con el navegador movil
+  const { data: interview, error } = await supabase
+    .from('interviews')
+    .select('*')
+    .eq('id', id)
+    .maybeSingle();
+
+  return (
+    <InterviewDetailClient 
+      initialInterview={interview} 
+      initialError={error?.message} 
+      id={id} 
+    />
+  );
 }
