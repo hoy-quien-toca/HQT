@@ -8,6 +8,7 @@ import Link from 'next/link';
 export default function InterviewsPage() {
   const [interviews, setInterviews] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [errorInfo, setErrorInfo] = useState<string | null>(null);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [showLogoModal, setShowLogoModal] = useState(false);
 
@@ -18,17 +19,24 @@ export default function InterviewsPage() {
   async function fetchInterviews() {
     try {
       setLoading(true);
+      setErrorInfo(null);
+      
+      // QUITAMOS EL FILTRO DE IS_ACTIVE TEMPORALMENTE PARA VER SI APARECE ALGO
       const { data, error } = await supabase
         .from('interviews')
         .select('*')
-        .eq('is_active', true) 
         .order('published_at', { ascending: false });
 
-      if (!error && data) {
+      if (error) {
+        throw new Error(error.message);
+      }
+      
+      if (data) {
         setInterviews(data);
       }
-    } catch (e) {
+    } catch (e: any) {
       console.error("List error:", e);
+      setErrorInfo(e.message || "Error al cargar entrevistas");
     } finally {
       setLoading(false);
     }
@@ -47,16 +55,16 @@ export default function InterviewsPage() {
                <Image src="/logo-rojo.jpg" alt="Logo" width={70} height={70} className="border-2 border-white rounded-2xl md:w-[85px] md:h-[85px] shadow-lg shadow-red-600/30" />
             </button>
             <div>
-              <h1 className="text-2xl md:text-5xl font-franklin tracking-tighter text-red-600 leading-none">Hoy Quien Toca</h1>
+              <h1 className="text-2xl md:text-5xl font-franklin tracking-tighter text-red-600 leading-none uppercase">Hoy Quien Toca</h1>
               <p className="text-[10px] md:text-xs font-bold text-white uppercase tracking-widest mt-1">Descubri recitales en tu Ciudad</p>
             </div>
           </div>
           
           <nav className="hidden md:flex gap-6 font-bold uppercase tracking-widest text-sm items-center">
             <Link href="/" className="hover:text-red-600 transition-colors font-black">Fechas</Link>
-            <Link href="/interviews" className="text-red-600 underline decoration-2 underline-offset-4 font-black font-black">Entrevistas</Link>
+            <Link href="/interviews" className="text-red-600 underline decoration-2 underline-offset-4 font-black">Entrevistas</Link>
             <Link href="/contact" className="hover:text-red-600 transition-colors font-black">Contacto</Link>
-            <Link href="/submit" className="border-2 border-red-600 text-red-600 px-4 py-1 bg-black rounded-full animate-pulse hover:bg-red-600 hover:text-white transition-colors font-black font-black">Subir Fecha</Link>
+            <Link href="/submit" className="border-2 border-red-600 text-red-600 px-4 py-1 bg-black rounded-full animate-pulse hover:bg-red-600 hover:text-white transition-colors font-black">Subir Fecha</Link>
           </nav>
 
           <button onClick={() => setIsMenuOpen(!isMenuOpen)} className="md:hidden text-red-600 focus:outline-none">
@@ -73,25 +81,35 @@ export default function InterviewsPage() {
           <Link href="/" onClick={() => setIsMenuOpen(false)} className="text-4xl uppercase text-white italic font-franklin">Fechas</Link>
           <Link href="/interviews" onClick={() => setIsMenuOpen(false)} className="text-4xl uppercase text-red-600 italic font-franklin">Entrevistas</Link>
           <Link href="/contact" onClick={() => setIsMenuOpen(false)} className="text-4xl uppercase text-white italic font-franklin">Contacto</Link>
-          {/* AGREGADO: Subir Fecha al menú movil */}
           <Link href="/submit" onClick={() => setIsMenuOpen(false)} className="text-3xl uppercase border-4 border-red-600 text-red-600 px-8 py-4 rounded-full animate-pulse font-franklin">Subir Fecha</Link>
         </div>
       )}
 
       <main className="max-w-6xl mx-auto p-4 md:p-6 space-y-12 relative z-10">
-        <h2 className="text-4xl md:text-6xl font-franklin text-center py-10 border-b-8 border-red-600 text-white leading-none">Entrevistas</h2>
+        <h2 className="text-4xl md:text-6xl font-franklin text-center py-10 border-b-8 border-red-600 text-white leading-none uppercase">Entrevistas</h2>
 
         {loading ? (
           <div className="flex flex-col items-center py-20 animate-pulse">
             <div className="w-12 h-12 border-4 border-red-600 border-t-transparent rounded-full animate-spin mb-4" />
             <p className="text-2xl font-franklin uppercase italic">Cargando...</p>
           </div>
+        ) : errorInfo ? (
+          <div className="text-center py-20">
+            <p className="text-xl text-red-500 font-bold uppercase mb-4">{errorInfo}</p>
+            <button onClick={fetchInterviews} className="bg-white text-black px-6 py-2 rounded-full font-black uppercase text-xs">Reintentar carga</button>
+          </div>
+        ) : interviews.length === 0 ? (
+          <div className="text-center py-20">
+            <p className="text-3xl font-black uppercase italic text-zinc-600 tracking-tighter">Próximamente nuevas entrevistas...</p>
+            <p className="text-[10px] text-zinc-700 mt-4 font-mono uppercase">Database Table: interviews | Count: 0</p>
+          </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-12 text-left">
             {interviews.map((interview) => (
-              <a 
+              <Link 
                 href={`/interviews/${interview.id}`} 
                 key={interview.id}
+                prefetch={false}
                 className="group border-4 border-white p-4 bg-zinc-950/80 hover:border-red-600 transition-all shadow-[8px_8px_0px_0px_rgba(220,38,38,0.3)] rounded-[32px] block"
               >
                 <div className="aspect-video bg-zinc-800 mb-6 border-2 border-zinc-700 overflow-hidden rounded-2xl relative">
@@ -103,21 +121,21 @@ export default function InterviewsPage() {
                       style={{ objectPosition: interview.image_position || 'center' }} 
                     />
                   ) : (
-                    <div className="w-full h-full flex items-center justify-center text-zinc-500 font-black italic uppercase text-center font-black">Sin Imagen</div>
+                    <div className="w-full h-full flex items-center justify-center text-zinc-500 font-black italic uppercase text-center">Sin Imagen</div>
                   )}
                 </div>
                 <div className="space-y-3 font-black">
-                  <span className="bg-red-600 text-white px-3 py-1 text-xs font-black uppercase tracking-widest italic rounded-full font-black">BANDA: {interview.band_name}</span>
-                  <h3 className="text-3xl font-franklin leading-none group-hover:text-red-600 transition-colors text-white uppercase font-black">{interview.title}</h3>
+                  <span className="bg-red-600 text-white px-3 py-1 text-xs font-black uppercase tracking-widest italic rounded-full">BANDA: {interview.band_name}</span>
+                  <h3 className="text-3xl font-franklin leading-none group-hover:text-red-600 transition-colors text-white uppercase">{interview.title}</h3>
                   {interview.subtitle && (
-                    <p className="text-zinc-400 text-sm font-bold line-clamp-2 uppercase italic font-black">{interview.subtitle}</p>
+                    <p className="text-zinc-400 text-sm font-bold line-clamp-2 uppercase italic">{interview.subtitle}</p>
                   )}
                   <div className="flex justify-between items-center text-zinc-500 font-bold text-[10px] uppercase tracking-tighter">
-                    <p className="font-black">Publicado: {new Date(interview.published_at).toLocaleDateString()}</p>
-                    {interview.author && <p className="text-red-600 font-black font-black">Por: {interview.author}</p>}
+                    <p>Publicado: {new Date(interview.published_at).toLocaleDateString()}</p>
+                    {interview.author && <p className="text-red-600">Por: {interview.author}</p>}
                   </div>
                 </div>
-              </a>
+              </Link>
             ))}
           </div>
         )}
