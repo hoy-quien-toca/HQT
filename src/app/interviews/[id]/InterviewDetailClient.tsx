@@ -13,11 +13,19 @@ export default function InterviewDetailClient({ id }: { id: string }) {
   const [errorState, setErrorState] = useState<string | null>(null);
   const [showLogoModal, setShowLogoModal] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [debugLog, setDebugLog] = useState<string[]>([]);
+
+  const log = (msg: string) => {
+    console.log(msg);
+    setDebugLog(prev => [...prev, `${new Date().toLocaleTimeString()}: ${msg}`]);
+  };
 
   useEffect(() => {
+    log("Component mounted with ID: " + id);
     if (id && id !== '[id]') {
       fetchInterview();
     } else {
+      log("ERROR: Invalid ID received");
       setErrorState("Identificador de entrevista no válido.");
       setLoading(false);
     }
@@ -27,28 +35,32 @@ export default function InterviewDetailClient({ id }: { id: string }) {
     try {
       setLoading(true);
       setErrorState(null);
-      
-      console.log("Fetching interview with ID:", id);
+      log("Fetching data from Supabase...");
 
-      // Use .maybeSingle() instead of .single() to avoid PostgREST coercion errors when 0 rows are found
       const { data, error } = await supabase
         .from('interviews')
         .select('*')
         .eq('id', id)
         .maybeSingle();
 
-      if (error) throw error;
+      if (error) {
+        log("Supabase error: " + error.message);
+        throw error;
+      }
       
       if (data) {
+        log("Data found: " + data.title);
         setInterview(data);
       } else {
+        log("ERROR: No data found for ID " + id);
         setErrorState("No encontramos la entrevista solicitada.");
       }
     } catch (err: any) {
-      console.error("Fetch failed:", err);
+      log("Catch error: " + (err.message || "Unknown"));
       setErrorState(err.message || "Error de conexión");
     } finally {
       setLoading(false);
+      log("Loading finished");
     }
   }
 
@@ -61,7 +73,8 @@ export default function InterviewDetailClient({ id }: { id: string }) {
     return (
       <div className="min-h-screen bg-black text-red-600 flex flex-col items-center justify-center p-6 text-center font-franklin">
         <div className="w-12 h-12 border-4 border-red-600 border-t-transparent rounded-full animate-spin mb-4" />
-        <p className="text-xl uppercase italic animate-pulse">Cargando...</p>
+        <p className="text-xl uppercase italic animate-pulse">Cargando entrevista...</p>
+        <div className="mt-10 text-[8px] text-zinc-600 font-mono">ID: {id}</div>
       </div>
     );
   }
@@ -70,10 +83,19 @@ export default function InterviewDetailClient({ id }: { id: string }) {
     return (
       <div className="min-h-screen bg-zinc-900 text-white flex flex-col items-center justify-center p-6 text-center font-black">
         <h1 className="text-6xl uppercase italic text-red-600 mb-4 tracking-tighter font-franklin">404</h1>
-        <p className="text-xl uppercase tracking-widest mb-8">{errorState || "Entrevista no encontrada."}</p>
-        <div className="flex flex-col gap-4 w-full max-w-xs">
-           <button onClick={() => window.location.reload()} className="bg-red-600 text-white py-3 rounded-full font-black uppercase text-sm">Reintentar</button>
-           <Link href="/interviews" className="bg-white text-black py-3 rounded-full font-black uppercase text-sm">Volver al inicio</Link>
+        <p className="text-xl uppercase tracking-widest mb-4">{errorState || "Entrevista no encontrada."}</p>
+        
+        {/* DEBUG PANEL VISIBLE FOR THE USER */}
+        <div className="bg-black/50 p-4 rounded-xl text-left font-mono text-[9px] text-zinc-500 mb-8 max-w-xs w-full overflow-auto max-h-40 border border-zinc-800">
+           <p className="text-red-500 font-bold mb-1 underline">DEBUG INFO (Dile esto al programador):</p>
+           {debugLog.map((l, i) => <p key={i}>{l}</p>)}
+           <p>ID_PARAMS: {id}</p>
+           <p>URL: {typeof window !== 'undefined' ? window.location.pathname : 'server'}</p>
+        </div>
+
+        <div className="flex flex-col gap-4 w-full max-w-xs font-black">
+           <button onClick={() => window.location.reload()} className="bg-red-600 text-white py-3 rounded-full font-black uppercase text-sm border-2 border-white">Reintentar</button>
+           <Link href="/interviews" className="bg-white text-black py-3 rounded-full font-black uppercase text-sm border-2 border-zinc-800">Volver al inicio</Link>
         </div>
       </div>
     );
@@ -103,7 +125,7 @@ export default function InterviewDetailClient({ id }: { id: string }) {
           
           <nav className="hidden md:flex gap-6 font-bold uppercase text-sm items-center">
             <Link href="/" className="hover:text-red-600 transition-colors">Fechas</Link>
-            <Link href="/interviews" className="text-red-600 underline underline-offset-4">Entrevistas</Link>
+            <Link href="/interviews" className="text-red-600 underline underline-offset-4 font-black">Entrevistas</Link>
             <Link href="/contact" className="hover:text-red-600 transition-colors">Contacto</Link>
           </nav>
         </div>
@@ -118,7 +140,7 @@ export default function InterviewDetailClient({ id }: { id: string }) {
         </div>
       )}
 
-      <main className="max-w-4xl mx-auto p-4 md:p-6 py-10 relative z-10">
+      <main className="max-w-4xl mx-auto p-4 md:p-6 py-10 relative z-10 font-black">
         <button 
           onClick={() => router.push('/interviews')}
           className="fixed bottom-6 right-6 md:absolute md:top-4 md:right-4 bg-red-600 text-white w-14 h-14 md:w-16 md:h-16 flex items-center justify-center font-black text-3xl border-4 border-white rounded-full shadow-[0_0_20px_rgba(220,38,38,0.5)] z-[60]"
@@ -126,20 +148,20 @@ export default function InterviewDetailClient({ id }: { id: string }) {
           X
         </button>
 
-        <article className="space-y-8 font-black">
-          <div className="text-center space-y-4">
+        <article className="space-y-8">
+          <div className="text-center space-y-4 font-black">
             <span className="bg-red-600 text-white px-4 py-1 text-[10px] md:text-sm font-franklin italic rounded-full inline-block">BANDA: {interview.band_name}</span>
             <h1 className="text-4xl md:text-7xl font-franklin tracking-tighter text-white leading-none break-words uppercase">{interview.title}</h1>
             {interview.subtitle && <p className="text-xl md:text-3xl text-zinc-400 font-bold uppercase italic mt-4">{interview.subtitle}</p>}
             
-            <div className="flex flex-col md:flex-row justify-center items-center gap-2 md:gap-4 pt-6 text-zinc-500 font-bold uppercase text-[9px] md:text-xs">
+            <div className="flex flex-col md:flex-row justify-center items-center gap-2 md:gap-4 pt-6 text-zinc-500 font-bold uppercase text-[9px] md:text-xs font-black">
                <p>Publicado: {new Date(interview.published_at).toLocaleDateString()}</p>
                {interview.author && <p className="text-red-600 italic">Por: {interview.author}</p>}
             </div>
           </div>
 
           {interview.image_url && (
-            <div className="flex justify-center">
+            <div className="flex justify-center px-1">
               <div className="border-4 md:border-8 border-white shadow-xl overflow-hidden relative group rounded-[24px] md:rounded-[40px] w-full max-w-3xl">
                 <img 
                   src={interview.image_url} 
@@ -152,11 +174,11 @@ export default function InterviewDetailClient({ id }: { id: string }) {
             </div>
           )}
 
-          <div className="max-w-none text-lg md:text-2xl leading-relaxed font-bold space-y-6 text-zinc-200 uppercase tracking-tight pt-8 whitespace-pre-wrap px-1">
+          <div className="max-w-none text-lg md:text-2xl leading-relaxed font-bold space-y-6 text-zinc-200 uppercase tracking-tight pt-8 whitespace-pre-wrap px-1 font-black">
             {interview.content}
           </div>
 
-          <div className="pt-16 border-t-4 border-zinc-800 flex flex-col items-center gap-8 pb-32">
+          <div className="pt-16 border-t-4 border-zinc-800 flex flex-col items-center gap-8 pb-32 font-black">
             <p className="text-zinc-500 uppercase text-xs italic">Gracias por leer Hoy Quien Toca</p>
             <button onClick={shareOnWhatsApp} className="bg-green-600 text-white px-10 py-4 font-black uppercase text-lg hover:bg-white hover:text-green-600 shadow-xl rounded-full border-4 border-black italic font-franklin">Compartir en WhatsApp</button>
           </div>
@@ -164,7 +186,7 @@ export default function InterviewDetailClient({ id }: { id: string }) {
       </main>
 
       {showLogoModal && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 font-black">
           <div className="absolute inset-0 bg-black/95 backdrop-blur-xl" onClick={() => setShowLogoModal(false)} />
           <div className="relative max-w-lg w-full bg-zinc-900 border-8 border-white p-6 rounded-[50px] shadow-2xl text-center">
             <button onClick={() => setShowLogoModal(false)} className="absolute -top-4 -right-4 bg-red-600 text-white w-12 h-12 font-black text-2xl border-4 border-white rounded-full">X</button>
