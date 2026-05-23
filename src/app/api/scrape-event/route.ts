@@ -36,7 +36,8 @@ export async function POST(request: Request) {
 
     // 3. Fecha (Buscamos formatos comunes como YYYY-MM-DD o DD/MM/YYYY)
     // Muchas ticketeras usan JSON-LD (Schema.org)
-    const jsonLdMatch = html.match(/<script type="application\/ld\+json">(.*?)<\/script>/is);
+    // Usamos [\s\S] en lugar del flag 's' para máxima compatibilidad
+    const jsonLdMatch = html.match(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/i);
     let date = '';
     let venue = '';
     let price = '';
