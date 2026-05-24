@@ -146,7 +146,7 @@ export default function AdminDashboard() {
           <img
             src={ev.flyer_url || '/logo-rojo.jpg'}
             alt={ev.band_name}
-            className="w-[4.75rem] h-[5.75rem] sm:w-20 sm:h-24 object-cover border-2 border-white rounded-lg flex-shrink-0 self-start"
+            className="w-[6.65rem] h-[8.05rem] sm:w-28 sm:h-[8.4rem] object-cover border-2 border-white rounded-lg flex-shrink-0 self-start"
           />
           <div className="min-w-0 flex-1 flex flex-col gap-1">
             <div className="flex items-start justify-between gap-1">
