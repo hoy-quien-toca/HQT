@@ -54,10 +54,17 @@ export default function AdminDashboard() {
     const fileExt = file.name.split('.').pop();
     const filePath = `${folder}/${Math.random()}.${fileExt}`;
     const { error: uploadError } = await supabase.storage.from('hqt-assets').upload(filePath, file);
-    if (uploadError) { alert('Error: ' + uploadError.message); setUploading(false); return null; }
+    if (uploadError) { alert('Error subiendo: ' + uploadError.message); setUploading(false); return null; }
     const { data } = supabase.storage.from('hqt-assets').getPublicUrl(filePath);
     setUploading(false); return data.publicUrl;
   }
+
+  // --- EVENT HELPERS ---
+  async function toggleSoldOut(id: string, current: boolean) { await supabase.from('events').update({ is_sold_out: !current }).eq('id', id); fetchData(); }
+  async function toggleSuspended(id: string, current: boolean) { await supabase.from('events').update({ is_suspended: !current }).eq('id', id); fetchData(); }
+  async function toggleFeatured(id: string, current: boolean) { await supabase.from('events').update({ is_featured: !current }).eq('id', id); fetchData(); }
+  async function updateEventTag(id: string, tag: string) { await supabase.from('events').update({ suggestion_tag: tag }).eq('id', id); fetchData(); }
+  async function deleteEvent(id: string) { if (confirm('¿Borrar?')) { await supabase.from('events').delete().eq('id', id); fetchData(); } }
 
   async function handleSaveEvent(e: React.FormEvent) {
     e.preventDefault(); if (!editingEvent) return;
@@ -116,7 +123,7 @@ export default function AdminDashboard() {
                 <select value={editingEvent.age_rating} onChange={e => setEditingEvent({...editingEvent, age_rating: e.target.value})} className="bg-black border-2 border-white p-2 rounded-lg uppercase"><option value="ATP">ATP</option><option value="+5">+5</option><option value="+12">+12</option><option value="+18">+18</option></select>
                 <select value={editingEvent.price_type} onChange={e => setEditingEvent({...editingEvent, price_type: e.target.value})} className="bg-black border-2 border-white p-2 rounded-lg uppercase"><option value="range">PAGO</option><option value="free">LIBRE</option><option value="gorra">GORRA</option></select>
                 <div className="grid grid-cols-2 gap-2 col-span-2"><input type="number" placeholder="Mín $" value={editingEvent.price_min || ''} onChange={e => setEditingEvent({...editingEvent, price_min: e.target.value})} className="bg-black border-2 border-white p-2 rounded-lg" /><input type="number" placeholder="Máx $" value={editingEvent.price_max || ''} onChange={e => setEditingEvent({...editingEvent, price_max: e.target.value})} className="bg-black border-2 border-white p-2 rounded-lg" /></div>
-                <div className="col-span-2 flex gap-4 items-center border-2 border-dashed border-zinc-700 p-2 relative rounded-xl"><p className="text-[10px] uppercase text-zinc-500 flex-1">{uploading ? '...' : (editingEvent.flyer_url ? 'Foto OK ✅' : 'Subir Flyer')}</p><input type="file" className="absolute inset-0 opacity-0" onChange={async (e) => { const f = e.target.files?.[0]; if (f) { const u = await handleFileUpload(f, 'flyers'); if (u) setEditingEvent({...editingEvent, flyer_url: u}); } }} /></div>
+                <div className="col-span-2 flex gap-4 items-center border-2 border-dashed border-zinc-700 p-2 relative rounded-xl font-black"><p className="text-[10px] uppercase text-zinc-500 flex-1">{uploading ? '...' : (editingEvent.flyer_url ? 'Foto OK ✅' : 'Subir Flyer')}</p><input type="file" className="absolute inset-0 opacity-0" onChange={async (e) => { const f = e.target.files?.[0]; if (f) { const u = await handleFileUpload(f, 'flyers'); if (u) setEditingEvent({...editingEvent, flyer_url: u}); } }} /></div>
                 <textarea value={editingEvent.description || ''} onChange={e => setEditingEvent({...editingEvent, description: e.target.value})} className="sm:col-span-2 bg-black border-2 border-white p-2 uppercase rounded-lg h-20" placeholder="Reseña" />
                 <div className="sm:col-span-2 flex gap-2"><button type="submit" className="flex-1 bg-blue-600 py-3 font-black border-2 border-white rounded-full uppercase shadow-lg">GUARDAR</button><button type="button" onClick={() => setEditingEvent(null)} className="bg-zinc-700 px-6 font-black border-2 border-white rounded-full">X</button></div>
               </form>
