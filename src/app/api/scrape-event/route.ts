@@ -24,27 +24,25 @@ export async function POST(request: Request) {
 
     const html = await response.text();
 
-    // --- EXTRACCIÓN MEJORADA ---
-
-    // 1. Imagen (OpenGraph es lo más fiable para flyers)
-    const imgMatch = html.match(/property="og:image" content="(.*?)"/i) || html.match(/name="twitter:image" content="(.*?)"/i);
+    // 1. Imagen (Flyer)
+    const imgMatch = html.match(/property="og:image" content="(.*?)"/i) || 
+                   html.match(/name="twitter:image" content="(.*?)"/i) ||
+                   html.match(/itemprop="image" content="(.*?)"/i);
     const image_url = imgMatch ? imgMatch[1] : '';
 
-    // 2. Título (Banda/Show)
-    const titleMatch = html.match(/property="og:title" content="(.*?)"/i) || html.match(/<title>(.*?)<\/title>/i);
+    // 2. Título
+    const titleMatch = html.match(/property="og:title" content="(.*?)"/i) || 
+                     html.match(/<title>(.*?)<\/title>/i) ||
+                     html.match(/<h1>(.*?)<\/h1>/i);
     let title = titleMatch ? titleMatch[1] : '';
     title = title.replace(/\|.*?$/, '').replace(/ - RedTickets/i, '').replace(/ - Entraste/i, '').trim();
 
-    // 3. Descripción / Reseña
-    const descMatch = html.match(/property="og:description" content="(.*?)"/i) || html.match(/name="description" content="(.*?)"/i);
+    // 3. Descripción
+    const descMatch = html.match(/property="og:description" content="(.*?)"/i) || 
+                    html.match(/name="description" content="(.*?)"/i);
     let description = descMatch ? descMatch[1] : '';
-    if (description.length < 50) {
-        // Si la meta desc es muy corta, intentamos buscar bloques de texto grandes (experimental)
-        const bodyTextMatch = html.match(/<div[^>]*class="[^"]*description[^"]*"[^>]*>([\s\S]*?)<\/div>/i);
-        if (bodyTextMatch) description = bodyTextMatch[1].replace(/<[^>]*>/g, '').trim();
-    }
 
-    // 4. Datos Estructurados (JSON-LD) - La mina de oro
+    // 4. Datos Estructurados (JSON-LD)
     const jsonLdMatches = html.matchAll(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/gi);
     let date = '';
     let time = '21:00';
@@ -69,8 +67,8 @@ export async function POST(request: Request) {
             if (eventData.location.address) {
                 if (typeof eventData.location.address === 'string') {
                     address = eventData.location.address;
-                } else if (eventData.location.address.streetAddress) {
-                    address = eventData.location.address.streetAddress;
+                } else {
+                    address = eventData.location.address.streetAddress || eventData.location.address.addressLocality || '';
                 }
             }
           }
@@ -83,21 +81,34 @@ export async function POST(request: Request) {
       } catch (e) {}
     }
 
-    // 5. Fallbacks específicos para Ticketeras si JSON-LD falló
+    // 5. Fallbacks específicos para Ticketeras uruguayas
     if (!venue) {
-        const vMatch = html.match(/Lugar:?\s*<\/strong>\s*([^<]+)/i) || html.match(/venue["']:\s*["']([^"']+)["']/i);
-        venue = vMatch ? vMatch[1].trim() : '';
+        // RedTickets suele usar h2 o spans con clases específicas
+        const rtVenue = html.match(/class="venue-name">(.*?)<\/h2>/i) || html.match(/Local: (.*?)[\r\n|<]/i);
+        if (rtVenue) venue = rtVenue[1].trim();
+    }
+    
+    if (!price) {
+        const pMatch = html.match(/Desde \$ ([\d\.,]+)/i) || html.match(/Precio: \$ ([\d\.,]+)/i);
+        if (pMatch) price = pMatch[1].replace(/\./g, '');
+    }
+
+    if (!description || description.length < 100) {
+        // Buscar bloques de texto descriptivos
+        const contentMatch = html.match(/<div[^>]*class="[^"]*content[^"]*"[^>]*>([\s\S]*?)<\/div>/i) ||
+                           html.match(/<div[^>]*id="[^"]*description[^"]*"[^>]*>([\s\S]*?)<\/div>/i);
+        if (contentMatch) description = contentMatch[1].replace(/<[^>]*>/g, '').trim();
     }
 
     return NextResponse.json({
       success: true,
       data: {
-        title,
-        description,
+        title: title.substring(0, 100),
+        description: description.substring(0, 2000),
         date,
         time,
-        venue,
-        address,
+        venue: venue.substring(0, 100),
+        address: address.substring(0, 200),
         price,
         image_url
       }
