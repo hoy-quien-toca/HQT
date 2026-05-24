@@ -7,6 +7,17 @@ import { useRouter } from 'next/navigation';
 const DEPARTAMENTOS = ["MONTEVIDEO", "CANELONES", "MALDONADO", "COLONIA", "SAN JOSE", "FLORIDA", "LAVALLEJA", "ROCHA", "TREINTA Y TRES", "CERRO LARGO", "RIVERA", "TACUAREMBÓ", "DURAZNO", "SORIANO", "RIO NEGRO", "PAYSANDU", "SALTO", "ARTIGAS"];
 const GENEROS = ["ROCK", "CUMBIA", "PLENA", "ELECTRONICA", "TECHNO", "HOUSE", "INDIE", "POP", "TRAP", "REGGAETON", "HIP-HOP/RAP", "PUNK ROCK", "METAL", "FOLKLORE", "TANGO", "JAZZ", "BLUES", "FUNK", "REGGUE", "SKA", "ALTERNATIVO", "CARNAVAL", "MURGA", "TROPICAL", "LATINA", "ACUSTICO", "COVERS", "FIESTA", "DJ-SET", "UNDER"];
 
+const adminBtn = 'text-[11px] sm:text-xs px-3 py-1.5 rounded-full border font-black whitespace-nowrap';
+
+function AdminButtonGroup({ label, children, className = '' }: { label: string; children: React.ReactNode; className?: string }) {
+  return (
+    <div className={`space-y-1.5 ${className}`}>
+      <p className="text-[9px] text-zinc-500 uppercase tracking-widest">{label}</p>
+      <div className="flex flex-wrap gap-2">{children}</div>
+    </div>
+  );
+}
+
 export default function AdminDashboard() {
   const [events, setEvents] = useState<any[]>([]);
   const [messages, setMessages] = useState<any[]>([]);
@@ -159,18 +170,24 @@ export default function AdminDashboard() {
                 <div className="min-w-0 flex-1 w-full">
                   <h3 className="text-base sm:text-lg font-black uppercase leading-tight truncate">{ev.band_name}</h3>
                   <p className="text-xs font-bold text-red-600 uppercase mt-1">{ev.date} — {ev.time?.substring(0, 5)} hs · {ev.venue}</p>
-                  <div className="flex flex-wrap gap-2 mt-3">
-                    <button type="button" onClick={() => setEditingEvent(ev)} className="bg-blue-600 text-[11px] sm:text-xs px-3 py-1 rounded-full border border-white font-black">EDITAR</button>
-                    <button type="button" onClick={() => supabase.from('events').update({ is_approved: !ev.is_approved }).eq('id', ev.id).then(() => fetchData())} className={`text-[11px] sm:text-xs px-3 py-1 rounded-full border border-white font-black ${ev.is_approved ? 'bg-zinc-800' : 'bg-green-600'}`}>{ev.is_approved ? 'BAJAR' : 'APROBAR'}</button>
-                    <button type="button" onClick={() => deleteEvent(ev.id)} className="text-[11px] sm:text-xs bg-red-600 px-3 py-1 rounded-full border border-white font-black">BORRAR</button>
-                  </div>
-                  <div className="flex flex-wrap gap-2 mt-2">
-                    <button type="button" onClick={() => toggleFeatured(ev.id, ev.is_featured)} className={`text-[11px] sm:text-xs px-3 py-1 rounded-full border font-black ${ev.is_featured ? 'bg-red-600 border-white text-white' : 'border-red-600 text-red-600'}`} title="Carrusel destacado arriba en la home">BANNER</button>
-                    <button type="button" onClick={() => updateEventTag(ev.id, 'PLANAZO', ev.suggestion_tag)} className={`text-[11px] sm:text-xs px-3 py-1 rounded-full border font-black ${ev.suggestion_tag === 'PLANAZO' ? 'bg-yellow-400 text-black border-black' : 'border-yellow-400 text-yellow-400'}`}>PLANAZO</button>
-                    <button type="button" onClick={() => updateEventTag(ev.id, 'NO FALLA', ev.suggestion_tag)} className={`text-[11px] sm:text-xs px-3 py-1 rounded-full border font-black ${ev.suggestion_tag === 'NO FALLA' ? 'bg-white text-black border-black' : 'border-white text-white'}`}>NO FALLA</button>
-                    <button type="button" onClick={() => updateEventTag(ev.id, 'SALIDA SEGURA', ev.suggestion_tag)} className={`text-[11px] sm:text-xs px-3 py-1 rounded-full border font-black ${ev.suggestion_tag === 'SALIDA SEGURA' ? 'bg-green-600 border-white text-white' : 'border-green-600 text-green-600'}`}>SALIDA SEGURA</button>
-                    <button type="button" onClick={() => toggleSoldOut(ev.id, ev.is_sold_out)} className={`text-[11px] sm:text-xs px-3 py-1 rounded-full border font-black ${ev.is_sold_out ? 'bg-red-600 border-white text-white' : 'border-red-600 text-red-600'}`}>AGOTADO</button>
-                    <button type="button" onClick={() => toggleSuspended(ev.id, ev.is_suspended)} className={`text-[11px] sm:text-xs px-3 py-1 rounded-full border font-black ${ev.is_suspended ? 'bg-white text-black border-black' : 'border-zinc-500 text-zinc-500'}`}>SUSPENDIDO</button>
+                  <div className="mt-3 space-y-2.5">
+                    <AdminButtonGroup label="Gestión">
+                      <button type="button" onClick={() => setEditingEvent(ev)} className={`${adminBtn} bg-blue-600 border-white`}>EDITAR</button>
+                      <button type="button" onClick={() => supabase.from('events').update({ is_approved: !ev.is_approved }).eq('id', ev.id).then(() => fetchData())} className={`${adminBtn} border-white ${ev.is_approved ? 'bg-zinc-800' : 'bg-green-600'}`}>{ev.is_approved ? 'BAJAR' : 'APROBAR'}</button>
+                      <button type="button" onClick={() => deleteEvent(ev.id)} className={`${adminBtn} bg-red-600 border-white`}>BORRAR</button>
+                    </AdminButtonGroup>
+                    <AdminButtonGroup label="Destacar en home">
+                      <button type="button" onClick={() => toggleFeatured(ev.id, ev.is_featured)} className={`${adminBtn} ${ev.is_featured ? 'bg-red-600 border-white text-white' : 'border-red-600 text-red-600'}`} title="Carrusel grande arriba en la portada">BANNER</button>
+                    </AdminButtonGroup>
+                    <AdminButtonGroup label="Etiquetas">
+                      <button type="button" onClick={() => updateEventTag(ev.id, 'PLANAZO', ev.suggestion_tag)} className={`${adminBtn} ${ev.suggestion_tag === 'PLANAZO' ? 'bg-yellow-400 text-black border-black' : 'border-yellow-400 text-yellow-400'}`}>PLANAZO</button>
+                      <button type="button" onClick={() => updateEventTag(ev.id, 'NO FALLA', ev.suggestion_tag)} className={`${adminBtn} ${ev.suggestion_tag === 'NO FALLA' ? 'bg-white text-black border-black' : 'border-white text-white'}`}>NO FALLA</button>
+                      <button type="button" onClick={() => updateEventTag(ev.id, 'SALIDA SEGURA', ev.suggestion_tag)} className={`${adminBtn} ${ev.suggestion_tag === 'SALIDA SEGURA' ? 'bg-green-600 border-white text-white' : 'border-green-600 text-green-600'}`}>SALIDA SEGURA</button>
+                    </AdminButtonGroup>
+                    <AdminButtonGroup label="Estado del show">
+                      <button type="button" onClick={() => toggleSoldOut(ev.id, ev.is_sold_out)} className={`${adminBtn} ${ev.is_sold_out ? 'bg-red-600 border-white text-white' : 'border-red-600 text-red-600'}`}>AGOTADO</button>
+                      <button type="button" onClick={() => toggleSuspended(ev.id, ev.is_suspended)} className={`${adminBtn} ${ev.is_suspended ? 'bg-white text-black border-black' : 'border-zinc-500 text-zinc-500'}`}>SUSPENDIDO</button>
+                    </AdminButtonGroup>
                   </div>
                 </div>
               </div>
@@ -187,7 +204,10 @@ export default function AdminDashboard() {
               {messages.map((m) => (
                 <div key={m.id} className="border-2 p-3 flex justify-between items-center border-white bg-zinc-900 rounded-2xl">
                   <div onClick={() => setSelectedMessage(m)} className="cursor-pointer flex-1 truncate pr-4"><h3 className="uppercase text-[10px] text-red-600">{m.name}</h3><p className="text-[9px] text-zinc-300 truncate">"{m.message}"</p></div>
-                  <div className="flex gap-2"><button onClick={() => setSelectedMessage(m)} className="text-[7px] bg-blue-600 px-2 py-0.5 rounded-full border border-white">VER</button><button onClick={() => deleteMessage(m.id)} className="text-[7px] bg-red-600 px-2 py-0.5 rounded-full border border-white">BORRAR</button></div>
+                  <div className="flex flex-shrink-0 gap-2">
+                    <button type="button" onClick={() => setSelectedMessage(m)} className={`${adminBtn} bg-blue-600 border-white`}>VER</button>
+                    <button type="button" onClick={() => deleteMessage(m.id)} className={`${adminBtn} bg-red-600 border-white`}>BORRAR</button>
+                  </div>
                 </div>
               ))}
             </div>
@@ -224,29 +244,11 @@ export default function AdminDashboard() {
                     {sp.link && (
                       <p className="text-[11px] text-zinc-400 truncate mt-1">{sp.link}</p>
                     )}
-                    <div className="flex flex-wrap gap-2 mt-3">
-                      <button
-                        type="button"
-                        onClick={() => setNewSponsor(sp)}
-                        className="text-[11px] sm:text-xs bg-blue-600 px-3 py-1 rounded-full border border-white font-black"
-                      >
-                        EDITAR
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => toggleSponsorStatus(sp.id, sp.is_active)}
-                        className="text-[11px] sm:text-xs bg-green-600 px-3 py-1 rounded-full border border-white font-black"
-                      >
-                        {sp.is_active ? 'PAUSA' : 'ACTIVO'}
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => deleteSponsor(sp.id)}
-                        className="text-[11px] sm:text-xs bg-red-600 px-3 py-1 rounded-full border border-white font-black"
-                      >
-                        BORRAR
-                      </button>
-                    </div>
+                    <AdminButtonGroup label="Gestión" className="mt-3">
+                      <button type="button" onClick={() => setNewSponsor(sp)} className={`${adminBtn} bg-blue-600 border-white`}>EDITAR</button>
+                      <button type="button" onClick={() => toggleSponsorStatus(sp.id, sp.is_active)} className={`${adminBtn} bg-green-600 border-white`}>{sp.is_active ? 'PAUSA' : 'ACTIVO'}</button>
+                      <button type="button" onClick={() => deleteSponsor(sp.id)} className={`${adminBtn} bg-red-600 border-white`}>BORRAR</button>
+                    </AdminButtonGroup>
                   </div>
                 </div>
               ))}
@@ -286,35 +288,15 @@ export default function AdminDashboard() {
                     {int.subtitle && (
                       <p className="text-[11px] text-zinc-400 uppercase mt-1 line-clamp-2 italic">{int.subtitle}</p>
                     )}
-                    <div className="flex flex-wrap gap-2 mt-3">
-                      <button
-                        type="button"
-                        onClick={() => setSelectedInterview(int)}
-                        className="text-[11px] sm:text-xs bg-zinc-700 text-white px-3 py-1 rounded-full border border-white font-black"
-                      >
-                        VER
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => setNewInterview(int)}
-                        className="text-[11px] sm:text-xs bg-blue-600 px-3 py-1 rounded-full border border-white font-black"
-                      >
-                        EDITAR
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => toggleInterviewStatus(int.id, int.is_active)}
-                        className="text-[11px] sm:text-xs bg-green-600 px-3 py-1 rounded-full border border-white font-black"
-                      >
-                        {int.is_active ? 'PAUSA' : 'ACTIVO'}
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => deleteInterview(int.id)}
-                        className="text-[11px] sm:text-xs bg-red-600 px-3 py-1 rounded-full border border-white font-black"
-                      >
-                        BORRAR
-                      </button>
+                    <div className="mt-3 space-y-2.5">
+                      <AdminButtonGroup label="Ver y editar">
+                        <button type="button" onClick={() => setSelectedInterview(int)} className={`${adminBtn} bg-zinc-700 border-white text-white`}>VER</button>
+                        <button type="button" onClick={() => setNewInterview(int)} className={`${adminBtn} bg-blue-600 border-white`}>EDITAR</button>
+                      </AdminButtonGroup>
+                      <AdminButtonGroup label="Gestión">
+                        <button type="button" onClick={() => toggleInterviewStatus(int.id, int.is_active)} className={`${adminBtn} bg-green-600 border-white`}>{int.is_active ? 'PAUSA' : 'ACTIVO'}</button>
+                        <button type="button" onClick={() => deleteInterview(int.id)} className={`${adminBtn} bg-red-600 border-white`}>BORRAR</button>
+                      </AdminButtonGroup>
                     </div>
                   </div>
                 </div>
