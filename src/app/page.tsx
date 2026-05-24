@@ -352,11 +352,16 @@ export default function Home() {
         </section>
         )}
 
-        {selectedEvent && (
-          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 font-black">
+        <footer className="border-t-4 border-zinc-800 pt-8 pb-16 text-center font-black">
+          <p className="text-zinc-500 font-bold uppercase text-[10px] max-w-2xl mx-auto tracking-tighter leading-relaxed italic font-black">AVISO: HOY QUIEN TOCA NO VENDE ENTRADAS. SOMOS UNA PLATAFORMA INFORMATIVA. LA VENTA Y ORGANIZACIÓN ES RESPONSABILIDAD DE LOS ORGANIZADORES.</p>
+        </footer>
+      </main>
+
+      {selectedEvent && (
+          <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 font-black overflow-y-auto">
             <div className="absolute inset-0 bg-black/90 backdrop-blur-sm font-black" onClick={() => setSelectedEvent(null)} />
             <div className="relative w-full max-w-4xl bg-zinc-900 border-4 md:border-8 border-white shadow-[20px_20px_0px_0px_rgba(220,38,38,0.5)] flex flex-col md:flex-row overflow-y-auto max-h-[90vh] rounded-[32px] md:rounded-[40px] font-black">
-              <button onClick={() => setSelectedEvent(null)} className="absolute top-4 right-4 bg-red-600 text-white w-10 h-10 font-black text-xl border-4 border-white z-50 hover:bg-black transition-colors text-center flex items-center justify-center rounded-full shadow-lg font-black">X</button>
+              <button onClick={() => setSelectedEvent(null)} className="absolute top-3 right-3 sm:top-4 sm:right-4 bg-red-600 text-white w-10 h-10 font-black text-xl border-4 border-white z-[210] hover:bg-black transition-colors text-center flex items-center justify-center rounded-full shadow-lg font-black">X</button>
               <div className="md:w-1/2 bg-zinc-800 border-b-4 md:border-b-0 md:border-r-4 border-white flex items-center justify-center p-4 font-black">
                 {selectedEvent.flyer_url ? <img src={selectedEvent.flyer_url} alt="Flyer" className="max-w-full h-auto shadow-2xl border-4 border-white rounded-2xl font-black" /> : <p className="font-black italic text-zinc-600 uppercase text-center font-franklin font-black">SIN FLYER</p>}
               </div>
@@ -400,40 +405,46 @@ export default function Home() {
           </div>
         )}
 
-        {selectedAd && (
-          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 font-black">
-            <div className="absolute inset-0 bg-black/95 backdrop-blur font-black" onClick={() => setSelectedAd(null)} />
-            <div className="relative max-w-2xl w-full bg-zinc-900 border-8 border-white p-4 shadow-[20px_20px_0px_0px_rgba(220,38,38,0.3)] text-center rounded-[40px] font-black">
-              <button onClick={() => setSelectedAd(null)} className="absolute -top-4 -right-4 bg-red-600 text-white w-12 h-12 font-black text-2xl border-4 border-white hover:bg-black transition-colors z-[110] text-center flex items-center justify-center shadow-xl rounded-full font-black">X</button>
-              <img src={selectedAd.image_url} alt="Sponsor" className="w-full h-auto border-4 border-zinc-800 shadow-2xl rounded-3xl font-black" />
-              <div className="p-6 text-center space-y-4 font-black">
-                {selectedAd.link && (
-                  <a href={selectedAd.link} target="_blank" className="inline-block bg-white text-black px-10 py-3 font-black uppercase hover:bg-red-600 hover:text-white transition-all shadow-[6px_6px_0px_0px_rgba(220,38,38,0.5)] rounded-full border-2 border-black italic font-black">Visitar Web</a>
-                )}
-              </div>
+      {selectedAd && (
+        <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 pt-16 sm:pt-4 font-black overflow-y-auto">
+          <div className="absolute inset-0 bg-black/95 backdrop-blur font-black" onClick={() => setSelectedAd(null)} />
+          <div className="relative max-w-2xl w-full bg-zinc-900 border-4 sm:border-8 border-white p-4 pt-12 sm:pt-4 shadow-[20px_20px_0px_0px_rgba(220,38,38,0.3)] text-center rounded-3xl sm:rounded-[40px] font-black my-auto">
+            <button
+              type="button"
+              onClick={() => setSelectedAd(null)}
+              className="absolute top-3 right-3 sm:top-4 sm:right-4 bg-red-600 text-white w-10 h-10 sm:w-12 sm:h-12 font-black text-xl sm:text-2xl border-4 border-white hover:bg-black transition-colors z-[210] flex items-center justify-center shadow-xl rounded-full font-black"
+            >
+              X
+            </button>
+            <img src={selectedAd.image_url} alt="Sponsor" className="w-full h-auto border-4 border-zinc-800 shadow-2xl rounded-3xl font-black" />
+            <div className="p-4 sm:p-6 text-center space-y-4 font-black">
+              {selectedAd.link && (
+                <a href={selectedAd.link} target="_blank" rel="noopener noreferrer" className="inline-block bg-white text-black px-8 sm:px-10 py-3 font-black uppercase hover:bg-red-600 hover:text-white transition-all shadow-[6px_6px_0px_0px_rgba(220,38,38,0.5)] rounded-full border-2 border-black italic font-black">Visitar Web</a>
+              )}
             </div>
           </div>
-        )}
+        </div>
+      )}
 
-        {/* Logo Modal */}
-        {showLogoModal && (
-          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 font-black">
-            <div className="absolute inset-0 bg-black/95 backdrop-blur-xl font-black" onClick={() => setShowLogoModal(false)} />
-            <div className="relative max-w-lg w-full bg-zinc-900 border-8 border-white p-4 shadow-[30px_30px_0px_0px_rgba(220,38,38,0.5)] text-center rounded-[50px] transform hover:scale-105 transition-transform duration-500 font-black">
-              <button onClick={() => setShowLogoModal(false)} className="absolute -top-4 -right-4 bg-red-600 text-white w-14 h-14 font-black text-3xl border-4 border-white hover:bg-black transition-colors z-[110] text-center flex items-center justify-center shadow-2xl rounded-full font-black font-black">X</button>
-              <Image src="/logo-rojo.jpg" alt="Logo Grande" width={800} height={800} className="w-full h-auto rounded-[40px] border-4 border-zinc-800 shadow-2xl font-black" />
-              <div className="p-6 font-black">
-                <h3 className="text-4xl font-franklin text-red-600 leading-none">Hoy Quien Toca</h3>
-                <p className="text-xs font-black uppercase tracking-widest text-white/60 mt-2 italic">Descubri recitales, toques y eventos musicales en tu Ciudad</p>
-              </div>
+      {showLogoModal && (
+        <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 pt-16 sm:pt-4 font-black overflow-y-auto">
+          <div className="absolute inset-0 bg-black/95 backdrop-blur-xl font-black" onClick={() => setShowLogoModal(false)} />
+          <div className="relative max-w-lg w-full bg-zinc-900 border-4 sm:border-8 border-white p-4 pt-12 sm:pt-4 shadow-[30px_30px_0px_0px_rgba(220,38,38,0.5)] text-center rounded-3xl sm:rounded-[50px] font-black my-auto">
+            <button
+              type="button"
+              onClick={() => setShowLogoModal(false)}
+              className="absolute top-3 right-3 sm:top-4 sm:right-4 bg-red-600 text-white w-10 h-10 sm:w-14 sm:h-14 font-black text-xl sm:text-3xl border-4 border-white hover:bg-black transition-colors z-[210] flex items-center justify-center shadow-2xl rounded-full font-black"
+            >
+              X
+            </button>
+            <Image src="/logo-rojo.jpg" alt="Logo Grande" width={800} height={800} className="w-full h-auto rounded-3xl sm:rounded-[40px] border-4 border-zinc-800 shadow-2xl font-black" />
+            <div className="p-4 sm:p-6 font-black">
+              <h3 className="text-3xl sm:text-4xl font-franklin text-red-600 leading-none">Hoy Quien Toca</h3>
+              <p className="text-xs font-black uppercase tracking-widest text-white/60 mt-2 italic">Descubri recitales, toques y eventos musicales en tu Ciudad</p>
             </div>
           </div>
-        )}
-
-        <footer className="border-t-4 border-zinc-800 pt-8 pb-16 text-center font-black">
-          <p className="text-zinc-500 font-bold uppercase text-[10px] max-w-2xl mx-auto tracking-tighter leading-relaxed italic font-black">AVISO: HOY QUIEN TOCA NO VENDE ENTRADAS. SOMOS UNA PLATAFORMA INFORMATIVA. LA VENTA Y ORGANIZACIÓN ES RESPONSABILIDAD DE LOS ORGANIZADORES.</p>
-        </footer>
-      </main>
+        </div>
+      )}
       <style jsx global>{`
         .custom-scrollbar::-webkit-scrollbar { width: 4px; }
         .custom-scrollbar::-webkit-scrollbar-track { background: #1a1a1a; }
