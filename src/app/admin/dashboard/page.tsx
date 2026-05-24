@@ -8,7 +8,7 @@ const DEPARTAMENTOS = ["MONTEVIDEO", "CANELONES", "MALDONADO", "COLONIA", "SAN J
 const GENEROS = ["ROCK", "CUMBIA", "PLENA", "ELECTRONICA", "TECHNO", "HOUSE", "INDIE", "POP", "TRAP", "REGGAETON", "HIP-HOP/RAP", "PUNK ROCK", "METAL", "FOLKLORE", "TANGO", "JAZZ", "BLUES", "FUNK", "REGGUE", "SKA", "ALTERNATIVO", "CARNAVAL", "MURGA", "TROPICAL", "LATINA", "ACUSTICO", "COVERS", "FIESTA", "DJ-SET", "UNDER"];
 
 const adminBtn = 'text-[9px] sm:text-[10px] px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-full border font-black whitespace-nowrap';
-const adminBarSm = 'w-full py-0.5 px-1 text-[7px] sm:text-[8px] font-black uppercase tracking-wide border rounded transition-colors leading-tight';
+const adminBar = 'w-full py-1 sm:py-1.5 px-1.5 text-[9px] sm:text-[10px] font-black uppercase tracking-wide border-2 rounded-md transition-colors leading-tight min-h-[1.35rem] sm:min-h-[1.6rem] flex items-center justify-center';
 
 export default function AdminDashboard() {
   const [events, setEvents] = useState<any[]>([]);
@@ -148,8 +148,8 @@ export default function AdminDashboard() {
             alt={ev.band_name}
             className="w-[6.65rem] h-[8.05rem] sm:w-28 sm:h-[8.4rem] object-cover border-2 border-white rounded-lg flex-shrink-0 self-start"
           />
-          <div className="min-w-0 flex-1 flex flex-col gap-1">
-            <div className="flex items-start justify-between gap-1">
+          <div className="min-w-0 flex-1 flex flex-col gap-1 min-h-[8.05rem] sm:min-h-[8.4rem]">
+            <div className="flex items-start justify-between gap-1 flex-shrink-0">
               <h3 className="text-sm sm:text-base font-black uppercase leading-tight truncate flex-1 min-w-0 pr-1">{ev.band_name}</h3>
               <div className="flex flex-shrink-0 gap-0.5 sm:gap-1">
                 <button type="button" onClick={() => setEditingEvent(ev)} className={`${adminBtn} bg-blue-600 border-white`}>EDITAR</button>
@@ -157,25 +157,27 @@ export default function AdminDashboard() {
                 <button type="button" onClick={() => deleteEvent(ev.id)} className={`${adminBtn} bg-red-600 border-white`}>BORRAR</button>
               </div>
             </div>
-            <p className="text-[10px] sm:text-xs font-bold text-red-600 uppercase line-clamp-2">
+            <p className="text-[10px] sm:text-xs font-bold text-red-600 uppercase line-clamp-2 flex-shrink-0">
               {ev.date} — {ev.time?.substring(0, 5)} hs · {ev.venue}
             </p>
-            <button
-              type="button"
-              onClick={() => toggleFeatured(ev.id, ev.is_featured)}
-              title="Carrusel destacado arriba en la portada"
-              className={`${adminBarSm} ${ev.is_featured ? 'bg-red-600 border-white text-white' : 'bg-transparent border-red-600 text-red-600'}`}
-            >
-              BANNER
-            </button>
-            <div className="grid grid-cols-3 gap-0.5 sm:gap-1">
-              <button type="button" onClick={() => updateEventTag(ev.id, 'PLANAZO', ev.suggestion_tag)} className={`${adminBarSm} ${ev.suggestion_tag === 'PLANAZO' ? 'bg-yellow-400 text-black border-black' : 'border-yellow-400 text-yellow-400'}`}>PLANAZO</button>
-              <button type="button" onClick={() => updateEventTag(ev.id, 'NO FALLA', ev.suggestion_tag)} className={`${adminBarSm} ${ev.suggestion_tag === 'NO FALLA' ? 'bg-white text-black border-black' : 'border-white text-white'}`}>NO FALLA</button>
-              <button type="button" onClick={() => updateEventTag(ev.id, 'SALIDA SEGURA', ev.suggestion_tag)} className={`${adminBarSm} text-[6px] sm:text-[7px] ${ev.suggestion_tag === 'SALIDA SEGURA' ? 'bg-green-600 border-white text-white' : 'border-green-600 text-green-600'}`}>SALIDA SEGURA</button>
-            </div>
-            <div className="grid grid-cols-2 gap-0.5 sm:gap-1">
-              <button type="button" onClick={() => toggleSoldOut(ev.id, ev.is_sold_out)} className={`${adminBarSm} ${ev.is_sold_out ? 'bg-red-600 border-white text-white' : 'border-red-600 text-red-600'}`}>AGOTADO</button>
-              <button type="button" onClick={() => toggleSuspended(ev.id, ev.is_suspended)} className={`${adminBarSm} ${ev.is_suspended ? 'bg-orange-500 border-white text-black' : 'border-orange-500 text-orange-500'}`}>SUSPENDIDO</button>
+            <div className="flex flex-col gap-1 sm:gap-1.5 flex-1 justify-between min-h-0">
+              <button
+                type="button"
+                onClick={() => toggleFeatured(ev.id, ev.is_featured)}
+                title="Carrusel destacado arriba en la portada"
+                className={`${adminBar} flex-1 ${ev.is_featured ? 'bg-red-600 border-white text-white' : 'bg-transparent border-red-600 text-red-600'}`}
+              >
+                BANNER
+              </button>
+              <div className="grid grid-cols-3 gap-1 sm:gap-1.5 flex-1">
+                <button type="button" onClick={() => updateEventTag(ev.id, 'PLANAZO', ev.suggestion_tag)} className={`${adminBar} h-full ${ev.suggestion_tag === 'PLANAZO' ? 'bg-yellow-400 text-black border-black' : 'border-yellow-400 text-yellow-400'}`}>PLANAZO</button>
+                <button type="button" onClick={() => updateEventTag(ev.id, 'NO FALLA', ev.suggestion_tag)} className={`${adminBar} h-full ${ev.suggestion_tag === 'NO FALLA' ? 'bg-white text-black border-black' : 'border-white text-white'}`}>NO FALLA</button>
+                <button type="button" onClick={() => updateEventTag(ev.id, 'SALIDA SEGURA', ev.suggestion_tag)} className={`${adminBar} h-full text-[8px] sm:text-[9px] ${ev.suggestion_tag === 'SALIDA SEGURA' ? 'bg-green-600 border-white text-white' : 'border-green-600 text-green-600'}`}>SALIDA SEGURA</button>
+              </div>
+              <div className="grid grid-cols-2 gap-1 sm:gap-1.5 flex-1">
+                <button type="button" onClick={() => toggleSoldOut(ev.id, ev.is_sold_out)} className={`${adminBar} h-full ${ev.is_sold_out ? 'bg-red-600 border-white text-white' : 'border-red-600 text-red-600'}`}>AGOTADO</button>
+                <button type="button" onClick={() => toggleSuspended(ev.id, ev.is_suspended)} className={`${adminBar} h-full ${ev.is_suspended ? 'bg-orange-500 border-white text-black' : 'border-orange-500 text-orange-500'}`}>SUSPENDIDO</button>
+              </div>
             </div>
           </div>
         </div>
