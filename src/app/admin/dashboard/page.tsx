@@ -69,16 +69,18 @@ export default function AdminDashboard() {
       const data = await res.json();
       
       if (data.success) {
-        // Abrimos el formulario de edición con los datos traídos
+        // Abrimos el formulario con todos los datos posibles
         setEditingEvent({
-          id: 'new', // Flag para saber que es uno nuevo
+          id: 'new',
           band_name: data.data.title || '',
           description: data.data.description || '',
           venue: data.data.venue || '',
+          address: data.data.address || '',
           date: data.data.date || '',
           time: data.data.time || '21:00',
           price_type: data.data.price ? 'range' : 'free',
           price_min: data.data.price || '',
+          flyer_url: data.data.image_url || '',
           ticket_contact: magicLink,
           ticket_type: 'link',
           is_approved: false
@@ -113,12 +115,10 @@ export default function AdminDashboard() {
     const { id, created_at, ...data } = editingEvent;
 
     if (id === 'new') {
-       // Insertar nuevo evento desde admin
        const { error } = await supabase.from('events').insert([data]);
        if (error) alert('Error al crear: ' + error.message);
        else { setEditingEvent(null); fetchData(); }
     } else {
-       // Actualizar existente
        const { error } = await supabase.from('events').update(data).eq('id', id);
        if (error) alert('Error: ' + error.message);
        else { setEditingEvent(null); fetchData(); }
@@ -178,11 +178,8 @@ export default function AdminDashboard() {
   async function handleSaveInterview(e: React.FormEvent) {
     e.preventDefault();
     if (!newInterview.image_url) return alert('Sube foto primero');
-    
-    // Type casting to safely handle dynamic props
     const temp: any = { ...newInterview };
     const { id, created_at, published_at, ...data } = temp;
-    
     let error;
     if (id) error = (await supabase.from('interviews').update(data).eq('id', id)).error;
     else error = (await supabase.from('interviews').insert([data])).error;
@@ -218,64 +215,92 @@ export default function AdminDashboard() {
     <div className="min-h-screen bg-zinc-900 text-white p-4 md:p-6 font-sans relative text-left overflow-x-hidden font-black">
       <header className="flex flex-col md:flex-row justify-between items-center mb-8 border-b-4 border-red-600 pb-6 bg-zinc-950 p-4 sticky top-0 z-50 gap-4">
         <div>
-           <h1 className="text-3xl md:text-4xl font-black uppercase italic text-red-600 leading-none">ADMINISTRADOR HQT</h1>
+           <h1 className="text-3xl md:text-4xl font-black uppercase italic text-red-600 leading-none font-franklin">ADMINISTRADOR HQT</h1>
            <p className="text-[10px] md:text-xs font-bold text-zinc-500 uppercase tracking-widest mt-1 italic font-black">Descubri recitales, toques y eventos musicales en tu Ciudad</p>
         </div>
         <div className="flex gap-4">
-          <button onClick={() => router.push('/')} className="bg-white text-black px-4 py-1 font-black uppercase text-xs hover:bg-red-600 hover:text-white transition-colors">Web</button>
-          <button onClick={() => supabase.auth.signOut().then(() => router.push('/admin'))} className="bg-red-600 px-4 py-1 font-black uppercase text-xs hover:bg-white hover:text-black transition-colors font-black">Salir</button>
+          <button onClick={() => router.push('/')} className="bg-white text-black px-4 py-1 font-black uppercase text-xs hover:bg-red-600 hover:text-white transition-colors rounded-full border-2 border-white">Web</button>
+          <button onClick={() => supabase.auth.signOut().then(() => router.push('/admin'))} className="bg-red-600 px-4 py-1 font-black uppercase text-xs hover:bg-white hover:text-black transition-colors font-black rounded-full border-2 border-white">Salir</button>
         </div>
       </header>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 md:gap-10">
-        {/* LADO IZQUIERDO: FECHAS (ESTILO ROJO/SIMPLE) */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 md:gap-10 font-black">
+        {/* LADO IZQUIERDO: FECHAS */}
         <section className="space-y-6 text-left">
-          <div className="flex flex-col md:flex-row justify-between items-center gap-4 bg-zinc-950 p-4 border-l-8 border-red-600">
-             <h2 className="text-2xl font-black uppercase italic text-red-600">Gestión de Fechas</h2>
-             
-             {/* MAGIC LOAD INPUT */}
+          <div className="flex flex-col md:flex-row justify-between items-center gap-4 bg-zinc-950 p-4 border-l-8 border-red-600 rounded-r-2xl">
+             <h2 className="text-2xl font-black uppercase italic text-red-600 font-franklin">Gestión de Fechas</h2>
              <div className="flex gap-2 w-full md:w-auto">
                 <input 
                   placeholder="Pegar link de Ticketera..." 
-                  className="bg-black border-2 border-zinc-700 p-2 text-[10px] uppercase font-bold rounded-lg flex-1 md:w-48 outline-none focus:border-red-600"
+                  className="bg-black border-2 border-zinc-700 p-2 text-[10px] uppercase font-bold rounded-xl flex-1 md:w-48 outline-none focus:border-red-600"
                   value={magicLink}
                   onChange={e => setMagicLink(e.target.value)}
                 />
                 <button 
                   onClick={handleMagicLoad}
                   disabled={isScraping}
-                  className="bg-red-600 text-white px-3 py-2 text-[10px] font-black uppercase rounded-lg hover:bg-white hover:text-black transition-colors"
+                  className="bg-red-600 text-white px-4 py-2 text-[10px] font-black uppercase rounded-full hover:bg-white hover:text-black transition-colors shadow-lg animate-pulse"
                 >
-                  {isScraping ? '⌛' : 'CARGAR MAGIC'}
+                  {isScraping ? '⌛' : 'MAGIC'}
                 </button>
              </div>
           </div>
           
           {editingEvent && (
-            <div className="border-4 border-blue-600 p-4 bg-zinc-950 space-y-4 mb-8 shadow-[10px_10px_0px_0px_rgba(37,99,235,1)] rounded-3xl">
-              <h3 className="font-black uppercase text-blue-500">{editingEvent.id === 'new' ? 'NUEVA FECHA RÁPIDA' : `Editando: ${editingEvent.band_name}`}</h3>
-              <form onSubmit={handleSaveEvent} className="grid grid-cols-2 gap-2 text-xs text-white">
-                <input value={editingEvent.band_name} onChange={e => setEditingEvent({...editingEvent, band_name: e.target.value})} className="col-span-2 bg-black border p-2 uppercase font-bold rounded-lg" placeholder="Banda / Artista" />
-                <input value={editingEvent.address || ''} onChange={e => setEditingEvent({...editingEvent, address: e.target.value})} className="col-span-2 bg-black border p-2 uppercase rounded-lg" placeholder="Dirección" />
-                <input type="date" value={editingEvent.date} onChange={e => setEditingEvent({...editingEvent, date: e.target.value})} className="bg-black border p-2 rounded-lg" />
-                <input type="time" value={editingEvent.time} onChange={e => setEditingEvent({...editingEvent, time: e.target.value})} className="bg-black border p-2 rounded-lg" />
-                <select value={editingEvent.age_rating} onChange={e => setEditingEvent({...editingEvent, age_rating: e.target.value})} className="bg-black border p-2 rounded-lg">
-                   <option value="ATP">ATP</option>
-                   <option value="+5">+5</option><option value="+7">+7</option><option value="+10">+10</option>
-                   <option value="+12">+12</option><option value="+15">+15</option><option value="+18">+18</option>
-                </select>
+            <div className="border-4 border-blue-600 p-4 bg-zinc-950 space-y-4 mb-8 shadow-[10px_10px_0px_0px_rgba(37,99,235,1)] rounded-3xl font-black">
+              <h3 className="font-black uppercase text-blue-500 font-franklin">{editingEvent.id === 'new' ? 'NUEVA FECHA RÁPIDA' : `Editando: ${editingEvent.band_name}`}</h3>
+              <form onSubmit={handleSaveEvent} className="grid grid-cols-2 gap-3 text-xs text-white">
+                <div className="col-span-2 space-y-1">
+                   <label className="text-[8px] text-zinc-500 uppercase">Banda / Artista</label>
+                   <input value={editingEvent.band_name} onChange={e => setEditingEvent({...editingEvent, band_name: e.target.value})} className="w-full bg-black border-2 border-white p-2 uppercase font-bold rounded-xl" />
+                </div>
+                <div className="space-y-1">
+                   <label className="text-[8px] text-zinc-500 uppercase">Lugar</label>
+                   <input value={editingEvent.venue} onChange={e => setEditingEvent({...editingEvent, venue: e.target.value})} className="w-full bg-black border-2 border-white p-2 uppercase rounded-xl" />
+                </div>
+                <div className="space-y-1">
+                   <label className="text-[8px] text-zinc-500 uppercase">Dirección</label>
+                   <input value={editingEvent.address || ''} onChange={e => setEditingEvent({...editingEvent, address: e.target.value})} className="w-full bg-black border-2 border-white p-2 uppercase rounded-xl" placeholder="Ej: 18 de Julio 1234" />
+                </div>
+                <div className="space-y-1">
+                   <label className="text-[8px] text-zinc-500 uppercase">Fecha</label>
+                   <input type="date" value={editingEvent.date} onChange={e => setEditingEvent({...editingEvent, date: e.target.value})} className="w-full bg-black border-2 border-white p-2 rounded-xl" />
+                </div>
+                <div className="space-y-1">
+                   <label className="text-[8px] text-zinc-500 uppercase">Hora</label>
+                   <input type="time" value={editingEvent.time} onChange={e => setEditingEvent({...editingEvent, time: e.target.value})} className="w-full bg-black border-2 border-white p-2 rounded-xl" />
+                </div>
+                <div className="space-y-1">
+                   <label className="text-[8px] text-zinc-500 uppercase">Precio Min $</label>
+                   <input value={editingEvent.price_min || ''} onChange={e => setEditingEvent({...editingEvent, price_min: e.target.value})} className="w-full bg-black border-2 border-white p-2 rounded-xl" placeholder="Ej: 500" />
+                </div>
+                <div className="space-y-1">
+                   <label className="text-[8px] text-zinc-500 uppercase">Edad</label>
+                   <select value={editingEvent.age_rating} onChange={e => setEditingEvent({...editingEvent, age_rating: e.target.value})} className="w-full bg-black border-2 border-white p-2 rounded-xl">
+                      <option value="ATP">ATP</option>
+                      <option value="+5">+5</option><option value="+7">+7</option><option value="+10">+10</option>
+                      <option value="+12">+12</option><option value="+15">+15</option><option value="+18">+18</option>
+                   </select>
+                </div>
+                
+                <div className="col-span-2 space-y-1">
+                   <label className="text-[8px] text-zinc-500 uppercase">URL del Flyer (Si vino del Magic)</label>
+                   <input value={editingEvent.flyer_url || ''} onChange={e => setEditingEvent({...editingEvent, flyer_url: e.target.value})} className="w-full bg-black border-2 border-zinc-700 p-2 text-[10px] rounded-xl" />
+                </div>
+
                 <div className="col-span-2 space-y-1 font-black">
-                   <textarea value={editingEvent.description || ''} onChange={e => setEditingEvent({...editingEvent, description: e.target.value})} className="w-full bg-black border p-2 uppercase rounded-lg h-20" placeholder="Reseña" />
+                   <label className="text-[8px] text-zinc-500 uppercase">Reseña del Show</label>
+                   <textarea value={editingEvent.description || ''} onChange={e => setEditingEvent({...editingEvent, description: e.target.value})} className="w-full bg-black border-2 border-white p-2 uppercase rounded-xl h-24" />
                 </div>
                 <div className="col-span-2 flex gap-2 pt-2 font-black">
-                  <button type="submit" className="flex-1 bg-blue-600 py-2 font-black border-2 border-white rounded-full uppercase">{editingEvent.id === 'new' ? 'CREAR Y PUBLICAR' : 'ACTUALIZAR'}</button>
-                  <button type="button" onClick={() => setEditingEvent(null)} className="bg-zinc-700 px-4 font-black rounded-full">X</button>
+                  <button type="submit" className="flex-1 bg-blue-600 py-3 font-black border-2 border-white rounded-full uppercase shadow-lg">PUBLICAR AHORA</button>
+                  <button type="button" onClick={() => setEditingEvent(null)} className="bg-zinc-700 px-6 font-black border-2 border-white rounded-full">CANCELAR</button>
                 </div>
               </form>
             </div>
           )}
 
-          <div className="space-y-4">
+          <div className="space-y-4 font-black">
             {events.map((event) => (
               <div key={event.id} className={`border-4 p-4 flex flex-col gap-4 ${!event.is_approved ? 'border-red-600 bg-zinc-900 animate-pulse shadow-lg' : event.is_featured ? 'border-red-600 bg-zinc-950/80 shadow-md' : 'border-zinc-700 bg-zinc-950/80'} rounded-[32px]`}>
                 <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 text-left font-black">
@@ -285,15 +310,11 @@ export default function AdminDashboard() {
                       <h3 className="text-xl font-black uppercase leading-none">{event.band_name}</h3>
                       <p className="text-[10px] font-bold text-red-600 uppercase">{event.date} - {event.time.substring(0,5)}hs</p>
                       <p className="text-[10px] text-zinc-400 uppercase">{event.venue} - {event.address || 'Sin Dirección'}</p>
-                      <div className="flex gap-1 mt-1 font-black">
-                        <p className="text-[8px] text-white uppercase opacity-50 bg-zinc-800 px-2 py-0.5 rounded-sm">{!event.is_approved ? 'PENDIENTE' : event.is_featured ? '★ DESTACADO' : 'APROBADO'}</p>
-                        {event.is_suspended && <p className="text-[8px] bg-white text-black font-black uppercase px-2 py-0.5 rounded-sm italic">SUSPENDIDO</p>}
-                      </div>
                     </div>
                   </div>
                   <div className="flex gap-2 w-full md:w-auto font-black">
                     <button onClick={() => setEditingEvent(event)} className="bg-blue-600 text-white px-3 py-1 font-black uppercase text-[10px] border-2 border-white shadow-sm rounded-full">EDITAR</button>
-                    <button onClick={() => supabase.from('events').update({ is_approved: !event.is_approved }).eq('id', event.id).then(() => fetchData())} className={`flex-1 md:flex-none px-3 py-1 font-black uppercase text-[10px] border-2 border-white shadow-sm rounded-full ${event.is_approved ? 'bg-zinc-800 text-zinc-400' : 'bg-green-600 text-white'}`}>{event.is_approved ? 'BAJAR' : 'APROBAR'}</button>
+                    <button onClick={() => supabase.from('events').update({ is_approved: !event.is_approved }).eq('id', event.id).then(() => fetchData())} className={`flex-1 md:flex-none px-3 py-1 font-black uppercase text-[10px] border-2 border-white shadow-sm rounded-full ${event.is_approved ? 'bg-zinc-800 text-zinc-400' : 'bg-green-600 text-white font-black'}`}>{event.is_approved ? 'BAJAR' : 'APROBAR'}</button>
                     <button onClick={() => deleteEvent(event.id)} className="bg-red-600 text-white px-3 py-1 font-black text-[10px] border-2 border-white shadow-sm rounded-full font-black">BORRAR</button>
                   </div>
                 </div>
@@ -302,7 +323,7 @@ export default function AdminDashboard() {
                   <div className="space-y-3 border-t border-zinc-800 pt-3 font-black">
                     <button 
                       onClick={() => toggleFeatured(event.id, event.is_featured)} 
-                      className={`w-full py-1 font-black uppercase text-[10px] border-2 transition-all rounded-full ${event.is_featured ? 'bg-red-600 text-white border-white shadow-md font-black' : 'bg-black text-red-600 border-red-600'}`}
+                      className={`w-full py-1 font-black uppercase text-[10px] border-2 transition-all rounded-full ${event.is_featured ? 'bg-red-600 text-white border-white shadow-md font-black' : 'bg-black text-red-600 border-red-600 font-black'}`}
                     >
                       {event.is_featured ? '★ EN BANNER PRINCIPAL (DESACTIVAR)' : '★ PONER EN BANNER PRINCIPAL'}
                     </button>
@@ -310,12 +331,11 @@ export default function AdminDashboard() {
                       <button onClick={() => updateEventTag(event.id, 'PLANAZO')} className={`px-2 py-1 text-[8px] font-black border-2 rounded-full ${event.suggestion_tag === 'PLANAZO' ? 'bg-red-600 border-white text-white' : 'border-red-600 text-red-600'}`}>PLANAZO</button>
                       <button onClick={() => updateEventTag(event.id, 'SALIDA SEGURA')} className={`px-2 py-1 text-[8px] font-black border-2 rounded-full ${event.suggestion_tag === 'SALIDA SEGURA' ? 'bg-green-600 border-white text-white' : 'border-green-600 text-green-600'}`}>SALIDA SEGURA</button>
                       <button onClick={() => updateEventTag(event.id, 'NO FALLA')} className={`px-2 py-1 text-[8px] font-black border-2 rounded-full ${event.suggestion_tag === 'NO FALLA' ? 'bg-white border-black text-black' : 'border-white text-white'}`}>NO FALLA</button>
-                      <button onClick={() => updateEventTag(event.id, '')} className="text-[7px] font-black uppercase text-zinc-500 underline ml-auto">QUITAR TAG</button>
                     </div>
                     
                     <div className="flex gap-2">
                        <button onClick={() => toggleSoldOut(event.id, event.is_sold_out)} className={`flex-1 py-1 text-[9px] font-black uppercase border-2 rounded-full ${event.is_sold_out ? 'bg-red-600 border-white text-white shadow-lg animate-pulse' : 'border-zinc-700 text-zinc-500'}`}>{event.is_sold_out ? 'AGOTADO' : 'MARCAR AGOTADO'}</button>
-                       <button onClick={() => toggleSuspended(event.id, event.is_suspended)} className={`flex-1 py-1 text-[9px] font-black uppercase border-2 rounded-full ${event.is_suspended ? 'bg-white text-black border-black shadow-lg animate-pulse' : 'border-zinc-700 text-zinc-500'}`}>{event.is_suspended ? 'ACTIVAR TOQUE' : 'SUSPENDER'}</button>
+                       <button onClick={() => toggleSuspended(event.id, event.is_suspended)} className={`flex-1 py-1 text-[9px] font-black uppercase border-2 rounded-full ${event.is_suspended ? 'bg-white text-black border-black shadow-lg animate-pulse' : 'border-zinc-700 text-zinc-500'}`}>{event.is_suspended ? 'ACTIVAR' : 'SUSPENDER'}</button>
                     </div>
                   </div>
                 )}
@@ -328,7 +348,7 @@ export default function AdminDashboard() {
         <section className="space-y-12 font-black">
           {/* Publicidad */}
           <div className="space-y-6 text-left">
-            <h2 className="text-2xl font-black uppercase italic text-red-600 border-l-8 border-red-600 pl-4 bg-zinc-950 py-2">Publicidad</h2>
+            <h2 className="text-2xl font-black uppercase italic text-red-600 border-l-8 border-red-600 pl-4 bg-zinc-950 py-2 font-franklin">Publicidad</h2>
             <form onSubmit={handleSaveSponsor} className="bg-zinc-950 p-4 md:p-6 border-4 border-white space-y-4 shadow-xl rounded-[32px]">
               <span className="text-[10px] font-black uppercase text-zinc-500">{newSponsor.id ? 'EDITANDO' : 'NUEVO ANUNCIO'}</span>
               <input placeholder="Nombre Cliente" className="w-full bg-black border-2 border-white p-2 font-bold uppercase text-xs text-white outline-none focus:border-red-600 rounded-xl" value={newSponsor.client_name} onChange={e => setNewSponsor({...newSponsor, client_name: e.target.value})} required />
@@ -371,7 +391,7 @@ export default function AdminDashboard() {
 
           {/* Entrevistas */}
           <div className="space-y-6 border-t-4 border-zinc-800 pt-8 text-left font-black">
-            <h2 className="text-2xl font-black uppercase italic text-red-600 border-l-8 border-red-600 pl-4 bg-zinc-950 py-2">Entrevistas</h2>
+            <h2 className="text-2xl font-black uppercase italic text-red-600 border-l-8 border-red-600 pl-4 bg-zinc-950 py-2 font-franklin">Entrevistas</h2>
             <form onSubmit={handleSaveInterview} className="bg-zinc-950 p-4 md:p-6 border-4 border-white space-y-4 shadow-xl rounded-[32px]">
               <input placeholder="Título" className="w-full bg-black border-2 border-white p-2 font-bold uppercase text-xs text-white focus:border-red-600 outline-none rounded-xl" value={newInterview.title} onChange={e => setNewInterview({...newInterview, title: e.target.value})} required />
               <input placeholder="Subtítulo / Copete" className="w-full bg-black border-2 border-white p-2 font-bold uppercase text-xs text-white focus:border-red-600 outline-none rounded-xl" value={newInterview.subtitle || ''} onChange={e => setNewInterview({...newInterview, subtitle: e.target.value})} />
@@ -422,7 +442,7 @@ export default function AdminDashboard() {
 
           {/* Mensajes */}
           <div className="space-y-6 border-t-4 border-zinc-800 pt-8 text-left text-white font-black">
-            <h2 className="text-2xl font-black uppercase italic text-red-600 border-l-8 border-red-600 pl-4 bg-zinc-950 py-2 font-black">Mensajes</h2>
+            <h2 className="text-2xl font-black uppercase italic text-red-600 border-l-8 border-red-600 pl-4 bg-zinc-950 py-2 font-black font-franklin">Mensajes</h2>
             <div className="space-y-4 max-h-[300px] overflow-y-auto pr-2 custom-scrollbar font-black">
               {messages.map((msg) => (
                 <div key={msg.id} className={`border-2 p-3 flex justify-between items-center ${msg.is_read ? 'border-zinc-800 bg-zinc-950/50 opacity-60' : 'border-white bg-zinc-900'} rounded-2xl`}>
