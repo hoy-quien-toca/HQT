@@ -80,14 +80,14 @@ export default function AdminDashboard() {
     return data.publicUrl;
   }
 
-  // --- EVENTS (LOCKED) ---
+  // --- EVENTS ---
   async function handleSaveEvent(e: React.FormEvent) {
     e.preventDefault();
     if (!editingEvent) return;
     const { id, created_at, ...data } = editingEvent;
     if (id === 'new') {
        const { error } = await supabase.from('events').insert([data]);
-       if (error) alert('Error al crear: ' + error.message);
+       if (error) alert('Error: ' + error.message);
        else { setEditingEvent(null); fetchData(); }
     } else {
        const { error } = await supabase.from('events').update(data).eq('id', id);
@@ -119,7 +119,7 @@ export default function AdminDashboard() {
     }
   }
 
-  // --- SPONSORS (LOCKED) ---
+  // --- SPONSORS ---
   async function handleSaveSponsor(e: React.FormEvent) {
     e.preventDefault();
     if (!newSponsor.image_url) return alert('Sube imagen primero');
@@ -171,7 +171,7 @@ export default function AdminDashboard() {
 
   async function toggleInterviewStatus(id: string, currentStatus: boolean) {
     const { error } = await supabase.from('interviews').update({ is_active: !currentStatus }).eq('id', id);
-    if (error) alert('Error al cambiar estado: ' + error.message);
+    if (error) alert('Error: ' + error.message);
     else fetchData();
   }
 
@@ -184,203 +184,213 @@ export default function AdminDashboard() {
     }
   }
 
-  if (loading) return <div className="min-h-screen bg-black text-red-600 flex items-center justify-center font-black text-2xl uppercase italic text-center">Cargando...</div>;
+  if (loading) return <div className="min-h-screen bg-black text-red-600 flex items-center justify-center font-black text-4xl uppercase italic text-center font-black">Cargando Admin...</div>;
 
   return (
     <div className="min-h-screen bg-zinc-900 text-white p-4 md:p-6 font-sans relative text-left overflow-x-hidden font-black">
-      <header className="flex flex-col md:flex-row justify-between items-center mb-8 border-b-4 border-red-600 pb-6 bg-zinc-950 p-4 sticky top-0 z-50 gap-4">
+      <header className="flex flex-col md:flex-row justify-between items-center mb-8 border-b-4 border-red-600 pb-6 bg-zinc-950 p-4 sticky top-0 z-50 gap-4 font-black">
         <div>
            <h1 className="text-3xl md:text-4xl font-black uppercase italic text-red-600 leading-none">ADMINISTRADOR HQT</h1>
-           <p className="text-[10px] md:text-xs font-bold text-zinc-500 uppercase tracking-widest mt-1 italic">Gestión de Hoy Quien Toca</p>
+           <p className="text-[10px] md:text-xs font-bold text-zinc-500 uppercase tracking-widest mt-1 italic font-black">Gestión de Hoy Quien Toca</p>
         </div>
-        <div className="flex gap-4 font-black">
-          <button onClick={() => router.push('/')} className="bg-white text-black px-4 py-1 font-black uppercase text-xs hover:bg-red-600 hover:text-white transition-colors rounded-full border-2 border-white">Web</button>
-          <button onClick={() => supabase.auth.signOut().then(() => router.push('/admin'))} className="bg-red-600 px-4 py-1 font-black uppercase text-xs hover:bg-white hover:text-black transition-colors rounded-full border-2 border-white font-black">Salir</button>
+        <div className="flex gap-4">
+          <button onClick={() => router.push('/')} className="bg-white text-black px-4 py-1 font-black uppercase text-xs hover:bg-red-600 hover:text-white transition-colors rounded-full border-2 border-white font-black font-black">Web</button>
+          <button onClick={() => supabase.auth.signOut().then(() => router.push('/admin'))} className="bg-red-600 px-4 py-1 font-black uppercase text-xs hover:bg-white hover:text-black transition-colors font-black rounded-full border-2 border-white font-black">Salir</button>
         </div>
       </header>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 md:gap-10">
-        {/* LADO IZQUIERDO: FECHAS (LOCKED - TOTALMENTE INTACTO) */}
-        <section className="space-y-6 text-left">
-          <div className="flex justify-between items-center bg-zinc-950 p-3 border-l-4 border-red-600 rounded-r-xl">
-             <h2 className="text-xl font-black uppercase italic text-red-600 font-franklin">Fechas</h2>
-             <button onClick={() => setEditingEvent({ id: 'new', band_name: '', venue: '', address: '', city: '', department: 'MONTEVIDEO', date: '', time: '21:00', age_rating: 'ATP', description: '', is_approved: false, price_type: 'range', genre: 'ROCK', flyer_url: '', price_min: '', price_max: '', ticket_type: 'link', ticket_contact: '' })} className="bg-red-600 text-white px-4 py-1.5 text-[9px] font-black uppercase rounded-full border-2 border-white">+ NUEVA FECHA</button>
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 md:gap-10 font-black">
+        {/* LADO IZQUIERDO: FECHAS (STABLE RED VERSION) */}
+        <section className="space-y-6 text-left font-black font-black">
+          <div className="flex justify-between items-center bg-zinc-950 p-4 border-l-8 border-red-600 rounded-r-2xl font-black">
+             <h2 className="text-2xl font-black uppercase italic text-red-600 font-franklin font-black">Fechas</h2>
+             <button onClick={() => setEditingEvent({ id: 'new', band_name: '', venue: '', address: '', city: '', department: 'MONTEVIDEO', date: '', time: '21:00', age_rating: 'ATP', description: '', is_approved: false, price_type: 'range', genre: 'ROCK', flyer_url: '', price_min: '', price_max: '', ticket_type: 'link', ticket_contact: '' })} className="bg-red-600 text-white px-6 py-2 text-[10px] font-black uppercase rounded-full hover:bg-white hover:text-black transition-all shadow-lg font-black">+ NUEVA FECHA</button>
           </div>
           
           {editingEvent && (
             <div className="border-4 border-blue-600 p-4 bg-zinc-950 space-y-4 mb-8 shadow-lg rounded-3xl font-black">
-              <h3 className="text-sm font-black uppercase text-blue-500 font-franklin">{editingEvent.id === 'new' ? 'NUEVA FECHA' : 'EDITANDO'}</h3>
-              <form onSubmit={handleSaveEvent} className="grid grid-cols-2 gap-3 text-[10px] text-white font-black">
-                <input required value={editingEvent.band_name} onChange={e => setEditingEvent({...editingEvent, band_name: e.target.value})} className="col-span-2 bg-black border-2 border-white p-2 uppercase font-bold rounded-lg" placeholder="Banda" />
-                <input required value={editingEvent.venue || ''} onChange={e => setEditingEvent({...editingEvent, venue: e.target.value})} className="bg-black border-2 border-white p-2 uppercase rounded-lg" placeholder="Lugar" />
-                <input required value={editingEvent.address || ''} onChange={e => setEditingEvent({...editingEvent, address: e.target.value})} className="bg-black border-2 border-white p-2 uppercase rounded-lg" placeholder="Dirección" />
-                <input required value={editingEvent.city || ''} onChange={e => setEditingEvent({...editingEvent, city: e.target.value})} className="bg-black border-2 border-white p-2 uppercase rounded-lg" placeholder="Ciudad" />
+              <h3 className="font-black uppercase text-blue-500 font-franklin">{editingEvent.id === 'new' ? 'NUEVA FECHA' : 'EDITANDO'}</h3>
+              <form onSubmit={handleSaveEvent} className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs text-white font-black">
+                <input required value={editingEvent.band_name} onChange={e => setEditingEvent({...editingEvent, band_name: e.target.value})} className="sm:col-span-2 bg-black border-2 border-white p-2 uppercase font-bold rounded-lg font-black" placeholder="Banda" />
+                <input required value={editingEvent.venue || ''} onChange={e => setEditingEvent({...editingEvent, venue: e.target.value})} className="bg-black border-2 border-white p-2 uppercase rounded-lg font-black" placeholder="Lugar" />
+                <input required value={editingEvent.address || ''} onChange={e => setEditingEvent({...editingEvent, address: e.target.value})} className="bg-black border-2 border-white p-2 uppercase rounded-lg font-black" placeholder="Dirección" />
+                <input required value={editingEvent.city || ''} onChange={e => setEditingEvent({...editingEvent, city: e.target.value})} className="bg-black border-2 border-white p-2 uppercase rounded-lg font-black" placeholder="Ciudad" />
                 
-                <select value={editingEvent.department} onChange={e => setEditingEvent({...editingEvent, department: e.target.value})} className="bg-black border-2 border-white p-2 uppercase rounded-lg">
+                <select value={editingEvent.department} onChange={e => setEditingEvent({...editingEvent, department: e.target.value})} className="bg-black border-2 border-white p-2 uppercase rounded-lg font-black font-black">
                   {DEPARTAMENTOS.map(d => <option key={d} value={d}>{d}</option>)}
                 </select>
-                <select value={editingEvent.genre} onChange={e => setEditingEvent({...editingEvent, genre: e.target.value})} className="bg-black border-2 border-white p-2 uppercase rounded-lg">
+                <select value={editingEvent.genre} onChange={e => setEditingEvent({...editingEvent, genre: e.target.value})} className="bg-black border-2 border-white p-2 uppercase rounded-lg font-black font-black">
                   {GENEROS.map(g => <option key={g} value={g}>{g}</option>)}
                 </select>
 
-                <input required type="date" value={editingEvent.date} onChange={e => setEditingEvent({...editingEvent, date: e.target.value})} className="bg-black border-2 border-white p-2 rounded-lg" />
-                <input required type="time" value={editingEvent.time} onChange={e => setEditingEvent({...editingEvent, time: e.target.value})} className="bg-black border-2 border-white p-2 rounded-lg" />
+                <input required type="date" value={editingEvent.date} onChange={e => setEditingEvent({...editingEvent, date: e.target.value})} className="bg-black border-2 border-white p-2 rounded-lg font-black" />
+                <input required type="time" value={editingEvent.time} onChange={e => setEditingEvent({...editingEvent, time: e.target.value})} className="bg-black border-2 border-white p-2 rounded-lg font-black" />
                 
-                <select value={editingEvent.age_rating} onChange={e => setEditingEvent({...editingEvent, age_rating: e.target.value})} className="bg-black border-2 border-white p-2 rounded-lg uppercase font-black">
+                <select value={editingEvent.age_rating} onChange={e => setEditingEvent({...editingEvent, age_rating: e.target.value})} className="bg-black border-2 border-white p-2 rounded-lg uppercase font-black font-black font-black">
                    <option value="ATP">ATP</option>
                    <option value="+5">+5</option><option value="+7">+7</option><option value="+10">+10</option>
                    <option value="+12">+12</option><option value="+15">+15</option><option value="+18">+18</option>
                 </select>
 
-                <select value={editingEvent.price_type} onChange={e => setEditingEvent({...editingEvent, price_type: e.target.value})} className="bg-black border-2 border-white p-2 rounded-lg font-black uppercase">
+                <select value={editingEvent.price_type} onChange={e => setEditingEvent({...editingEvent, price_type: e.target.value})} className="bg-black border-2 border-white p-2 rounded-lg font-black uppercase font-black font-black">
                    <option value="range">PAGO</option><option value="free">LIBRE</option><option value="gorra">GORRA</option><option value="sobre">SOBRE</option>
                 </select>
 
-                <div className="grid grid-cols-2 gap-2 col-span-2 font-black">
-                  <input type="number" placeholder="Precio Mín $" value={editingEvent.price_min || ''} onChange={e => setEditingEvent({...editingEvent, price_min: e.target.value})} className="bg-black border-2 border-white p-2 rounded-lg" />
-                  <input type="number" placeholder="Precio Máx $" value={editingEvent.price_max || ''} onChange={e => setEditingEvent({...editingEvent, price_max: e.target.value})} className="bg-black border-2 border-white p-2 rounded-lg" />
+                <div className="grid grid-cols-2 gap-2 sm:col-span-2 font-black font-black font-black">
+                  <input type="number" placeholder="Precio Mín $" value={editingEvent.price_min || ''} onChange={e => setEditingEvent({...editingEvent, price_min: e.target.value})} className="bg-black border-2 border-white p-2 rounded-lg font-black" />
+                  <input type="number" placeholder="Precio Máx $" value={editingEvent.price_max || ''} onChange={e => setEditingEvent({...editingEvent, price_max: e.target.value})} className="bg-black border-2 border-white p-2 rounded-lg font-black" />
                 </div>
 
-                <div className="grid grid-cols-2 gap-2 col-span-2 font-black">
-                  <select value={editingEvent.ticket_type} onChange={e => setEditingEvent({...editingEvent, ticket_type: e.target.value})} className="bg-black border-2 border-white p-2 rounded-lg uppercase font-black">
+                <div className="grid grid-cols-2 gap-2 sm:col-span-2 font-black font-black font-black">
+                  <select value={editingEvent.ticket_type} onChange={e => setEditingEvent({...editingEvent, ticket_type: e.target.value})} className="bg-black border-2 border-white p-2 rounded-lg uppercase font-black font-black font-black">
                      <option value="link">Web / Link</option>
                      <option value="whatsapp">WhatsApp</option>
                   </select>
-                  <input placeholder={editingEvent.ticket_type === 'whatsapp' ? 'Celular' : 'Link Compra'} value={editingEvent.ticket_contact || ''} onChange={e => setEditingEvent({...editingEvent, ticket_contact: e.target.value})} className="bg-black border-2 border-white p-2 rounded-lg" />
+                  <input placeholder={editingEvent.ticket_type === 'whatsapp' ? 'Celular' : 'Link Compra'} value={editingEvent.ticket_contact || ''} onChange={e => setEditingEvent({...editingEvent, ticket_contact: e.target.value})} className="bg-black border-2 border-white p-2 rounded-lg font-black" />
                 </div>
 
-                <div className="col-span-2 space-y-1">
-                   <label className="text-[9px] text-red-600 uppercase font-black">Flyer / Imagen</label>
-                   <div className="flex gap-4 items-center border-2 border-dashed border-zinc-700 p-2 relative rounded-xl font-black">
-                      <p className="text-[9px] font-black uppercase text-zinc-500 flex-1 font-black">{uploading ? 'Cargando...' : (editingEvent.flyer_url ? 'Imagen OK ✅' : 'Clic para elegir imagen')}</p>
+                <div className="sm:col-span-2 space-y-1 font-black font-black font-black">
+                   <label className="text-[10px] text-red-600 uppercase font-black">Subir Flyer / Imagen</label>
+                   <div className="flex flex-col sm:flex-row gap-4 items-center border-2 border-dashed border-zinc-700 p-2 relative rounded-xl font-black font-black font-black">
+                      <p className="text-[10px] font-black uppercase text-zinc-500 flex-1">{uploading ? 'Subiendo...' : (editingEvent.flyer_url ? 'Imagen OK ✅' : 'Clic para elegir imagen')}</p>
                       <input type="file" className="absolute inset-0 opacity-0 cursor-pointer font-black" onChange={async (e) => {
                         const file = e.target.files?.[0]; if (file) { const url = await handleFileUpload(file, 'flyers'); if (url) setEditingEvent({...editingEvent, flyer_url: url}); }
                       }} />
-                      {editingEvent.flyer_url && <img src={editingEvent.flyer_url} className="h-10 w-10 object-cover border-2 border-white rounded-lg" />}
+                      {editingEvent.flyer_url && <img src={editingEvent.flyer_url} className="h-10 w-10 object-cover border-2 border-white rounded-lg font-black" />}
                    </div>
                 </div>
 
-                <textarea value={editingEvent.description || ''} onChange={e => setEditingEvent({...editingEvent, description: e.target.value})} className="col-span-2 bg-black border-2 border-white p-2 uppercase rounded-lg h-20" placeholder="Reseña" />
-                
-                <div className="col-span-2 flex gap-2 font-black">
-                  <button type="submit" className="flex-1 bg-blue-600 py-2 font-black border border-white rounded-full uppercase shadow-lg">GUARDAR</button>
-                  <button type="button" onClick={() => setEditingEvent(null)} className="bg-zinc-700 px-6 font-black border border-white rounded-full font-black">X</button>
+                <textarea value={editingEvent.description || ''} onChange={e => setEditingEvent({...editingEvent, description: e.target.value})} className="sm:col-span-2 bg-black border-2 border-white p-2 uppercase rounded-lg h-20 font-black" placeholder="Reseña" />
+
+                <div className="sm:col-span-2 flex gap-2 font-black font-black font-black">
+                  <button type="submit" className="flex-1 bg-blue-600 py-3 font-black border-2 border-white rounded-full uppercase shadow-lg font-black font-black">GUARDAR</button>
+                  <button type="button" onClick={() => setEditingEvent(null)} className="bg-zinc-700 px-6 font-black border-2 border-white rounded-full font-black font-black font-black">X</button>
                 </div>
               </form>
             </div>
           )}
 
-          <div className="space-y-3 font-black">
+          <div className="space-y-4 font-black">
             {events.map((event) => (
-              <div key={event.id} className={`border-2 p-3 flex flex-col gap-3 ${!event.is_approved ? 'border-red-600 bg-zinc-900 animate-pulse shadow-lg' : 'border-zinc-800 bg-zinc-950/80'} rounded-2xl`}>
-                <div className="flex justify-between items-center font-black font-black">
-                  <div className="flex gap-2 items-center font-black">
-                    {event.flyer_url && <img src={event.flyer_url} className="w-10 h-10 object-cover border-2 border-white rounded-lg" />}
-                    <div>
-                      <h3 className="text-base font-black uppercase leading-none">{event.band_name}</h3>
-                      <p className="text-[7px] text-red-600 font-bold uppercase">{event.date} @ {event.venue}</p>
+              <div key={event.id} className={`border-4 p-4 flex flex-col gap-4 ${!event.is_approved ? 'border-red-600 bg-zinc-900 animate-pulse shadow-lg' : event.is_featured ? 'border-red-600 bg-zinc-950/80 shadow-md' : 'border-zinc-700 bg-zinc-950/80'} rounded-[32px] font-black`}>
+                <div className="flex justify-between items-center font-black">
+                  <div className="flex gap-4 items-center font-black">
+                    {event.flyer_url && <img src={event.flyer_url} className="w-16 h-16 object-cover border-2 border-white rounded-xl shadow-md font-black" />}
+                    <div className="font-black">
+                      <h3 className="text-xl font-black uppercase leading-none font-black">{event.band_name}</h3>
+                      <p className="text-[10px] font-bold text-red-600 uppercase font-black font-black">{event.date} - {event.time?.substring(0,5)}hs</p>
+                      <p className="text-[10px] text-zinc-400 uppercase font-black font-black">{event.venue} - {event.address || 'Sin Dirección'}</p>
                     </div>
                   </div>
-                  <div className="flex gap-1.5 font-black">
-                    <button onClick={() => setEditingEvent(event)} className="bg-blue-600 text-white px-2 py-0.5 text-[7px] font-black rounded-full border border-white">EDIT</button>
-                    <button onClick={() => supabase.from('events').update({ is_approved: !event.is_approved }).eq('id', event.id).then(() => fetchData())} className={`px-2 py-0.5 text-[7px] font-black rounded-full border border-white ${event.is_approved ? 'bg-zinc-800' : 'bg-green-600'}`}>{event.is_approved ? 'BAJAR' : 'ALTA'}</button>
-                    <button onClick={() => deleteEvent(event.id)} className="bg-red-600 text-white px-2 py-0.5 text-[7px] font-black border border-white rounded-full">BORRAR</button>
+                  <div className="flex gap-2 w-full md:w-auto font-black font-black">
+                    <button onClick={() => setEditingEvent(event)} className="bg-blue-600 text-white px-3 py-1 font-black uppercase text-[10px] border-2 border-white shadow-sm rounded-full font-black">EDITAR</button>
+                    <button onClick={() => supabase.from('events').update({ is_approved: !event.is_approved }).eq('id', event.id).then(() => fetchData())} className={`flex-1 md:flex-none px-3 py-1 font-black uppercase text-[10px] border-2 border-white shadow-sm rounded-full font-black ${event.is_approved ? 'bg-zinc-800 text-zinc-400' : 'bg-green-600 text-white'}`}>{event.is_approved ? 'BAJAR' : 'APROBAR'}</button>
+                    <button onClick={() => deleteEvent(event.id)} className="bg-red-600 text-white px-3 py-1 font-black text-[10px] border-2 border-white shadow-sm rounded-full font-black font-black">BORRAR</button>
                   </div>
                 </div>
 
-                <div className="flex flex-wrap gap-1.5 items-center border-t border-zinc-800 pt-1.5 font-black">
-                  <button onClick={() => toggleSoldOut(event.id, event.is_sold_out)} className={`px-2 py-0.5 text-[6px] font-black border rounded-full ${event.is_sold_out ? 'bg-red-600 text-white' : 'border-red-600 text-red-600'}`}>AGOTADO</button>
-                  <button onClick={() => toggleSuspended(event.id, event.is_suspended)} className={`px-2 py-0.5 text-[6px] font-black border rounded-full ${event.is_suspended ? 'bg-zinc-100 text-black' : 'border-zinc-500 text-zinc-500'}`}>SUSPENDIDO</button>
-                  <div className="h-4 w-[1px] bg-zinc-800 mx-1" />
-                  <button onClick={() => updateEventTag(event.id, 'PLANAZO')} className={`px-2 py-0.5 text-[6px] font-black border rounded-full ${event.suggestion_tag === 'PLANAZO' ? 'bg-red-600 border-white text-white shadow-sm' : 'border-red-600 text-red-600'}`}>PLANAZO</button>
-                  <button onClick={() => updateEventTag(event.id, 'SALIDA SEGURA')} className={`px-2 py-0.5 text-[6px] font-black border rounded-full ${event.suggestion_tag === 'SALIDA SEGURA' ? 'bg-green-600 border-white text-white shadow-sm' : 'border-green-600 text-green-600'}`}>SEGURA</button>
-                  <button onClick={() => updateEventTag(event.id, 'NO FALLA')} className={`px-2 py-0.5 text-[6px] font-black border rounded-full ${event.suggestion_tag === 'NO FALLA' ? 'bg-white border-black text-black shadow-sm' : 'border-white text-white'}`}>NO FALLA</button>
-                  <button onClick={() => updateEventTag(event.id, '')} className="text-[6px] font-black uppercase text-red-600 underline ml-auto italic">X TAG</button>
-                </div>
+                {event.is_approved && (
+                  <div className="space-y-3 border-t border-zinc-800 pt-3 font-black">
+                    <button onClick={() => toggleFeatured(event.id, event.is_featured)} className={`w-full py-1 font-black uppercase text-[10px] border-2 transition-all rounded-full font-black ${event.is_featured ? 'bg-red-600 text-white border-white shadow-md' : 'bg-black text-red-600 border-red-600'}`}>
+                      {event.is_featured ? '★ EN BANNER (DESACTIVAR)' : '★ PONER EN BANNER'}
+                    </button>
+                    <div className="flex flex-wrap gap-2 items-center font-black">
+                      <button onClick={() => toggleSoldOut(event.id, event.is_sold_out)} className={`px-2 py-0.5 text-[8px] font-black border-2 rounded-full ${event.is_sold_out ? 'bg-red-600 text-white shadow-md' : 'border-red-600 text-red-600'}`}>AGOTADO</button>
+                      <button onClick={() => toggleSuspended(event.id, event.is_suspended)} className={`px-2 py-0.5 text-[8px] font-black border-2 rounded-full ${event.is_suspended ? 'bg-zinc-100 text-black shadow-md' : 'border-zinc-500 text-zinc-500'}`}>SUSPENDIDO</button>
+                      <div className="h-4 w-[1px] bg-zinc-800 mx-1 font-black" />
+                      <button onClick={() => updateEventTag(event.id, 'PLANAZO')} className={`px-2 py-1 text-[8px] font-black border-2 rounded-full ${event.suggestion_tag === 'PLANAZO' ? 'bg-red-600 border-white text-white shadow-sm font-black' : 'border-red-600 text-red-600 font-black'} font-black`}>PLANAZO</button>
+                      <button onClick={() => updateEventTag(event.id, 'SALIDA SEGURA')} className={`px-2 py-1 text-[8px] font-black border-2 rounded-full ${event.suggestion_tag === 'SALIDA SEGURA' ? 'bg-green-600 border-white text-white shadow-sm' : 'border-green-600 text-green-600 font-black font-black'} font-black`}>SEGURA</button>
+                      <button onClick={() => updateEventTag(event.id, 'NO FALLA')} className={`px-2 py-1 text-[8px] font-black border-2 rounded-full ${event.suggestion_tag === 'NO FALLA' ? 'bg-white border-black text-black shadow-sm' : 'border-white text-white font-black font-black'} font-black`}>NO FALLA</button>
+                      <button onClick={() => updateEventTag(event.id, '')} className="text-[8px] font-black uppercase text-red-600 underline ml-auto italic font-black">X TAG</button>
+                    </div>
+                  </div>
+                )}
               </div>
             ))}
           </div>
         </section>
 
-        {/* LADO DERECHO: MENSAJES (AHORA ARRIBA), PUBLICIDAD, ENTREVISTAS */}
-        <section className="space-y-12 font-black">
+        {/* LADO DERECHO: MENSAJES (ARRIBA), PUBLICIDAD, INTERVIEWS */}
+        <section className="space-y-12 font-black font-black">
           
-          {/* Mensajes Recibidos - AHORA ARRIBA DEL TODO DEL LADO DERECHO */}
-          <div className="space-y-4">
-            <h2 className="text-xl font-black uppercase italic text-red-600 border-l-4 border-red-600 pl-3">Mensajes Recibidos</h2>
-            <div className="space-y-3 max-h-[300px] overflow-y-auto pr-2 custom-scrollbar">
+          {/* Mensajes Recibidos */}
+          <div className="space-y-6 text-left font-black font-black font-black">
+            <h2 className="text-2xl font-black uppercase italic text-red-600 border-l-8 border-red-600 pl-4 bg-zinc-950 py-2 font-black font-franklin font-black font-black">Mensajes Recibidos</h2>
+            <div className="space-y-4 max-h-[300px] overflow-y-auto pr-2 custom-scrollbar font-black font-black">
               {messages.map((msg) => (
-                <div key={msg.id} className={`border-2 p-3 flex justify-between items-center ${msg.is_read ? 'border-zinc-800 opacity-60' : 'border-white bg-zinc-900'} rounded-2xl`}>
+                <div key={msg.id} className={`border-2 p-3 flex justify-between items-center ${msg.is_read ? 'border-zinc-800 bg-zinc-950/50 opacity-60' : 'border-white bg-zinc-900'} rounded-2xl font-black`}>
                   <div onClick={() => setSelectedMessage(msg)} className="cursor-pointer flex-1 font-black">
-                    <h3 className="font-black uppercase text-[10px] text-red-600">{msg.name}</h3>
-                    <p className="text-[9px] text-zinc-400 truncate max-w-[200px]">"{msg.message}"</p>
+                    <h3 className="font-black uppercase text-[10px] text-red-600 font-black font-black">{msg.name}</h3>
+                    <p className="text-[9px] text-zinc-300 truncate max-w-[150px] font-black font-black font-black font-black">"{msg.message}"</p>
                   </div>
-                  <div className="flex gap-2">
-                    <button onClick={() => setSelectedMessage(msg)} className="text-[7px] bg-blue-600 text-white px-2 py-0.5 border border-white rounded-full uppercase">VER</button>
-                    <button onClick={() => deleteMessage(msg.id)} className="text-[7px] bg-red-600 text-white px-2 py-0.5 border border-white rounded-full uppercase">ELIMINAR</button>
+                  <div className="flex gap-2 font-black font-black">
+                    <button onClick={() => setSelectedMessage(msg)} className="text-[7px] bg-blue-600 text-white px-3 py-1 font-black uppercase border border-white rounded-full font-black font-black font-black font-black">VER</button>
+                    <button onClick={() => deleteMessage(msg.id)} className="text-[7px] bg-red-600 text-white px-3 py-1 font-black uppercase border border-white rounded-full font-black font-black font-black font-black font-black">ELIMINAR</button>
                   </div>
                 </div>
               ))}
-              {messages.length === 0 && <p className="text-xs text-zinc-500 italic uppercase">No hay mensajes aún.</p>}
+              {messages.length === 0 && <p className="text-xs text-zinc-500 italic uppercase font-black">No hay mensajes aún.</p>}
             </div>
           </div>
 
-          {/* Publicidad (LOCKED) */}
-          <div className="space-y-4">
-            <h2 className="text-xl font-black uppercase italic text-red-600 border-l-4 border-red-600 pl-3">Publicidad</h2>
-            <form onSubmit={handleSaveSponsor} className="bg-zinc-950 p-4 border-2 border-white space-y-3 shadow-md rounded-3xl">
-              <input placeholder="Nombre Cliente" className="w-full bg-black border p-2 uppercase text-[10px] text-white focus:border-red-600 outline-none rounded-xl font-black" value={newSponsor.client_name} onChange={e => setNewSponsor({...newSponsor, client_name: e.target.value})} required />
-              <input placeholder="Link / Web (https://...)" className="w-full bg-black border p-2 uppercase text-[10px] text-white outline-none focus:border-red-600 rounded-xl" value={newSponsor.link} onChange={e => setNewSponsor({...newSponsor, link: e.target.value})} />
-              <div className="grid grid-cols-2 gap-2">
-                <select value={newSponsor.position} onChange={e => setNewSponsor({...newSponsor, position: e.target.value})} className="bg-black border p-2 uppercase text-[10px] rounded-xl">
+          {/* Publicidad */}
+          <div className="space-y-6 text-left font-black font-black font-black border-t-4 border-zinc-800 pt-8">
+            <h2 className="text-2xl font-black uppercase italic text-red-600 border-l-8 border-red-600 pl-4 bg-zinc-950 py-2 font-franklin font-black font-black font-black">Publicidad</h2>
+            <form onSubmit={handleSaveSponsor} className="bg-zinc-950 p-4 border-4 border-white space-y-4 shadow-xl rounded-[32px] font-black font-black">
+              <input placeholder="Nombre Cliente" className="w-full bg-black border-2 border-white p-2 font-bold uppercase text-xs text-white outline-none focus:border-red-600 rounded-xl font-black" value={newSponsor.client_name} onChange={e => setNewSponsor({...newSponsor, client_name: e.target.value})} required />
+              <input placeholder="Link / Web (https://...)" className="w-full bg-black border-2 border-white p-2 uppercase text-xs text-white outline-none focus:border-red-600 rounded-xl font-black" value={newSponsor.link} onChange={e => setNewSponsor({...newSponsor, link: e.target.value})} />
+              <div className="grid grid-cols-2 gap-2 font-black">
+                <select value={newSponsor.position} onChange={e => setNewSponsor({...newSponsor, position: e.target.value})} className="bg-black border-2 border-white p-2 uppercase text-xs rounded-xl font-black font-black">
                    <option value="sidebar">LATERAL</option><option value="bottom">INFERIOR</option>
                 </select>
-                <input type="number" placeholder="Orden" value={newSponsor.display_order} onChange={e => setNewSponsor({...newSponsor, display_order: parseInt(e.target.value)})} className="bg-black border p-2 text-[10px] rounded-xl" />
+                <input type="number" placeholder="Orden" value={newSponsor.display_order} onChange={e => setNewSponsor({...newSponsor, display_order: parseInt(e.target.value)})} className="bg-black border-2 border-white p-2 text-xs rounded-xl font-black" />
               </div>
-              <div className="flex gap-4 items-center border border-dashed border-zinc-700 p-2 relative rounded-xl">
-                <p className="text-[9px] font-black uppercase text-zinc-500 flex-1">{uploading ? 'Subiendo...' : (newSponsor.image_url ? 'Imagen OK ✅' : 'Subir Anuncio')}</p>
-                <input type="file" className="absolute inset-0 opacity-0 cursor-pointer" onChange={async (e) => {
+              <div className="flex gap-4 items-center border-2 border-dashed border-zinc-700 p-2 relative rounded-xl font-black">
+                <p className="text-[10px] font-black uppercase text-zinc-500 flex-1 font-black">{uploading ? 'Cargando...' : (newSponsor.image_url ? 'Imagen OK ✅' : 'Subir Imagen/GIF')}</p>
+                <input type="file" className="absolute inset-0 opacity-0 cursor-pointer font-black" onChange={async (e) => {
                   const file = e.target.files?.[0]; if (file) { const url = await handleFileUpload(file, 'sponsors'); if (url) setNewSponsor({...newSponsor, image_url: url}); }
                 }} />
+                {newSponsor.image_url && <img src={newSponsor.image_url} className="h-10 w-10 object-cover border rounded-lg font-black font-black font-black" />}
               </div>
-              <div className="flex gap-2">
-                <button type="submit" disabled={uploading} className="flex-1 bg-red-600 text-white font-black uppercase py-2 text-[10px] border border-white rounded-full">{newSponsor.id ? 'ACTUALIZAR' : 'GUARDAR'}</button>
-                {newSponsor.id && <button type="button" onClick={() => setNewSponsor({id:null, client_name:'', image_url:'', link:'', position:'sidebar', display_order:0})} className="bg-zinc-700 px-4 border border-white text-white rounded-full">X</button>}
+              <div className="flex gap-2 font-black font-black">
+                <button type="submit" disabled={uploading} className="flex-1 bg-red-600 text-white font-black uppercase py-2 text-xs border-2 border-white rounded-full font-black font-black font-black">{newSponsor.id ? 'ACTUALIZAR' : 'GUARDAR'}</button>
+                {newSponsor.id && <button type="button" onClick={() => setNewSponsor({id:null, client_name:'', image_url:'', link:'', position:'sidebar', display_order:0})} className="bg-zinc-700 px-4 font-black border-2 border-white text-white rounded-full font-black font-black">X</button>}
               </div>
             </form>
-            <div className="grid grid-cols-1 gap-2 max-h-[300px] overflow-y-auto pr-2 custom-scrollbar font-black">
+            <div className="grid grid-cols-1 gap-2 max-h-[300px] overflow-y-auto pr-2 custom-scrollbar font-black font-black">
               {sponsors.map(sp => (
-                <div key={sp.id} className={`border-2 p-3 flex flex-col gap-2 ${sp.is_active ? 'border-red-600 bg-zinc-950 shadow-md' : 'border-zinc-800 opacity-50 bg-zinc-900'} rounded-2xl`}>
+                <div key={sp.id} className={`border-2 p-3 flex flex-col gap-2 ${sp.is_active ? 'border-red-600 bg-zinc-950 shadow-md' : 'border-zinc-800 opacity-50 bg-zinc-900'} rounded-2xl font-black`}>
                   <div className="flex justify-between items-start font-black">
-                    <div className="truncate flex-1 pr-2">
-                      <span className="text-[9px] font-black uppercase text-white">[{sp.position === 'sidebar' ? 'LAT' : 'INF'}] {sp.client_name}</span>
-                      <p className="text-[7px] text-zinc-500 uppercase">Orden: {sp.display_order}</p>
+                    <div className="truncate flex-1 pr-2 font-black">
+                      <span className="text-[9px] font-black uppercase text-white font-black font-black">[{sp.position === 'sidebar' ? 'LAT' : 'INF'}] {sp.client_name}</span>
+                      <p className="text-[7px] text-zinc-500 uppercase font-black font-black">Orden: {sp.display_order}</p>
                     </div>
                     <div className="flex gap-1 font-black">
-                      <button onClick={() => setNewSponsor(sp)} className="px-2 py-0.5 bg-blue-600 text-white text-[7px] font-black border border-white rounded-full uppercase">EDITAR</button>
-                      <button onClick={() => toggleSponsorStatus(sp.id, sp.is_active)} className={`px-2 py-0.5 text-white text-[7px] font-black border border-white rounded-full ${sp.is_active ? 'bg-green-600' : 'bg-zinc-700'}`}>{sp.is_active ? 'PAUSA' : 'ACTIVO'}</button>
-                      <button onClick={() => deleteSponsor(sp.id)} className="px-2 py-0.5 bg-red-600 text-white text-[7px] font-black border border-white rounded-full">X</button>
+                      <button onClick={() => setNewSponsor(sp)} className="px-2 py-0.5 bg-blue-600 text-white text-[7px] font-black border border-white rounded-full font-black font-black">EDITAR</button>
+                      <button onClick={() => toggleSponsorStatus(sp.id, sp.is_active)} className={`px-2 py-0.5 text-white text-[7px] font-black border border-white rounded-full ${sp.is_active ? 'bg-green-600' : 'bg-zinc-700 font-black font-black'}`}>{sp.is_active ? 'PAUSA' : 'ACTIVO'}</button>
+                      <button onClick={() => deleteSponsor(sp.id)} className="px-2 py-0.5 bg-red-600 text-white text-[7px] font-black border border-white rounded-full font-black font-black font-black">X</button>
                     </div>
                   </div>
+                  <img src={sp.image_url} className="w-full h-20 object-cover border border-zinc-800 shadow-inner rounded-lg font-black font-black" />
                 </div>
               ))}
             </div>
           </div>
 
-          {/* LISTA DE ENTREVISTAS (HECHAS GIGANTES) */}
-          <div className="space-y-6">
-            <h2 className="text-3xl font-black uppercase italic text-red-600 border-l-8 border-red-600 pl-6 py-2 bg-zinc-950 rounded-r-2xl">Entrevistas Hechas</h2>
-            <div className="grid grid-cols-1 gap-6 max-h-[600px] overflow-y-auto pr-4 custom-scrollbar">
+          {/* Entrevistas Hechas GIGANTES */}
+          <div className="space-y-6 border-t-4 border-zinc-800 pt-8 font-black font-black font-black">
+            <h2 className="text-3xl font-black uppercase italic text-red-600 border-l-8 border-red-600 pl-6 py-2 bg-zinc-950 rounded-r-2xl font-black">Entrevistas Hechas</h2>
+            <div className="grid grid-cols-1 gap-6 max-h-[600px] overflow-y-auto pr-4 custom-scrollbar font-black font-black">
               {interviews.map(int => (
-                <div key={int.id} className={`border-4 p-8 flex justify-between items-center shadow-2xl transition-all ${int.is_active ? 'border-red-600 bg-zinc-900 scale-105' : 'border-zinc-800 bg-zinc-950 opacity-40 grayscale italic'} rounded-[50px] font-black`}>
+                <div key={int.id} className={`border-4 p-8 flex justify-between items-center shadow-2xl transition-all ${int.is_active ? 'border-red-600 bg-zinc-900 scale-105 font-black' : 'border-zinc-800 bg-zinc-950 opacity-40 grayscale italic'} rounded-[50px] font-black`}>
                   <div className="truncate pr-10 text-left flex-1 font-black">
-                    <span className="text-2xl font-black uppercase text-red-600 block mb-2 leading-none font-black">{int.title}</span>
-                    <p className="text-sm text-zinc-500 uppercase font-black tracking-widest">{int.band_name} {int.is_active ? '' : '(PAUSADA)'}</p>
+                    <span className="text-2xl font-black uppercase text-red-600 block mb-2 leading-none font-black font-black font-black">{int.title}</span>
+                    <p className="text-sm text-zinc-500 uppercase font-black tracking-widest font-black font-black font-black">{int.band_name} {int.is_active ? '' : '(PAUSADA)'}</p>
                   </div>
-                  <div className="flex flex-col gap-2 shrink-0 font-black">
-                    <button onClick={() => toggleInterviewStatus(int.id, int.is_active)} className={`px-8 py-3 text-white text-xs font-black border-4 border-white rounded-full transition-all shadow-lg ${int.is_active ? 'bg-green-600 hover:bg-black' : 'bg-zinc-700 hover:bg-green-600'}`}>{int.is_active ? 'PAUSAR' : 'ACTIVAR'}</button>
-                    <button onClick={() => setNewInterview(int)} className="px-8 py-2 bg-blue-600 text-white text-[10px] font-black border-2 border-white rounded-full hover:bg-white hover:text-black uppercase">EDITAR</button>
-                    <button onClick={() => confirm('¿Borrar?') && deleteInterview(int.id)} className="px-8 py-2 bg-red-600 text-white text-[10px] font-black border-2 border-white rounded-full uppercase">BORRAR</button>
+                  <div className="flex flex-col gap-2 shrink-0 font-black font-black">
+                    <button onClick={() => toggleInterviewStatus(int.id, int.is_active)} className={`px-8 py-3 text-white text-xs font-black border-4 border-white rounded-full transition-all shadow-lg font-black font-black ${int.is_active ? 'bg-green-600 hover:bg-black' : 'bg-zinc-700 hover:bg-green-600'}`}>{int.is_active ? 'PAUSAR' : 'ACTIVAR'}</button>
+                    <button onClick={() => setNewInterview(int)} className="px-8 py-2 bg-blue-600 text-white text-[10px] font-black border-2 border-white rounded-full hover:bg-white hover:text-black uppercase font-black font-black font-black">EDITAR</button>
+                    <button onClick={() => confirm('¿Borrar?') && deleteInterview(int.id)} className="px-8 py-2 bg-red-600 text-white text-[10px] font-black border-2 border-white rounded-full uppercase font-black font-black font-black">BORRAR</button>
                   </div>
                 </div>
               ))}
@@ -390,14 +400,14 @@ export default function AdminDashboard() {
       </div>
 
       {selectedMessage && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-          <div className="absolute inset-0 bg-black/90 backdrop-blur-sm font-black" onClick={() => setSelectedMessage(null)} />
-          <div className="relative w-full max-w-xl bg-zinc-900 border-8 border-white p-8 shadow-2xl rounded-[50px] font-black text-left font-black">
-            <button onClick={() => setSelectedMessage(null)} className="absolute -top-4 -right-4 bg-red-600 text-white w-10 h-10 font-black text-xl border-4 border-white rounded-full shadow-xl">X</button>
-            <h3 className="text-2xl font-black uppercase text-red-600 mb-2">{selectedMessage.name}</h3>
-            <p className="text-xs text-zinc-500 mb-2 italic">{selectedMessage.email} | {selectedMessage.phone}</p>
-            <p className="text-lg text-white font-black">"{selectedMessage.message}"</p>
-            <button onClick={() => { if(confirm('¿Borrar?')) deleteMessage(selectedMessage.id) }} className="mt-6 bg-red-600 text-white px-6 py-2 rounded-full font-black uppercase text-xs border-2 border-white">ELIMINAR MENSAJE</button>
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 font-black font-black">
+          <div className="absolute inset-0 bg-black/90 backdrop-blur-sm font-black font-black" onClick={() => setSelectedMessage(null)} />
+          <div className="relative w-full max-w-xl bg-zinc-900 border-8 border-white p-8 shadow-2xl rounded-[50px] font-black text-left font-black font-black">
+            <button onClick={() => setSelectedMessage(null)} className="absolute -top-4 -right-4 bg-red-600 text-white w-10 h-10 font-black text-xl border-4 border-white rounded-full shadow-xl font-black font-black font-black">X</button>
+            <h3 className="text-2xl font-black uppercase text-red-600 mb-2 font-black font-black">{selectedMessage.name}</h3>
+            <p className="text-xs text-zinc-500 mb-2 italic font-black font-black">{selectedMessage.email} | {selectedMessage.phone}</p>
+            <p className="text-lg text-white font-black font-black font-black font-black">"{selectedMessage.message}"</p>
+            <button onClick={() => { if(confirm('¿Borrar?')) deleteMessage(selectedMessage.id) }} className="mt-6 bg-red-600 text-white px-6 py-2 rounded-full font-black uppercase text-xs border-2 border-white font-black font-black font-black">ELIMINAR MENSAJE</button>
           </div>
         </div>
       )}
