@@ -54,8 +54,12 @@ export default function AdminDashboard() {
     const sortedEvents = (eventRes.data || []).sort((a: any, b: any) => {
       if (!a.is_approved && b.is_approved) return -1;
       if (a.is_approved && !b.is_approved) return 1;
+      const dateA = a.date || '';
+      const dateB = b.date || '';
+      if (!a.is_approved && !b.is_approved) return dateA.localeCompare(dateB);
       if (a.is_featured && !b.is_featured) return -1;
-      return 0;
+      if (!a.is_featured && b.is_featured) return 1;
+      return dateA.localeCompare(dateB);
     });
     setEvents(sortedEvents); setMessages(messageRes.data || []); setInterviews(interviewRes.data || []); setSponsors(sponsorRes.data || []); setLoading(false);
   }
@@ -127,6 +131,80 @@ export default function AdminDashboard() {
 
   if (loading) return <div className="min-h-screen bg-black text-red-600 flex items-center justify-center font-black text-2xl uppercase italic">Cargando Admin...</div>;
 
+  const pendingEvents = events.filter((e) => !e.is_approved);
+  const approvedEvents = events.filter((e) => e.is_approved);
+
+  const renderEventCard = (ev: any) => {
+    const isPending = !ev.is_approved;
+    return (
+      <div
+        key={ev.id}
+        className={`border-4 p-4 flex flex-col gap-3 rounded-3xl ${
+          isPending
+            ? 'border-red-600 bg-red-950/40 admin-pending-card'
+            : 'border-red-600 bg-zinc-950/80'
+        }`}
+      >
+        {isPending && (
+          <p className="text-center text-[10px] sm:text-xs font-black uppercase tracking-widest text-red-500 animate-pulse">
+            ⚠ Pendiente de aprobación
+          </p>
+        )}
+        <div className="flex gap-3 sm:gap-4">
+          <img src={ev.flyer_url || '/logo-rojo.jpg'} alt={ev.band_name} className="w-20 h-20 sm:w-24 sm:h-24 object-cover border-2 border-white rounded-xl flex-shrink-0" />
+          <div className="min-w-0 flex-1 flex flex-col gap-2">
+            <div className="flex items-start justify-between gap-2">
+              <div className="min-w-0 pr-1">
+                <h3 className="text-base sm:text-lg font-black uppercase leading-tight truncate">{ev.band_name}</h3>
+                <p className="text-xs font-bold text-red-600 uppercase mt-1">{ev.date} — {ev.time?.substring(0, 5)} hs · {ev.venue}</p>
+              </div>
+              <div className="flex flex-shrink-0 flex-wrap justify-end gap-1.5 max-w-[52%] sm:max-w-none">
+                <button type="button" onClick={() => setEditingEvent(ev)} className={`${adminBtn} bg-blue-600 border-white`}>EDITAR</button>
+                <button type="button" onClick={() => supabase.from('events').update({ is_approved: !ev.is_approved }).eq('id', ev.id).then(() => fetchData())} className={`${adminBtn} border-white ${ev.is_approved ? 'bg-zinc-800' : 'bg-green-600'}`}>{ev.is_approved ? 'BAJAR' : 'APROBAR'}</button>
+                <button type="button" onClick={() => deleteEvent(ev.id)} className={`${adminBtn} bg-red-600 border-white`}>BORRAR</button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <button
+          type="button"
+          onClick={() => toggleFeatured(ev.id, ev.is_featured)}
+          title="Carrusel destacado arriba en la portada"
+          className={`w-full py-1 px-3 text-[10px] sm:text-[11px] font-black uppercase tracking-widest border-2 rounded-lg transition-colors ${
+            ev.is_featured ? 'bg-red-600 border-white text-white' : 'bg-transparent border-red-600 text-red-600 hover:bg-red-600/10'
+          }`}
+        >
+          BANNER
+        </button>
+        <div className="grid grid-cols-3 gap-2">
+          <button type="button" onClick={() => updateEventTag(ev.id, 'PLANAZO', ev.suggestion_tag)} className={`${adminBtn} w-full !px-1.5 !py-1 text-[10px] sm:text-[11px] ${ev.suggestion_tag === 'PLANAZO' ? 'bg-yellow-400 text-black border-black' : 'border-yellow-400 text-yellow-400'}`}>PLANAZO</button>
+          <button type="button" onClick={() => updateEventTag(ev.id, 'NO FALLA', ev.suggestion_tag)} className={`${adminBtn} w-full !px-1.5 !py-1 text-[10px] sm:text-[11px] ${ev.suggestion_tag === 'NO FALLA' ? 'bg-white text-black border-black' : 'border-white text-white'}`}>NO FALLA</button>
+          <button type="button" onClick={() => updateEventTag(ev.id, 'SALIDA SEGURA', ev.suggestion_tag)} className={`${adminBtn} w-full !px-1.5 !py-1 text-[9px] sm:text-[10px] leading-tight ${ev.suggestion_tag === 'SALIDA SEGURA' ? 'bg-green-600 border-white text-white' : 'border-green-600 text-green-600'}`}>SALIDA SEGURA</button>
+        </div>
+        <div className="grid grid-cols-2 gap-2">
+          <button
+            type="button"
+            onClick={() => toggleSoldOut(ev.id, ev.is_sold_out)}
+            className={`w-full py-1 px-2 text-[10px] sm:text-[11px] font-black uppercase tracking-widest border-2 rounded-lg transition-colors ${
+              ev.is_sold_out ? 'bg-red-600 border-white text-white' : 'bg-transparent border-red-600 text-red-600 hover:bg-red-600/10'
+            }`}
+          >
+            AGOTADO
+          </button>
+          <button
+            type="button"
+            onClick={() => toggleSuspended(ev.id, ev.is_suspended)}
+            className={`w-full py-1 px-2 text-[10px] sm:text-[11px] font-black uppercase tracking-widest border-2 rounded-lg transition-colors ${
+              ev.is_suspended ? 'bg-orange-500 border-white text-black' : 'bg-transparent border-orange-500 text-orange-500 hover:bg-orange-500/10'
+            }`}
+          >
+            SUSPENDIDO
+          </button>
+        </div>
+      </div>
+    );
+  };
+
   return (
     <div className="min-h-screen bg-zinc-900 text-white p-4 md:p-6 font-sans relative text-left overflow-x-hidden font-black">
       <header className="flex flex-col md:flex-row justify-between items-center mb-8 border-b-4 border-red-600 pb-6 bg-zinc-950 p-4 sticky top-0 z-50 gap-4">
@@ -163,35 +241,27 @@ export default function AdminDashboard() {
             </div>
           )}
 
-          <div className="space-y-3 max-h-[min(36rem,60vh)] overflow-y-auto pr-2 custom-scrollbar">
-            {events.map((ev) => (
-              <div key={ev.id} className={`border-4 p-4 flex flex-col sm:flex-row gap-4 items-start sm:items-center rounded-3xl ${!ev.is_approved ? 'border-red-600 bg-zinc-900 animate-pulse' : 'border-zinc-700 bg-zinc-950/80'}`}>
-                <img src={ev.flyer_url || '/logo-rojo.jpg'} alt={ev.band_name} className="w-20 h-20 sm:w-24 sm:h-24 object-cover border-2 border-white rounded-xl flex-shrink-0" />
-                <div className="min-w-0 flex-1 w-full">
-                  <h3 className="text-base sm:text-lg font-black uppercase leading-tight truncate">{ev.band_name}</h3>
-                  <p className="text-xs font-bold text-red-600 uppercase mt-1">{ev.date} — {ev.time?.substring(0, 5)} hs · {ev.venue}</p>
-                  <div className="mt-3 space-y-2.5">
-                    <AdminButtonGroup label="Gestión">
-                      <button type="button" onClick={() => setEditingEvent(ev)} className={`${adminBtn} bg-blue-600 border-white`}>EDITAR</button>
-                      <button type="button" onClick={() => supabase.from('events').update({ is_approved: !ev.is_approved }).eq('id', ev.id).then(() => fetchData())} className={`${adminBtn} border-white ${ev.is_approved ? 'bg-zinc-800' : 'bg-green-600'}`}>{ev.is_approved ? 'BAJAR' : 'APROBAR'}</button>
-                      <button type="button" onClick={() => deleteEvent(ev.id)} className={`${adminBtn} bg-red-600 border-white`}>BORRAR</button>
-                    </AdminButtonGroup>
-                    <AdminButtonGroup label="Destacar en home">
-                      <button type="button" onClick={() => toggleFeatured(ev.id, ev.is_featured)} className={`${adminBtn} ${ev.is_featured ? 'bg-red-600 border-white text-white' : 'border-red-600 text-red-600'}`} title="Carrusel grande arriba en la portada">BANNER</button>
-                    </AdminButtonGroup>
-                    <AdminButtonGroup label="Etiquetas">
-                      <button type="button" onClick={() => updateEventTag(ev.id, 'PLANAZO', ev.suggestion_tag)} className={`${adminBtn} ${ev.suggestion_tag === 'PLANAZO' ? 'bg-yellow-400 text-black border-black' : 'border-yellow-400 text-yellow-400'}`}>PLANAZO</button>
-                      <button type="button" onClick={() => updateEventTag(ev.id, 'NO FALLA', ev.suggestion_tag)} className={`${adminBtn} ${ev.suggestion_tag === 'NO FALLA' ? 'bg-white text-black border-black' : 'border-white text-white'}`}>NO FALLA</button>
-                      <button type="button" onClick={() => updateEventTag(ev.id, 'SALIDA SEGURA', ev.suggestion_tag)} className={`${adminBtn} ${ev.suggestion_tag === 'SALIDA SEGURA' ? 'bg-green-600 border-white text-white' : 'border-green-600 text-green-600'}`}>SALIDA SEGURA</button>
-                    </AdminButtonGroup>
-                    <AdminButtonGroup label="Estado del show">
-                      <button type="button" onClick={() => toggleSoldOut(ev.id, ev.is_sold_out)} className={`${adminBtn} ${ev.is_sold_out ? 'bg-red-600 border-white text-white' : 'border-red-600 text-red-600'}`}>AGOTADO</button>
-                      <button type="button" onClick={() => toggleSuspended(ev.id, ev.is_suspended)} className={`${adminBtn} ${ev.is_suspended ? 'bg-white text-black border-black' : 'border-zinc-500 text-zinc-500'}`}>SUSPENDIDO</button>
-                    </AdminButtonGroup>
-                  </div>
+          <div className="flex flex-col gap-5 pb-6">
+            {pendingEvents.length > 0 && (
+              <div className="flex flex-col gap-4">
+                <div className="border-2 border-red-600 bg-red-600/20 rounded-2xl px-4 py-2 text-center admin-pending-banner">
+                  <p className="text-sm font-black uppercase text-red-500 tracking-widest">
+                    Por aprobar ({pendingEvents.length})
+                  </p>
                 </div>
+                {pendingEvents.map(renderEventCard)}
               </div>
-            ))}
+            )}
+            {approvedEvents.length > 0 && (
+              <div className="flex flex-col gap-5">
+                {pendingEvents.length > 0 && (
+                  <p className="text-[10px] font-black uppercase tracking-widest text-zinc-500 border-b border-zinc-800 pb-2">
+                    Fechas publicadas
+                  </p>
+                )}
+                {approvedEvents.map(renderEventCard)}
+              </div>
+            )}
           </div>
         </section>
 
@@ -318,6 +388,22 @@ export default function AdminDashboard() {
         .custom-scrollbar::-webkit-scrollbar { width: 4px; }
         .custom-scrollbar::-webkit-scrollbar-track { background: #1a1a1a; }
         .custom-scrollbar::-webkit-scrollbar-thumb { background: #dc2626; border-radius: 10px; }
+        @keyframes admin-pending-blink {
+          0%, 100% {
+            border-color: #dc2626;
+            box-shadow: 0 0 18px rgba(220, 38, 38, 0.55);
+          }
+          50% {
+            border-color: #ffffff;
+            box-shadow: 0 0 28px rgba(220, 38, 38, 0.85);
+          }
+        }
+        .admin-pending-card {
+          animation: admin-pending-blink 1.1s ease-in-out infinite;
+        }
+        .admin-pending-banner {
+          animation: admin-pending-blink 1.1s ease-in-out infinite;
+        }
       `}</style>
     </div>
   );
