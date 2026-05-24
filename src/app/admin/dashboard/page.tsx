@@ -62,8 +62,30 @@ export default function AdminDashboard() {
   async function toggleSoldOut(id: string, current: boolean) { await supabase.from('events').update({ is_sold_out: !current }).eq('id', id); fetchData(); }
   async function toggleSuspended(id: string, current: boolean) { await supabase.from('events').update({ is_suspended: !current }).eq('id', id); fetchData(); }
   async function toggleFeatured(id: string, current: boolean) { await supabase.from('events').update({ is_featured: !current }).eq('id', id); fetchData(); }
-  async function updateEventTag(id: string, tag: string) { await supabase.from('events').update({ suggestion_tag: tag }).eq('id', id); fetchData(); }
-  async function deleteEvent(id: string) { if (confirm('¿Borrar?')) { await supabase.from('events').delete().eq('id', id); fetchData(); } }
+  async function updateEventTag(id: string, tag: string, current?: string | null) {
+    const next = current === tag ? null : tag;
+    await supabase.from('events').update({ suggestion_tag: next }).eq('id', id);
+    fetchData();
+  }
+  async function deleteEvent(id: string) {
+    if (!confirm('¿Borrar esta fecha? No se puede deshacer.')) return;
+    await supabase.from('events').delete().eq('id', id);
+    if (editingEvent?.id === id) setEditingEvent(null);
+    fetchData();
+  }
+  async function deleteSponsor(id: string) {
+    if (!confirm('¿Borrar esta publicidad? No se puede deshacer.')) return;
+    await supabase.from('sponsors').delete().eq('id', id);
+    if (newSponsor.id === id) setNewSponsor({ id: null, client_name: '', image_url: '', link: '', position: 'sidebar', display_order: 0 });
+    fetchData();
+  }
+
+  function sponsorPositionLabel(position: string) {
+    if (position === 'top') return 'Banner superior';
+    if (position === 'sidebar') return 'Lateral';
+    if (position === 'bottom') return 'Inferior';
+    return position;
+  }
 
   async function handleSaveEvent(e: React.FormEvent) {
     e.preventDefault(); if (!editingEvent) return;
@@ -140,6 +162,13 @@ export default function AdminDashboard() {
                   <div className="flex flex-wrap gap-2 mt-3">
                     <button type="button" onClick={() => setEditingEvent(ev)} className="bg-blue-600 text-[11px] sm:text-xs px-3 py-1 rounded-full border border-white font-black">EDITAR</button>
                     <button type="button" onClick={() => supabase.from('events').update({ is_approved: !ev.is_approved }).eq('id', ev.id).then(() => fetchData())} className={`text-[11px] sm:text-xs px-3 py-1 rounded-full border border-white font-black ${ev.is_approved ? 'bg-zinc-800' : 'bg-green-600'}`}>{ev.is_approved ? 'BAJAR' : 'APROBAR'}</button>
+                    <button type="button" onClick={() => deleteEvent(ev.id)} className="text-[11px] sm:text-xs bg-red-600 px-3 py-1 rounded-full border border-white font-black">BORRAR</button>
+                  </div>
+                  <div className="flex flex-wrap gap-2 mt-2">
+                    <button type="button" onClick={() => toggleFeatured(ev.id, ev.is_featured)} className={`text-[11px] sm:text-xs px-3 py-1 rounded-full border font-black ${ev.is_featured ? 'bg-red-600 border-white text-white' : 'border-red-600 text-red-600'}`} title="Carrusel destacado arriba en la home">BANNER</button>
+                    <button type="button" onClick={() => updateEventTag(ev.id, 'PLANAZO', ev.suggestion_tag)} className={`text-[11px] sm:text-xs px-3 py-1 rounded-full border font-black ${ev.suggestion_tag === 'PLANAZO' ? 'bg-yellow-400 text-black border-black' : 'border-yellow-400 text-yellow-400'}`}>PLANAZO</button>
+                    <button type="button" onClick={() => updateEventTag(ev.id, 'NO FALLA', ev.suggestion_tag)} className={`text-[11px] sm:text-xs px-3 py-1 rounded-full border font-black ${ev.suggestion_tag === 'NO FALLA' ? 'bg-white text-black border-black' : 'border-white text-white'}`}>NO FALLA</button>
+                    <button type="button" onClick={() => updateEventTag(ev.id, 'SALIDA SEGURA', ev.suggestion_tag)} className={`text-[11px] sm:text-xs px-3 py-1 rounded-full border font-black ${ev.suggestion_tag === 'SALIDA SEGURA' ? 'bg-green-600 border-white text-white' : 'border-green-600 text-green-600'}`}>SALIDA SEGURA</button>
                     <button type="button" onClick={() => toggleSoldOut(ev.id, ev.is_sold_out)} className={`text-[11px] sm:text-xs px-3 py-1 rounded-full border font-black ${ev.is_sold_out ? 'bg-red-600 border-white text-white' : 'border-red-600 text-red-600'}`}>AGOTADO</button>
                     <button type="button" onClick={() => toggleSuspended(ev.id, ev.is_suspended)} className={`text-[11px] sm:text-xs px-3 py-1 rounded-full border font-black ${ev.is_suspended ? 'bg-white text-black border-black' : 'border-zinc-500 text-zinc-500'}`}>SUSPENDIDO</button>
                   </div>
@@ -170,7 +199,7 @@ export default function AdminDashboard() {
             <form onSubmit={handleSaveSponsor} className="bg-zinc-950 p-4 border-4 border-white space-y-4 rounded-[32px] font-black">
               <input placeholder="Nombre Cliente" className="w-full bg-black border-2 border-white p-2 uppercase text-xs rounded-xl" value={newSponsor.client_name} onChange={e => setNewSponsor({...newSponsor, client_name: e.target.value})} required />
               <input placeholder="Link Web" className="w-full bg-black border-2 border-white p-2 text-xs rounded-xl" value={newSponsor.link} onChange={e => setNewSponsor({...newSponsor, link: e.target.value})} />
-              <div className="grid grid-cols-2 gap-2"><select value={newSponsor.position} onChange={e => setNewSponsor({...newSponsor, position: e.target.value})} className="bg-black border-2 border-white p-2 text-xs rounded-xl"><option value="sidebar">LATERAL</option><option value="bottom">INFERIOR</option></select><input type="number" placeholder="Orden" value={newSponsor.display_order} onChange={e => setNewSponsor({...newSponsor, display_order: parseInt(e.target.value)})} className="bg-black border-2 border-white p-2 text-xs rounded-xl" /></div>
+              <div className="grid grid-cols-2 gap-2"><select value={newSponsor.position} onChange={e => setNewSponsor({...newSponsor, position: e.target.value})} className="bg-black border-2 border-white p-2 text-xs rounded-xl"><option value="top">BANNER SUPERIOR</option><option value="sidebar">LATERAL</option><option value="bottom">INFERIOR</option></select><input type="number" placeholder="Orden" value={newSponsor.display_order} onChange={e => setNewSponsor({...newSponsor, display_order: parseInt(e.target.value) || 0})} className="bg-black border-2 border-white p-2 text-xs rounded-xl" /></div>
               <div className="flex gap-4 items-center border-2 border-dashed border-zinc-700 p-2 relative rounded-xl font-black font-black"><p className="text-[10px] uppercase text-zinc-500 flex-1 font-black">{uploading ? '...' : (newSponsor.image_url ? 'Imagen OK ✅' : 'Subir Imagen')}</p><input type="file" className="absolute inset-0 opacity-0" onChange={async (e) => { const f = e.target.files?.[0]; if (f) { const u = await handleFileUpload(f, 'sponsors'); if (u) setNewSponsor({...newSponsor, image_url: u}); } }} /></div>
               <button type="submit" disabled={uploading} className="w-full bg-red-600 py-2 text-xs border-2 border-white rounded-full font-black">GUARDAR</button>
             </form>
@@ -190,7 +219,7 @@ export default function AdminDashboard() {
                   <div className="min-w-0 flex-1 w-full">
                     <h3 className="text-base sm:text-lg font-black uppercase leading-tight truncate">{sp.client_name}</h3>
                     <p className="text-xs font-bold text-red-600 uppercase mt-1">
-                      {sp.position === 'sidebar' ? 'Lateral' : 'Inferior'} · Orden {sp.display_order}
+                      {sponsorPositionLabel(sp.position)} · Orden {sp.display_order}
                     </p>
                     {sp.link && (
                       <p className="text-[11px] text-zinc-400 truncate mt-1">{sp.link}</p>
@@ -209,6 +238,13 @@ export default function AdminDashboard() {
                         className="text-[11px] sm:text-xs bg-green-600 px-3 py-1 rounded-full border border-white font-black"
                       >
                         {sp.is_active ? 'PAUSA' : 'ACTIVO'}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => deleteSponsor(sp.id)}
+                        className="text-[11px] sm:text-xs bg-red-600 px-3 py-1 rounded-full border border-white font-black"
+                      >
+                        BORRAR
                       </button>
                     </div>
                   </div>
