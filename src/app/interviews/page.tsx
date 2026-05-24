@@ -21,10 +21,11 @@ export default function InterviewsPage() {
       setLoading(true);
       setErrorMsg("");
       
-      // CARGA TOTAL SIN NINGÚN FILTRO
+      // RESTAURADO: Ahora solo carga las que NO están pausadas
       const { data, error } = await supabase
         .from('interviews')
         .select('*')
+        .eq('is_active', true) 
         .order('published_at', { ascending: false });
 
       if (error) {
@@ -84,22 +85,21 @@ export default function InterviewsPage() {
         <h2 className="text-4xl md:text-6xl font-franklin text-center py-10 border-b-8 border-red-600 text-white leading-none uppercase">Entrevistas</h2>
 
         {loading ? (
-          <div className="flex flex-col items-center py-20 animate-pulse">
+          <div className="flex flex-col items-center py-20 animate-pulse font-black">
             <div className="w-12 h-12 border-4 border-red-600 border-t-transparent rounded-full animate-spin mb-4" />
             <p className="text-2xl font-franklin uppercase italic">Cargando...</p>
           </div>
         ) : errorMsg ? (
-          <div className="text-center py-20 bg-red-600/20 border-4 border-red-600 rounded-[40px] p-10">
+          <div className="text-center py-20 bg-red-600/20 border-4 border-red-600 rounded-[40px] p-10 font-black">
             <p className="text-2xl font-black uppercase mb-4">{errorMsg}</p>
-            <button onClick={fetchInterviews} className="bg-white text-black px-8 py-3 rounded-full font-black uppercase">Reintentar carga</button>
+            <button onClick={fetchInterviews} className="bg-white text-black px-8 py-3 rounded-full font-black uppercase border-4 border-black">Reintentar</button>
           </div>
         ) : interviews.length === 0 ? (
           <div className="text-center py-20 font-black">
-            <p className="text-3xl font-black uppercase italic text-zinc-600 tracking-tighter">No hay entrevistas publicadas aún.</p>
-            <p className="text-[10px] text-zinc-700 mt-10 font-mono">DEBUG: Table 'interviews' connected but returned 0 rows.</p>
+            <p className="text-3xl font-black uppercase italic text-zinc-600 tracking-tighter font-black">No hay entrevistas publicadas aún.</p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-12 text-left">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-12 text-left font-black">
             {interviews.map((interview) => (
               <Link 
                 href={`/interviews/${interview.id}`} 
@@ -111,22 +111,22 @@ export default function InterviewsPage() {
                     <img 
                       src={interview.image_url} 
                       alt={interview.title} 
-                      className="w-full h-full object-cover grayscale group-hover:grayscale-0 group-hover:scale-105 transition-all duration-500"
+                      className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-500 font-black"
                       style={{ objectPosition: interview.image_position || 'center' }} 
                     />
                   ) : (
-                    <div className="w-full h-full flex items-center justify-center text-zinc-500 font-black italic uppercase text-center">Sin Imagen</div>
+                    <div className="w-full h-full flex items-center justify-center text-zinc-500 font-black italic uppercase text-center font-black">Sin Imagen</div>
                   )}
                 </div>
                 <div className="space-y-3 font-black">
                   <span className="bg-red-600 text-white px-3 py-1 text-xs font-black uppercase tracking-widest italic rounded-full font-black">BANDA: {interview.band_name}</span>
-                  <h3 className="text-3xl font-franklin leading-none group-hover:text-red-600 transition-colors text-white uppercase">{interview.title}</h3>
+                  <h3 className="text-3xl font-franklin leading-none group-hover:text-red-600 transition-colors text-white uppercase font-black">{interview.title}</h3>
                   {interview.subtitle && (
                     <p className="text-zinc-400 text-sm font-bold line-clamp-2 uppercase italic font-black">{interview.subtitle}</p>
                   )}
                   <div className="flex justify-between items-center text-zinc-500 font-bold text-[10px] uppercase tracking-tighter font-black">
-                    <p>Publicado: {new Date(interview.published_at).toLocaleDateString()}</p>
-                    {interview.author && <p className="text-red-600">Por: {interview.author}</p>}
+                    <p className="font-black">Publicado: {new Date(interview.published_at).toLocaleDateString()}</p>
+                    {interview.author && <p className="text-red-600 font-black">Por: {interview.author}</p>}
                   </div>
                 </div>
               </Link>
@@ -137,12 +137,12 @@ export default function InterviewsPage() {
 
       {/* Logo Modal */}
       {showLogoModal && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 font-black">
           <div className="absolute inset-0 bg-black/95 backdrop-blur-xl" onClick={() => setShowLogoModal(false)} />
-          <div className="relative max-w-lg w-full bg-zinc-900 border-8 border-white p-4 rounded-[50px] shadow-2xl text-center">
-            <button onClick={() => setShowLogoModal(false)} className="absolute -top-4 -right-4 bg-red-600 text-white w-12 h-12 font-black text-2xl border-4 border-white rounded-full">X</button>
-            <Image src="/logo-rojo.jpg" alt="Logo Grande" width={800} height={800} className="w-full h-auto rounded-[30px]" />
-            <h3 className="text-3xl font-franklin text-red-600 mt-4 leading-none">Hoy Quien Toca</h3>
+          <div className="relative max-w-lg w-full bg-zinc-900 border-8 border-white p-4 rounded-[50px] shadow-2xl text-center font-black">
+            <button onClick={() => setShowLogoModal(false)} className="absolute -top-4 -right-4 bg-red-600 text-white w-12 h-12 font-black text-2xl border-4 border-white rounded-full font-black">X</button>
+            <Image src="/logo-rojo.jpg" alt="Logo Grande" width={800} height={800} className="w-full h-auto rounded-[30px] font-black" />
+            <h3 className="text-3xl font-franklin text-red-600 mt-4 leading-none font-black">Hoy Quien Toca</h3>
           </div>
         </div>
       )}
