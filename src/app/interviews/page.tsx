@@ -8,7 +8,7 @@ import Link from 'next/link';
 export default function InterviewsPage() {
   const [interviews, setInterviews] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [errorInfo, setErrorInfo] = useState<string | null>(null);
+  const [debugInfo, setDebugInfo] = useState<string>("");
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [showLogoModal, setShowLogoModal] = useState(false);
 
@@ -19,24 +19,22 @@ export default function InterviewsPage() {
   async function fetchInterviews() {
     try {
       setLoading(true);
-      setErrorInfo(null);
+      setDebugInfo("Iniciando carga...");
       
-      // QUITAMOS EL FILTRO DE IS_ACTIVE TEMPORALMENTE PARA VER SI APARECE ALGO
-      const { data, error } = await supabase
+      // QUITAMOS TODOS LOS FILTROS (Incluso is_active) para ver si hay ALGO en la base
+      const { data, error, count } = await supabase
         .from('interviews')
-        .select('*')
+        .select('*', { count: 'exact' })
         .order('published_at', { ascending: false });
 
       if (error) {
-        throw new Error(error.message);
-      }
-      
-      if (data) {
-        setInterviews(data);
+        setDebugInfo("Error Supabase: " + error.message);
+      } else {
+        setDebugInfo(`Carga exitosa. Encontrados: ${data?.length || 0} de ${count || 0}`);
+        setInterviews(data || []);
       }
     } catch (e: any) {
-      console.error("List error:", e);
-      setErrorInfo(e.message || "Error al cargar entrevistas");
+      setDebugInfo("Error Crítico: " + e.message);
     } finally {
       setLoading(false);
     }
@@ -61,16 +59,14 @@ export default function InterviewsPage() {
           </div>
           
           <nav className="hidden md:flex gap-6 font-bold uppercase tracking-widest text-sm items-center">
-            <Link href="/" className="hover:text-red-600 transition-colors font-black">Fechas</Link>
+            <Link href="/" className="hover:text-red-600 font-black transition-colors">Fechas</Link>
             <Link href="/interviews" className="text-red-600 underline decoration-2 underline-offset-4 font-black">Entrevistas</Link>
             <Link href="/contact" className="hover:text-red-600 transition-colors font-black">Contacto</Link>
             <Link href="/submit" className="border-2 border-red-600 text-red-600 px-4 py-1 bg-black rounded-full animate-pulse hover:bg-red-600 hover:text-white transition-colors font-black">Subir Fecha</Link>
           </nav>
 
           <button onClick={() => setIsMenuOpen(!isMenuOpen)} className="md:hidden text-red-600 focus:outline-none">
-            <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d={isMenuOpen ? "M6 18L18 6M6 6l12 12" : "M4 6h16M4 12h16M4 18h16"}></path>
-            </svg>
+            <svg className="w-8 h-8 font-black" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d={isMenuOpen ? "M6 18L18 6M6 6l12 12" : "M4 6h16M4 12h16M4 18h16"}></path></svg>
           </button>
         </div>
       </header>
@@ -78,10 +74,10 @@ export default function InterviewsPage() {
       {isMenuOpen && (
         <div className="fixed inset-0 z-[60] bg-black/95 flex flex-col items-center justify-center space-y-8 md:hidden font-black">
           <button onClick={() => setIsMenuOpen(false)} className="absolute top-6 right-6 text-white text-4xl">X</button>
-          <Link href="/" onClick={() => setIsMenuOpen(false)} className="text-4xl uppercase text-white italic font-franklin">Fechas</Link>
-          <Link href="/interviews" onClick={() => setIsMenuOpen(false)} className="text-4xl uppercase text-red-600 italic font-franklin">Entrevistas</Link>
-          <Link href="/contact" onClick={() => setIsMenuOpen(false)} className="text-4xl uppercase text-white italic font-franklin">Contacto</Link>
-          <Link href="/submit" onClick={() => setIsMenuOpen(false)} className="text-3xl uppercase border-4 border-red-600 text-red-600 px-8 py-4 rounded-full animate-pulse font-franklin">Subir Fecha</Link>
+          <Link href="/" onClick={() => setIsMenuOpen(false)} className="text-4xl font-franklin text-white italic">Fechas</Link>
+          <Link href="/interviews" onClick={() => setIsMenuOpen(false)} className="text-4xl font-franklin text-red-600 italic">Entrevistas</Link>
+          <Link href="/contact" onClick={() => setIsMenuOpen(false)} className="text-4xl font-franklin text-white italic">Contacto</Link>
+          <Link href="/submit" onClick={() => setIsMenuOpen(false)} className="text-3xl font-franklin border-4 border-red-600 text-red-600 px-8 py-4 rounded-full animate-pulse">Subir Fecha</Link>
         </div>
       )}
 
@@ -89,30 +85,31 @@ export default function InterviewsPage() {
         <h2 className="text-4xl md:text-6xl font-franklin text-center py-10 border-b-8 border-red-600 text-white leading-none uppercase">Entrevistas</h2>
 
         {loading ? (
-          <div className="flex flex-col items-center py-20 animate-pulse">
+          <div className="flex flex-col items-center py-20 animate-pulse font-black">
             <div className="w-12 h-12 border-4 border-red-600 border-t-transparent rounded-full animate-spin mb-4" />
             <p className="text-2xl font-franklin uppercase italic">Cargando...</p>
           </div>
-        ) : errorInfo ? (
-          <div className="text-center py-20">
-            <p className="text-xl text-red-500 font-bold uppercase mb-4">{errorInfo}</p>
-            <button onClick={fetchInterviews} className="bg-white text-black px-6 py-2 rounded-full font-black uppercase text-xs">Reintentar carga</button>
-          </div>
         ) : interviews.length === 0 ? (
-          <div className="text-center py-20">
+          <div className="text-center py-20 font-black">
             <p className="text-3xl font-black uppercase italic text-zinc-600 tracking-tighter">Próximamente nuevas entrevistas...</p>
-            <p className="text-[10px] text-zinc-700 mt-4 font-mono uppercase">Database Table: interviews | Count: 0</p>
+            
+            {/* PANEL DE DEBUG VISIBLE SOLO PARA REPARAR */}
+            <div className="mt-20 p-6 bg-black/50 border-2 border-red-600 rounded-3xl max-w-md mx-auto text-left font-mono text-[10px] text-zinc-400">
+               <p className="text-red-600 font-black mb-2 uppercase tracking-widest">Información Técnica:</p>
+               <p>STATUS: {debugInfo}</p>
+               <p>TIME: {new Date().toLocaleTimeString()}</p>
+               <button onClick={fetchInterviews} className="mt-4 bg-white text-black px-4 py-1 rounded-full font-black uppercase hover:bg-red-600 hover:text-white transition-colors">Forzar Recarga</button>
+            </div>
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-12 text-left">
             {interviews.map((interview) => (
-              <Link 
+              <a 
                 href={`/interviews/${interview.id}`} 
                 key={interview.id}
-                prefetch={false}
-                className="group border-4 border-white p-4 bg-zinc-950/80 hover:border-red-600 transition-all shadow-[8px_8px_0px_0px_rgba(220,38,38,0.3)] rounded-[32px] block"
+                className="group border-4 border-white p-4 bg-zinc-950/80 hover:border-red-600 transition-all shadow-[8px_8px_0px_0px_rgba(220,38,38,0.3)] rounded-[32px] block font-black"
               >
-                <div className="aspect-video bg-zinc-800 mb-6 border-2 border-zinc-700 overflow-hidden rounded-2xl relative">
+                <div className="aspect-video bg-zinc-800 mb-6 border-2 border-zinc-700 overflow-hidden rounded-2xl relative font-black">
                   {interview.image_url ? (
                     <img 
                       src={interview.image_url} 
@@ -125,17 +122,17 @@ export default function InterviewsPage() {
                   )}
                 </div>
                 <div className="space-y-3 font-black">
-                  <span className="bg-red-600 text-white px-3 py-1 text-xs font-black uppercase tracking-widest italic rounded-full">BANDA: {interview.band_name}</span>
+                  <span className="bg-red-600 text-white px-3 py-1 text-xs font-black uppercase tracking-widest italic rounded-full font-black">BANDA: {interview.band_name}</span>
                   <h3 className="text-3xl font-franklin leading-none group-hover:text-red-600 transition-colors text-white uppercase">{interview.title}</h3>
                   {interview.subtitle && (
-                    <p className="text-zinc-400 text-sm font-bold line-clamp-2 uppercase italic">{interview.subtitle}</p>
+                    <p className="text-zinc-400 text-sm font-bold line-clamp-2 uppercase italic font-black">{interview.subtitle}</p>
                   )}
-                  <div className="flex justify-between items-center text-zinc-500 font-bold text-[10px] uppercase tracking-tighter">
+                  <div className="flex justify-between items-center text-zinc-500 font-bold text-[10px] uppercase tracking-tighter font-black">
                     <p>Publicado: {new Date(interview.published_at).toLocaleDateString()}</p>
-                    {interview.author && <p className="text-red-600">Por: {interview.author}</p>}
+                    {interview.author && <p className="text-red-600 font-black">Por: {interview.author}</p>}
                   </div>
                 </div>
-              </Link>
+              </a>
             ))}
           </div>
         )}
@@ -145,9 +142,9 @@ export default function InterviewsPage() {
       {showLogoModal && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
           <div className="absolute inset-0 bg-black/95 backdrop-blur-xl" onClick={() => setShowLogoModal(false)} />
-          <div className="relative max-w-lg w-full bg-zinc-900 border-8 border-white p-6 rounded-[50px] shadow-2xl text-center">
+          <div className="relative max-w-lg w-full bg-zinc-900 border-8 border-white p-4 rounded-[50px] shadow-2xl text-center">
             <button onClick={() => setShowLogoModal(false)} className="absolute -top-4 -right-4 bg-red-600 text-white w-12 h-12 font-black text-2xl border-4 border-white rounded-full">X</button>
-            <Image src="/logo-rojo.jpg" alt="Logo Grande" width={600} height={600} className="w-full h-auto rounded-[30px]" />
+            <Image src="/logo-rojo.jpg" alt="Logo Grande" width={800} height={800} className="w-full h-auto rounded-[30px]" />
             <h3 className="text-3xl font-franklin text-red-600 mt-4 leading-none">Hoy Quien Toca</h3>
           </div>
         </div>
