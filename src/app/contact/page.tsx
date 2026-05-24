@@ -39,6 +39,7 @@ export default function ContactPage() {
     const { error } = await supabase.from('contact_messages').insert([{
       name: formData.get('name'),
       email: formData.get('email'),
+      phone: formData.get('phone'), // Nuevo campo celular
       message: formData.get('message')
     }]);
     
@@ -70,11 +71,11 @@ export default function ContactPage() {
             <Link href="/" className="hover:text-red-600 font-black transition-colors">Fechas</Link>
             <Link href="/interviews" className="hover:text-red-600 font-black transition-colors">Entrevistas</Link>
             <Link href="/contact" className="text-red-600 underline decoration-2 underline-offset-4 font-black">Contacto</Link>
-            <Link href="/submit" className="border-2 border-red-600 text-red-600 px-4 py-1 bg-black rounded-full animate-pulse hover:bg-red-600 hover:text-white transition-colors font-black font-black">Subir Fecha</Link>
+            <Link href="/submit" className="border-2 border-red-600 text-red-600 px-4 py-1 bg-black rounded-full animate-pulse hover:bg-red-600 hover:text-white transition-colors font-black">Subir Fecha</Link>
           </nav>
 
           <button onClick={() => setIsMenuOpen(!isMenuOpen)} className="md:hidden text-red-600 focus:outline-none">
-            <svg className="w-8 h-8 font-black" fill="none" stroke="currentColor" viewBox="0 0 24 24 font-black font-black"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d={isMenuOpen ? "M6 18L18 6M6 6l12 12" : "M4 6h16M4 12h16M4 18h16"}></path></svg>
+            <svg className="w-8 h-8 font-black" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d={isMenuOpen ? "M6 18L18 6M6 6l12 12" : "M4 6h16M4 12h16M4 18h16"}></path></svg>
           </button>
         </div>
       </header>
@@ -94,62 +95,51 @@ export default function ContactPage() {
           <div className="border-8 border-white p-12 bg-zinc-950 shadow-[12px_12px_0px_0px_rgba(220,38,38,0.5)] rounded-[40px] text-center space-y-6 font-black">
             <h2 className="text-5xl md:text-7xl font-franklin uppercase text-red-600 leading-none">¡Enviado!</h2>
             <p className="text-xl font-bold uppercase tracking-widest italic font-black">Te responderemos pronto.</p>
-            <Link href="/" className="inline-block bg-white text-black px-12 py-4 rounded-full font-black uppercase hover:bg-red-600 hover:text-white transition-all shadow-lg font-black font-black">Volver</Link>
+            <Link href="/" className="inline-block bg-white text-black px-12 py-4 rounded-full font-black uppercase hover:bg-red-600 hover:text-white transition-all shadow-lg font-black">Volver</Link>
           </div>
         ) : (
-          <div className="space-y-10">
-            <div className="border-8 border-white p-8 md:p-12 bg-zinc-950 shadow-[12px_12px_0px_0px_rgba(220,38,38,0.5)] rounded-[40px] relative font-black">
-              <Link href="/" className="absolute -top-4 -right-4 bg-red-600 text-white w-12 h-12 flex items-center justify-center font-black text-2xl border-4 border-white hover:bg-black transition-colors rounded-full shadow-xl font-black">X</Link>
-              <h2 className="text-5xl md:text-7xl font-franklin uppercase text-red-600 mb-2 leading-none font-black font-black">Contacto</h2>
-              <p className="text-sm font-bold text-white/60 uppercase tracking-widest mb-10 italic font-black font-black">¿Querés publicitar o hacernos una sugerencia?</p>
-              
-              <form onSubmit={handleSubmit} className="space-y-6 text-left font-black">
-                <div className="space-y-2 font-black">
-                  <label className="block font-black uppercase text-xs tracking-widest text-red-600 font-black">Tu Nombre</label>
-                  <input required name="name" className="w-full bg-zinc-900 border-4 border-white p-4 rounded-3xl focus:border-red-600 outline-none text-white font-bold uppercase shadow-inner" />
-                </div>
-                <div className="space-y-2 font-black">
-                  <label className="block font-black uppercase text-xs tracking-widest text-red-600 font-black">Tu Email</label>
+          <div className="border-8 border-white p-8 md:p-12 bg-zinc-950 shadow-[12px_12px_0px_0px_rgba(220,38,38,0.5)] rounded-[40px] relative font-black">
+            <Link href="/" className="absolute -top-4 -right-4 bg-red-600 text-white w-12 h-12 flex items-center justify-center font-black text-2xl border-4 border-white hover:bg-black transition-colors rounded-full shadow-xl">X</Link>
+            <h2 className="text-5xl md:text-7xl font-franklin uppercase text-red-600 mb-2 leading-none">Contacto</h2>
+            <p className="text-sm font-bold text-white/60 uppercase tracking-widest mb-10 italic">Dejanos tus datos y te contactaremos a la brevedad.</p>
+            
+            <form onSubmit={handleSubmit} className="space-y-6 text-left font-black">
+              <div className="space-y-2">
+                <label className="block font-black uppercase text-xs tracking-widest text-red-600">Tu Nombre</label>
+                <input required name="name" className="w-full bg-zinc-900 border-4 border-white p-4 rounded-3xl focus:border-red-600 outline-none text-white font-bold uppercase shadow-inner" />
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <label className="block font-black uppercase text-xs tracking-widest text-red-600">Email</label>
                   <input required type="email" name="email" className="w-full bg-zinc-900 border-4 border-white p-4 rounded-3xl focus:border-red-600 outline-none text-white font-bold shadow-inner" />
                 </div>
-                <div className="space-y-2 font-black">
-                  <label className="block font-black uppercase text-xs tracking-widest text-red-600 font-black">Mensaje</label>
-                  <textarea required name="message" rows={5} className="w-full bg-zinc-900 border-4 border-white p-4 rounded-[32px] focus:border-red-600 outline-none text-white font-bold uppercase shadow-inner" />
+                <div className="space-y-2">
+                  <label className="block font-black uppercase text-xs tracking-widest text-red-600">Celular / WhatsApp</label>
+                  <input required type="tel" name="phone" placeholder="09X XXX XXX" className="w-full bg-zinc-900 border-4 border-white p-4 rounded-3xl focus:border-red-600 outline-none text-white font-bold shadow-inner" />
                 </div>
+              </div>
+              <div className="space-y-2">
+                <label className="block font-black uppercase text-xs tracking-widest text-red-600">Mensaje</label>
+                <textarea required name="message" rows={5} className="w-full bg-zinc-900 border-4 border-white p-4 rounded-[32px] focus:border-red-600 outline-none text-white font-bold uppercase shadow-inner" />
+              </div>
 
-                {/* SIMPLE MATH CAPTCHA */}
-                <div className="space-y-2 p-4 bg-black/40 rounded-3xl border-2 border-zinc-800 font-black">
-                  <label className="block font-black uppercase text-[10px] tracking-widest text-zinc-500 mb-2 font-black">Seguridad: ¿Cuánto es {captcha.a} + {captcha.b}?</label>
-                  <input 
-                    required 
-                    type="number" 
-                    value={userAnswer}
-                    onChange={e => setUserAnswer(e.target.value)}
-                    placeholder="Resultado..."
-                    className="w-full bg-zinc-900 border-2 border-white p-3 rounded-2xl outline-none text-red-600 font-black text-center text-xl" 
-                  />
-                </div>
+              {/* SIMPLE MATH CAPTCHA */}
+              <div className="space-y-2 p-4 bg-black/40 rounded-3xl border-2 border-zinc-800 font-black">
+                <label className="block font-black uppercase text-[10px] tracking-widest text-zinc-500 mb-2">Seguridad: ¿Cuánto es {captcha.a} + {captcha.b}?</label>
+                <input 
+                  required 
+                  type="number" 
+                  value={userAnswer}
+                  onChange={e => setUserAnswer(e.target.value)}
+                  placeholder="Resultado..."
+                  className="w-full bg-zinc-900 border-2 border-white p-3 rounded-2xl outline-none text-red-600 font-black text-center text-xl shadow-inner" 
+                />
+              </div>
 
-                <button disabled={loading} className="w-full bg-red-600 text-white font-black uppercase text-2xl py-5 rounded-full hover:bg-white hover:text-black transition-all border-4 border-white shadow-xl italic tracking-tighter disabled:opacity-50 font-black font-black font-black">
-                  {loading ? 'Enviando...' : 'Enviar Mensaje'}
-                </button>
-              </form>
-            </div>
-
-            {/* CELULAR DE CONTACTO DIRECTO */}
-            <div className="bg-green-600 border-4 border-white p-6 rounded-[32px] shadow-lg flex flex-col md:flex-row items-center justify-between gap-4 font-black">
-               <div className="text-left font-black">
-                  <p className="text-[10px] uppercase font-black text-white/80 font-black">Contacto Directo / WhatsApp</p>
-                  <h3 className="text-2xl md:text-3xl font-franklin text-white leading-none font-black font-black">+598 94 336 295</h3>
-               </div>
-               <a 
-                href="https://wa.me/59894336295" 
-                target="_blank" 
-                className="bg-white text-green-600 px-8 py-3 rounded-full font-black uppercase hover:bg-black hover:text-white transition-all shadow-md font-black font-black"
-               >
-                 Escribinos
-               </a>
-            </div>
+              <button disabled={loading} className="w-full bg-red-600 text-white font-black uppercase text-2xl py-5 rounded-full hover:bg-white hover:text-black transition-all border-4 border-white shadow-xl italic tracking-tighter disabled:opacity-50">
+                {loading ? 'Enviando...' : 'Enviar Mensaje'}
+              </button>
+            </form>
           </div>
         )}
       </main>

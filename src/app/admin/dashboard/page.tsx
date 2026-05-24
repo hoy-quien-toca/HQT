@@ -18,10 +18,6 @@ export default function AdminDashboard() {
   const [newInterview, setNewInterview] = useState<any>({ id: null, title: '', subtitle: '', band_name: '', content: '', image_url: '', is_active: true, author: '', photo_credit: '', image_position: 'center' });
   const [selectedMessage, setSelectedMessage] = useState<any>(null);
 
-  // Magic Scraper State
-  const [magicLink, setMagicLink] = useState('');
-  const [isScraping, setIsScraping] = useState(false);
-
   const router = useRouter();
 
   useEffect(() => {
@@ -55,44 +51,6 @@ export default function AdminDashboard() {
     setInterviews(interviewRes.data || []);
     setSponsors(sponsorRes.data || []);
     setLoading(false);
-  }
-
-  async function handleMagicLoad() {
-    if (!magicLink) return alert("Pega un link primero");
-    setIsScraping(true);
-    try {
-      const res = await fetch('/api/scrape-event', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ url: magicLink })
-      });
-      const data = await res.json();
-      
-      if (data.success) {
-        setEditingEvent({
-          id: 'new',
-          band_name: data.data.title || '',
-          description: data.data.description || '',
-          venue: data.data.venue || '',
-          address: data.data.address || '',
-          date: data.data.date || '',
-          time: data.data.time || '21:00',
-          price_type: data.data.price ? 'range' : 'free',
-          price_min: data.data.price || '',
-          flyer_url: data.data.image_url || '',
-          ticket_contact: magicLink,
-          ticket_type: 'link',
-          is_approved: false
-        });
-        setMagicLink('');
-      } else {
-        alert("No pudimos extraer datos automáticamente. Intenta cargar el evento manualmente.");
-      }
-    } catch (e) {
-      alert("Error al conectar con el servidor de carga mágica.");
-    } finally {
-      setIsScraping(false);
-    }
   }
 
   async function handleFileUpload(file: File, folder: string) {
@@ -177,8 +135,11 @@ export default function AdminDashboard() {
   async function handleSaveInterview(e: React.FormEvent) {
     e.preventDefault();
     if (!newInterview.image_url) return alert('Sube foto primero');
+    
+    // Type casting to safely handle dynamic props
     const temp: any = { ...newInterview };
     const { id, created_at, published_at, ...data } = temp;
+    
     let error;
     if (id) error = (await supabase.from('interviews').update(data).eq('id', id)).error;
     else error = (await supabase.from('interviews').insert([data])).error;
@@ -214,7 +175,7 @@ export default function AdminDashboard() {
     <div className="min-h-screen bg-zinc-900 text-white p-4 md:p-6 font-sans relative text-left overflow-x-hidden font-black">
       <header className="flex flex-col md:flex-row justify-between items-center mb-8 border-b-4 border-red-600 pb-6 bg-zinc-950 p-4 sticky top-0 z-50 gap-4">
         <div>
-           <h1 className="text-3xl md:text-4xl font-black uppercase italic text-red-600 leading-none">ADMINISTRADOR HQT</h1>
+           <h1 className="text-3xl md:text-4xl font-black uppercase italic text-red-600 leading-none font-franklin">ADMINISTRADOR HQT</h1>
            <p className="text-[10px] md:text-xs font-bold text-zinc-500 uppercase tracking-widest mt-1 italic font-black">Descubri recitales, toques y eventos musicales en tu Ciudad</p>
         </div>
         <div className="flex gap-4">
@@ -228,26 +189,17 @@ export default function AdminDashboard() {
         <section className="space-y-6 text-left">
           <div className="flex flex-col md:flex-row justify-between items-center gap-4 bg-zinc-950 p-4 border-l-8 border-red-600 rounded-r-2xl">
              <h2 className="text-2xl font-black uppercase italic text-red-600 font-franklin">Gestión de Fechas</h2>
-             <div className="flex gap-2 w-full md:w-auto font-black">
-                <input 
-                  placeholder="Pegar link de Ticketera..." 
-                  className="bg-black border-2 border-zinc-700 p-2 text-[10px] uppercase font-bold rounded-xl flex-1 md:w-48 outline-none focus:border-red-600"
-                  value={magicLink}
-                  onChange={e => setMagicLink(e.target.value)}
-                />
-                <button 
-                  onClick={handleMagicLoad}
-                  disabled={isScraping}
-                  className="bg-red-600 text-white px-4 py-2 text-[10px] font-black uppercase rounded-full hover:bg-white hover:text-black transition-colors shadow-lg animate-pulse font-black"
-                >
-                  {isScraping ? '⌛' : 'MAGIC'}
-                </button>
-             </div>
+             <button 
+                onClick={() => setEditingEvent({ id: 'new', band_name: '', venue: '', address: '', date: '', time: '21:00', age_rating: 'ATP', description: '', is_approved: false })}
+                className="bg-red-600 text-white px-6 py-2 text-[10px] font-black uppercase rounded-full hover:bg-white hover:text-black transition-all shadow-lg font-black"
+             >
+                + NUEVA FECHA
+             </button>
           </div>
           
           {editingEvent && (
             <div className="border-4 border-blue-600 p-4 bg-zinc-950 space-y-4 mb-8 shadow-[10px_10px_0px_0px_rgba(37,99,235,1)] rounded-3xl font-black">
-              <h3 className="font-black uppercase text-blue-500 font-franklin">{editingEvent.id === 'new' ? 'NUEVA FECHA RÁPIDA' : `Editando: ${editingEvent.band_name}`}</h3>
+              <h3 className="font-black uppercase text-blue-500 font-franklin">{editingEvent.id === 'new' ? 'NUEVA FECHA' : `Editando: ${editingEvent.band_name}`}</h3>
               <form onSubmit={handleSaveEvent} className="grid grid-cols-2 gap-3 text-xs text-white font-black">
                 <div className="col-span-2 space-y-1">
                    <label className="text-[8px] text-zinc-500 uppercase">Banda / Artista</label>
@@ -283,7 +235,7 @@ export default function AdminDashboard() {
                 </div>
                 
                 <div className="col-span-2 space-y-1">
-                   <label className="text-[8px] text-zinc-500 uppercase">URL del Flyer (O pegar link)</label>
+                   <label className="text-[8px] text-zinc-500 uppercase">URL del Flyer</label>
                    <input value={editingEvent.flyer_url || ''} onChange={e => setEditingEvent({...editingEvent, flyer_url: e.target.value})} className="w-full bg-black border-2 border-zinc-700 p-2 text-[10px] rounded-xl font-black" />
                 </div>
 
@@ -467,7 +419,8 @@ export default function AdminDashboard() {
           <div className="relative w-full max-w-xl bg-zinc-900 border-8 border-white p-8 shadow-[20px_20px_0px_0px_rgba(220,38,38,1)] text-left font-black uppercase rounded-[40px] font-black">
             <button onClick={() => setSelectedMessage(null)} className="absolute -top-4 -right-4 bg-red-600 text-white w-10 h-10 font-black text-xl border-4 border-white text-center flex items-center justify-center shadow-xl rounded-full font-black">X</button>
             <h3 className="text-2xl font-black uppercase italic text-red-600 mb-2 border-b-2 border-red-600 pb-2 font-black font-franklin">{selectedMessage.name}</h3>
-            <p className="text-xs font-bold text-zinc-500 uppercase mb-6 italic font-black font-black">{selectedMessage.email}</p>
+            <p className="text-xs font-bold text-zinc-500 uppercase mb-2 italic font-black font-black">{selectedMessage.email}</p>
+            <p className="text-xs font-bold text-green-500 uppercase mb-6 italic font-black font-black">Celular: {selectedMessage.phone || 'No proporcionado'}</p>
             <p className="text-lg text-white leading-relaxed whitespace-pre-wrap font-black">"{selectedMessage.message}"</p>
             <button onClick={() => deleteMessage(selectedMessage.id)} className="mt-8 bg-red-600 text-white px-6 py-2 font-black uppercase text-xs border-2 border-white hover:bg-black transition-colors shadow-lg rounded-full font-black">Eliminar Mensaje</button>
           </div>
