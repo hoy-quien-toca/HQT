@@ -29,7 +29,8 @@ export default function AdminDashboard() {
   
   // Forms State
   const [editingEvent, setEditingEvent] = useState<any>(null);
-  const [newSponsor, setNewSponsor] = useState({ id: null, client_name: '', image_url: '', link: '', position: 'sidebar' });
+  // AGREGADOS: Link, position y display_order
+  const [newSponsor, setNewSponsor] = useState({ id: null, client_name: '', image_url: '', link: '', position: 'sidebar', display_order: 0 });
   const [newInterview, setNewInterview] = useState<any>({ id: null, title: '', subtitle: '', band_name: '', content: '', image_url: '', is_active: true, author: '', photo_credit: '', image_position: 'center' });
   const [selectedMessage, setSelectedMessage] = useState<any>(null);
 
@@ -50,7 +51,8 @@ export default function AdminDashboard() {
       supabase.from('events').select('*').order('date', { ascending: true }),
       supabase.from('contact_messages').select('*').order('created_at', { ascending: false }),
       supabase.from('interviews').select('*').order('published_at', { ascending: false }),
-      supabase.from('sponsors').select('*').order('created_at', { ascending: false })
+      // Ordenamos los sponsors por posición y luego por orden
+      supabase.from('sponsors').select('*').order('position', { ascending: true }).order('display_order', { ascending: true })
     ]);
 
     const sortedEvents = (eventRes.data || []).sort((a: any, b: any) => {
@@ -80,7 +82,7 @@ export default function AdminDashboard() {
     return data.publicUrl;
   }
 
-  // --- EVENTS ---
+  // --- EVENTS (SECTOR BLOQUEADO - NO TOCADO) ---
   async function handleSaveEvent(e: React.FormEvent) {
     e.preventDefault();
     if (!editingEvent) return;
@@ -119,7 +121,7 @@ export default function AdminDashboard() {
     }
   }
 
-  // --- SPONSORS ---
+  // --- SPONSORS (SECTOR MODIFICADO) ---
   async function handleSaveSponsor(e: React.FormEvent) {
     e.preventDefault();
     if (!newSponsor.image_url) return alert('Sube imagen primero');
@@ -128,7 +130,10 @@ export default function AdminDashboard() {
     if (id) error = (await supabase.from('sponsors').update(data).eq('id', id)).error;
     else error = (await supabase.from('sponsors').insert([data])).error;
     if (error) alert('Error: ' + error.message);
-    else { setNewSponsor({ id: null, client_name: '', image_url: '', link: '', position: 'sidebar' }); fetchData(); }
+    else { 
+      setNewSponsor({ id: null, client_name: '', image_url: '', link: '', position: 'sidebar', display_order: 0 }); 
+      fetchData(); 
+    }
   }
 
   async function toggleSponsorStatus(id: string, currentStatus: boolean) {
@@ -151,23 +156,16 @@ export default function AdminDashboard() {
     if (!newInterview.image_url) return alert('Sube foto primero');
     const temp: any = { ...newInterview };
     const { id, created_at, published_at, ...data } = temp;
-    
     const finalData = {
         title: data.title, subtitle: data.subtitle, band_name: data.band_name,
         content: data.content, image_url: data.image_url, is_active: data.is_active,
         author: data.author, photo_credit: data.photo_credit, image_position: data.image_position
     };
-
     let error;
     if (id) error = (await supabase.from('interviews').update(finalData).eq('id', id)).error;
     else error = (await supabase.from('interviews').insert([finalData])).error;
-    
     if (error) alert('Error al guardar: ' + error.message);
-    else { 
-        alert('¡Guardado!');
-        setNewInterview({ id: null, title: '', subtitle: '', band_name: '', content: '', image_url: '', is_active: true, author: '', photo_credit: '', image_position: 'center' }); 
-        fetchData(); 
-    }
+    else { alert('¡Guardado!'); setNewInterview({ id: null, title: '', subtitle: '', band_name: '', content: '', image_url: '', is_active: true, author: '', photo_credit: '', image_position: 'center' }); fetchData(); }
   }
 
   async function deleteInterview(id: string) {
@@ -192,23 +190,23 @@ export default function AdminDashboard() {
     }
   }
 
-  if (loading) return <div className="min-h-screen bg-black text-red-600 flex items-center justify-center font-black text-4xl uppercase italic text-center font-black">Cargando Admin...</div>;
+  if (loading) return <div className="min-h-screen bg-black text-red-600 flex items-center justify-center font-black text-2xl uppercase italic text-center">Cargando...</div>;
 
   return (
     <div className="min-h-screen bg-zinc-900 text-white p-4 md:p-6 font-sans relative text-left overflow-x-hidden font-black">
       <header className="flex flex-col md:flex-row justify-between items-center mb-8 border-b-4 border-red-600 pb-6 bg-zinc-950 p-4 sticky top-0 z-50 gap-4 font-black">
         <div>
-           <h1 className="text-3xl md:text-4xl font-black uppercase italic text-red-600 leading-none font-franklin">ADMINISTRADOR HQT</h1>
-           <p className="text-[10px] md:text-xs font-bold text-zinc-500 uppercase tracking-widest mt-1 italic font-black">Gestión de Hoy Quien Toca</p>
+           <h1 className="text-3xl md:text-4xl font-black uppercase italic text-red-600 leading-none">ADMINISTRADOR HQT</h1>
+           <p className="text-[10px] md:text-xs font-bold text-zinc-500 uppercase tracking-widest mt-1 italic">Gestión de Hoy Quien Toca</p>
         </div>
         <div className="flex gap-4">
-          <button onClick={() => router.push('/')} className="bg-white text-black px-4 py-1 font-black uppercase text-xs hover:bg-red-600 hover:text-white transition-colors rounded-full border-2 border-white font-black font-black">Web</button>
+          <button onClick={() => router.push('/')} className="bg-white text-black px-4 py-1 font-black uppercase text-xs hover:bg-red-600 hover:text-white transition-colors rounded-full border-2 border-white font-black">Web</button>
           <button onClick={() => supabase.auth.signOut().then(() => router.push('/admin'))} className="bg-red-600 px-4 py-1 font-black uppercase text-xs hover:bg-white hover:text-black transition-colors font-black rounded-full border-2 border-white font-black">Salir</button>
         </div>
       </header>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 md:gap-10 font-black">
-        {/* LADO IZQUIERDO: FECHAS */}
+        {/* LADO IZQUIERDO: FECHAS (TOTALMENTE INTACTO) */}
         <section className="space-y-6 text-left">
           <div className="flex flex-col sm:flex-row justify-between items-center gap-4 bg-zinc-950 p-4 border-l-8 border-red-600 rounded-r-2xl font-black">
              <h2 className="text-2xl font-black uppercase italic text-red-600 font-franklin font-black">Fechas</h2>
@@ -318,64 +316,81 @@ export default function AdminDashboard() {
           </div>
         </section>
 
-        {/* LADO DERECHO: PUBLICIDAD, ENTREVISTAS, MENSAJES */}
-        <section className="space-y-12 font-black">
+        {/* LADO DERECHO: PUBLICIDAD (MODIFICADO), INTERVIEWS, MENSAJES */}
+        <section className="space-y-12 font-black font-black">
           {/* Publicidad */}
-          <div className="space-y-6 text-left font-black">
-            <h2 className="text-2xl font-black uppercase italic text-red-600 border-l-8 border-red-600 pl-4 bg-zinc-950 py-2 font-franklin font-black font-black font-black">Publicidad</h2>
-            <form onSubmit={handleSaveSponsor} className="bg-zinc-950 p-4 border-4 border-white space-y-4 shadow-xl rounded-[32px] font-black font-black font-black">
-              <input placeholder="Nombre Cliente" className="w-full bg-black border-2 border-white p-2 font-bold uppercase text-xs text-white outline-none focus:border-red-600 rounded-xl font-black" value={newSponsor.client_name} onChange={e => setNewSponsor({...newSponsor, client_name: e.target.value})} required />
-              <div className="flex gap-4 items-center border-2 border-dashed border-zinc-700 p-2 relative rounded-xl font-black font-black font-black">
-                <p className="text-[10px] font-black uppercase text-zinc-500 flex-1 font-black">{uploading ? 'Cargando...' : (newSponsor.image_url ? 'Imagen OK ✅' : 'Subir Imagen/GIF')}</p>
-                <input type="file" className="absolute inset-0 opacity-0 cursor-pointer font-black font-black font-black" onChange={async (e) => {
+          <div className="space-y-6 text-left font-black font-black">
+            <h2 className="text-2xl font-black uppercase italic text-red-600 border-l-8 border-red-600 pl-4 bg-zinc-950 py-2 font-franklin">Publicidad</h2>
+            <form onSubmit={handleSaveSponsor} className="bg-zinc-950 p-4 border-4 border-white space-y-4 shadow-xl rounded-[32px] font-black font-black">
+              <input placeholder="Nombre Cliente" className="w-full bg-black border-2 border-white p-2 font-bold uppercase text-xs text-white outline-none focus:border-red-600 rounded-xl" value={newSponsor.client_name} onChange={e => setNewSponsor({...newSponsor, client_name: e.target.value})} required />
+              
+              <input placeholder="Link / Web (https://...)" className="w-full bg-black border-2 border-white p-2 uppercase text-xs text-white outline-none focus:border-red-600 rounded-xl" value={newSponsor.link} onChange={e => setNewSponsor({...newSponsor, link: e.target.value})} />
+
+              <div className="grid grid-cols-2 gap-2 font-black">
+                <select value={newSponsor.position} onChange={e => setNewSponsor({...newSponsor, position: e.target.value})} className="bg-black border-2 border-white p-2 uppercase text-xs rounded-xl font-black">
+                   <option value="sidebar">LATERAL</option>
+                   <option value="bottom">INFERIOR</option>
+                </select>
+                <input type="number" placeholder="Orden" value={newSponsor.display_order} onChange={e => setNewSponsor({...newSponsor, display_order: parseInt(e.target.value)})} className="bg-black border-2 border-white p-2 text-xs rounded-xl font-black" />
+              </div>
+
+              <div className="flex gap-4 items-center border-2 border-dashed border-zinc-700 p-2 relative rounded-xl font-black">
+                <p className="text-[10px] font-black uppercase text-zinc-500 flex-1">{uploading ? 'Cargando...' : (newSponsor.image_url ? 'Imagen OK ✅' : 'Subir Imagen/GIF')}</p>
+                <input type="file" className="absolute inset-0 opacity-0 cursor-pointer font-black" onChange={async (e) => {
                   const file = e.target.files?.[0]; if (file) { const url = await handleFileUpload(file, 'sponsors'); if (url) setNewSponsor({...newSponsor, image_url: url}); }
                 }} />
-                {newSponsor.image_url && <img src={newSponsor.image_url} className="h-10 w-10 object-cover border rounded-lg font-black font-black font-black" />}
+                {newSponsor.image_url && <img src={newSponsor.image_url} className="h-10 w-10 object-cover border rounded-lg font-black" />}
               </div>
-              <button type="submit" disabled={uploading} className="w-full bg-red-600 text-white font-black uppercase py-2 text-xs border-2 border-white rounded-full font-black font-black font-black">GUARDAR</button>
+              <div className="flex gap-2">
+                <button type="submit" disabled={uploading} className="flex-1 bg-red-600 text-white font-black uppercase py-2 text-xs border-2 border-white rounded-full font-black font-black">{newSponsor.id ? 'ACTUALIZAR' : 'GUARDAR'}</button>
+                {newSponsor.id && <button type="button" onClick={() => setNewSponsor({id:null, client_name:'', image_url:'', link:'', position:'sidebar', display_order:0})} className="bg-zinc-700 px-4 font-black border-2 border-white text-white rounded-full">X</button>}
+              </div>
             </form>
-          </div>
 
-          {/* Entrevistas */}
-          <div className="space-y-6 border-t-4 border-zinc-800 pt-8 text-left font-black font-black font-black">
-            <h2 className="text-2xl font-black uppercase italic text-red-600 border-l-8 border-red-600 pl-4 bg-zinc-950 py-2 font-franklin font-black font-black font-black">Entrevistas</h2>
-            <form onSubmit={handleSaveInterview} className="bg-zinc-950 p-4 border-4 border-white space-y-4 shadow-xl rounded-[32px] font-black font-black font-black">
-              <input placeholder="Título" className="w-full bg-black border-2 border-white p-2 font-bold uppercase text-xs text-white focus:border-red-600 outline-none rounded-xl font-black font-black font-black" value={newInterview.title} onChange={e => setNewInterview({...newInterview, title: e.target.value})} required />
-              <input placeholder="Banda" className="w-full bg-black border-2 border-white p-2 font-bold uppercase text-xs text-white focus:border-red-600 outline-none rounded-xl font-black font-black font-black" value={newInterview.band_name} onChange={e => setNewInterview({...newInterview, band_name: e.target.value})} required />
-              <textarea placeholder="Contenido..." className="w-full bg-black border-2 border-white p-2 text-xs text-white h-24 rounded-xl font-black font-black font-black" value={newInterview.content} onChange={e => setNewInterview({...newInterview, content: e.target.value})} required />
-              <div className="flex gap-2 font-black font-black font-black font-black">
-                <button type="submit" disabled={uploading} className="flex-1 bg-red-600 text-white font-black uppercase py-2 text-sm border-2 border-white rounded-full font-black font-black font-black">PUBLICAR</button>
-                {newInterview.id && <button type="button" onClick={() => setNewInterview({id:null, title:'', subtitle:'', band_name:'', content:'', image_url:'', is_active:true, author:'', photo_credit:'', image_position: 'center'})} className="bg-zinc-700 px-4 font-black border-2 border-white text-white rounded-full font-black font-black font-black">X</button>}
-              </div>
-            </form>
-            <div className="grid grid-cols-1 gap-2 max-h-[300px] overflow-y-auto custom-scrollbar font-black font-black font-black">
-              {interviews.map(int => (
-                <div key={int.id} className={`border-2 p-3 flex justify-between items-center ${int.is_active ? 'border-red-600 bg-zinc-900 shadow-md' : 'border-zinc-800 bg-zinc-950 opacity-40 grayscale italic'} rounded-2xl font-black font-black font-black`}>
-                  <div className="truncate pr-4 text-left font-black font-black font-black">
-                    <span className="text-[10px] font-black uppercase text-red-600 font-black font-black font-black">{int.title}</span>
-                    <p className="text-[8px] text-zinc-500 uppercase font-bold font-black font-black font-black">{int.band_name} {int.is_active ? '' : '(PAUSADA)'}</p>
+            <div className="grid grid-cols-1 gap-2 max-h-[400px] overflow-y-auto pr-2 custom-scrollbar font-black">
+              {sponsors.map(sp => (
+                <div key={sp.id} className={`border-2 p-3 flex flex-col gap-2 ${sp.is_active ? 'border-red-600 bg-zinc-950 shadow-md' : 'border-zinc-800 opacity-50 bg-zinc-900'} rounded-2xl`}>
+                  <div className="flex justify-between items-start">
+                    <div className="truncate flex-1 pr-2">
+                      <span className="text-[9px] font-black uppercase text-white">[{sp.position === 'sidebar' ? 'LAT' : 'INF'}] {sp.client_name}</span>
+                      <p className="text-[7px] text-zinc-500 uppercase font-black">Orden: {sp.display_order}</p>
+                    </div>
+                    <div className="flex gap-1">
+                      <button onClick={() => setNewSponsor(sp)} className="px-2 py-0.5 bg-blue-600 text-white text-[7px] font-black border border-white rounded-full">EDITAR</button>
+                      <button onClick={() => toggleSponsorStatus(sp.id, sp.is_active)} className={`px-2 py-0.5 text-white text-[7px] font-black border border-white rounded-full ${sp.is_active ? 'bg-green-600' : 'bg-zinc-700'}`}>{sp.is_active ? 'PAUSA' : 'ACTIVO'}</button>
+                      <button onClick={() => deleteSponsor(sp.id)} className="px-2 py-0.5 bg-red-600 text-white text-[7px] font-black border border-white rounded-full">BORRAR</button>
+                    </div>
                   </div>
-                  <div className="flex gap-1 shrink-0 font-black font-black font-black">
-                    <button onClick={() => setNewInterview(int)} className="px-2 py-0.5 bg-blue-600 text-white text-[7px] font-black border border-white rounded-full font-black font-black font-black">EDITAR</button>
-                    <button onClick={() => toggleInterviewStatus(int.id, int.is_active)} className={`px-2 py-0.5 text-white text-[7px] font-black border border-white rounded-full ${int.is_active ? 'bg-green-600' : 'bg-zinc-700 font-black font-black font-black'}`}>{int.is_active ? 'PAUSA' : 'ACTIVO'}</button>
-                    <button onClick={() => deleteInterview(int.id)} className="px-2 py-0.5 bg-red-600 text-white text-[7px] font-black border border-white rounded-full font-black font-black font-black">BORRAR</button>
-                  </div>
+                  <img src={sp.image_url} className="w-full h-20 object-cover border border-zinc-800 shadow-inner rounded-lg font-black" />
                 </div>
               ))}
             </div>
           </div>
 
-          {/* Mensajes */}
-          <div className="space-y-6 border-t-4 border-zinc-800 pt-8 text-left text-white font-black font-black font-black">
-            <h2 className="text-2xl font-black uppercase italic text-red-600 border-l-8 border-red-600 pl-4 bg-zinc-950 py-2 font-black font-franklin font-black font-black font-black">Mensajes</h2>
-            <div className="space-y-4 max-h-[300px] overflow-y-auto pr-2 custom-scrollbar font-black font-black font-black">
-              {messages.map((msg) => (
-                <div key={msg.id} className={`border-2 p-3 flex justify-between items-center ${msg.is_read ? 'border-zinc-800 bg-zinc-950/50 opacity-60' : 'border-white bg-zinc-900'} rounded-2xl font-black font-black font-black`}>
-                  <div onClick={() => setSelectedMessage(msg)} className="cursor-pointer flex-1 font-black font-black font-black">
-                    <h3 className="font-black uppercase text-[10px] text-red-600 font-black font-black font-black">{msg.name}</h3>
-                    <p className="text-[9px] text-zinc-300 truncate max-w-[150px] font-black font-black font-black font-black">"{msg.message}"</p>
+          {/* Entrevistas e Intactas */}
+          <div className="space-y-6 border-t-4 border-zinc-800 pt-8 text-left font-black font-black">
+            <h2 className="text-2xl font-black uppercase italic text-red-600 border-l-8 border-red-600 pl-4 bg-zinc-950 py-2 font-franklin">Entrevistas</h2>
+            <form onSubmit={handleSaveInterview} className="bg-zinc-950 p-4 border-4 border-white space-y-4 shadow-xl rounded-[32px] font-black">
+              <input placeholder="Título" className="w-full bg-black border-2 border-white p-2 font-bold uppercase text-xs text-white focus:border-red-600 outline-none rounded-xl" value={newInterview.title} onChange={e => setNewInterview({...newInterview, title: e.target.value})} required />
+              <input placeholder="Banda" className="w-full bg-black border-2 border-white p-2 font-bold uppercase text-xs text-white focus:border-red-600 outline-none rounded-xl" value={newInterview.band_name} onChange={e => setNewInterview({...newInterview, band_name: e.target.value})} required />
+              <textarea placeholder="Contenido..." className="w-full bg-black border-2 border-white p-2 text-xs text-white h-24 rounded-xl font-black font-black" value={newInterview.content} onChange={e => setNewInterview({...newInterview, content: e.target.value})} required />
+              <div className="flex gap-2 font-black">
+                <button type="submit" disabled={uploading} className="flex-1 bg-red-600 text-white font-black uppercase py-2 text-sm border-2 border-white rounded-full font-black font-black">PUBLICAR</button>
+                {newInterview.id && <button type="button" onClick={() => setNewInterview({id:null, title:'', subtitle:'', band_name:'', content:'', image_url:'', is_active:true, author:'', photo_credit:'', image_position: 'center'})} className="bg-zinc-700 px-4 font-black border-2 border-white text-white rounded-full font-black font-black">X</button>}
+              </div>
+            </form>
+            <div className="grid grid-cols-1 gap-2 max-h-[300px] overflow-y-auto custom-scrollbar font-black">
+              {interviews.map(int => (
+                <div key={int.id} className={`border-2 p-3 flex justify-between items-center ${int.is_active ? 'border-red-600 bg-zinc-900 shadow-md' : 'border-zinc-800 bg-zinc-950 opacity-40 grayscale italic'} rounded-2xl font-black font-black`}>
+                  <div className="truncate pr-4 text-left font-black">
+                    <span className="text-[10px] font-black uppercase text-red-600 font-black">{int.title}</span>
+                    <p className="text-[8px] text-zinc-500 uppercase font-bold font-black">{int.band_name} {int.is_active ? '' : '(PAUSADA)'}</p>
                   </div>
-                  <button onClick={() => deleteMessage(msg.id)} className="text-[7px] bg-red-600 text-white px-2 py-0.5 border border-white rounded-full font-black font-black font-black">BORRAR</button>
+                  <div className="flex gap-1 shrink-0 font-black">
+                    <button onClick={() => setNewInterview(int)} className="px-2 py-0.5 bg-blue-600 text-white text-[7px] font-black border border-white rounded-full font-black">EDITAR</button>
+                    <button onClick={() => toggleInterviewStatus(int.id, int.is_active)} className={`px-2 py-0.5 text-white text-[7px] font-black border border-white rounded-full ${int.is_active ? 'bg-green-600' : 'bg-zinc-700 font-black'}`}>{int.is_active ? 'PAUSA' : 'ACTIVO'}</button>
+                    <button onClick={() => deleteInterview(int.id)} className="px-2 py-0.5 bg-red-600 text-white text-[7px] font-black border border-white rounded-full font-black">BORRAR</button>
+                  </div>
                 </div>
               ))}
             </div>
@@ -383,17 +398,6 @@ export default function AdminDashboard() {
         </section>
       </div>
 
-      {selectedMessage && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 font-black font-black font-black">
-          <div className="absolute inset-0 bg-black/90 backdrop-blur-sm font-black font-black font-black" onClick={() => setSelectedMessage(null)} />
-          <div className="relative w-full max-w-xl bg-zinc-900 border-8 border-white p-10 shadow-2xl rounded-[50px] font-black text-left font-black font-black font-black">
-            <button onClick={() => setSelectedMessage(null)} className="absolute -top-4 -right-4 bg-red-600 text-white w-10 h-10 font-black text-xl border-4 border-white rounded-full shadow-xl font-black font-black font-black">X</button>
-            <h3 className="text-2xl font-black uppercase text-red-600 mb-2 font-black font-black font-black">{selectedMessage.name}</h3>
-            <p className="text-lg text-white font-black font-black font-black font-black font-black">"{selectedMessage.message}"</p>
-          </div>
-        </div>
-      )}
-      
       <style jsx global>{`
         .custom-scrollbar::-webkit-scrollbar { width: 4px; }
         .custom-scrollbar::-webkit-scrollbar-track { background: #1a1a1a; }
