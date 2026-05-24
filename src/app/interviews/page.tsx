@@ -8,7 +8,7 @@ import Link from 'next/link';
 export default function InterviewsPage() {
   const [interviews, setInterviews] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [debugInfo, setDebugInfo] = useState<string>("");
+  const [errorMsg, setErrorMsg] = useState<string>("");
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [showLogoModal, setShowLogoModal] = useState(false);
 
@@ -19,22 +19,21 @@ export default function InterviewsPage() {
   async function fetchInterviews() {
     try {
       setLoading(true);
-      setDebugInfo("Iniciando carga...");
+      setErrorMsg("");
       
-      // QUITAMOS TODOS LOS FILTROS (Incluso is_active) para ver si hay ALGO en la base
-      const { data, error, count } = await supabase
+      // CARGA TOTAL SIN NINGÚN FILTRO
+      const { data, error } = await supabase
         .from('interviews')
-        .select('*', { count: 'exact' })
+        .select('*')
         .order('published_at', { ascending: false });
 
       if (error) {
-        setDebugInfo("Error Supabase: " + error.message);
+        setErrorMsg("Error de base de datos: " + error.message);
       } else {
-        setDebugInfo(`Carga exitosa. Encontrados: ${data?.length || 0} de ${count || 0}`);
         setInterviews(data || []);
       }
     } catch (e: any) {
-      setDebugInfo("Error Crítico: " + e.message);
+      setErrorMsg("Error de conexión: " + e.message);
     } finally {
       setLoading(false);
     }
@@ -72,7 +71,7 @@ export default function InterviewsPage() {
       </header>
 
       {isMenuOpen && (
-        <div className="fixed inset-0 z-[60] bg-black/95 flex flex-col items-center justify-center space-y-8 md:hidden font-black">
+        <div className="fixed inset-0 z-[60] bg-black/95 flex flex-col items-center justify-center space-y-8 md:hidden font-black text-center">
           <button onClick={() => setIsMenuOpen(false)} className="absolute top-6 right-6 text-white text-4xl">X</button>
           <Link href="/" onClick={() => setIsMenuOpen(false)} className="text-4xl font-franklin text-white italic">Fechas</Link>
           <Link href="/interviews" onClick={() => setIsMenuOpen(false)} className="text-4xl font-franklin text-red-600 italic">Entrevistas</Link>
@@ -85,26 +84,24 @@ export default function InterviewsPage() {
         <h2 className="text-4xl md:text-6xl font-franklin text-center py-10 border-b-8 border-red-600 text-white leading-none uppercase">Entrevistas</h2>
 
         {loading ? (
-          <div className="flex flex-col items-center py-20 animate-pulse font-black">
+          <div className="flex flex-col items-center py-20 animate-pulse">
             <div className="w-12 h-12 border-4 border-red-600 border-t-transparent rounded-full animate-spin mb-4" />
             <p className="text-2xl font-franklin uppercase italic">Cargando...</p>
           </div>
+        ) : errorMsg ? (
+          <div className="text-center py-20 bg-red-600/20 border-4 border-red-600 rounded-[40px] p-10">
+            <p className="text-2xl font-black uppercase mb-4">{errorMsg}</p>
+            <button onClick={fetchInterviews} className="bg-white text-black px-8 py-3 rounded-full font-black uppercase">Reintentar carga</button>
+          </div>
         ) : interviews.length === 0 ? (
           <div className="text-center py-20 font-black">
-            <p className="text-3xl font-black uppercase italic text-zinc-600 tracking-tighter">Próximamente nuevas entrevistas...</p>
-            
-            {/* PANEL DE DEBUG VISIBLE SOLO PARA REPARAR */}
-            <div className="mt-20 p-6 bg-black/50 border-2 border-red-600 rounded-3xl max-w-md mx-auto text-left font-mono text-[10px] text-zinc-400">
-               <p className="text-red-600 font-black mb-2 uppercase tracking-widest">Información Técnica:</p>
-               <p>STATUS: {debugInfo}</p>
-               <p>TIME: {new Date().toLocaleTimeString()}</p>
-               <button onClick={fetchInterviews} className="mt-4 bg-white text-black px-4 py-1 rounded-full font-black uppercase hover:bg-red-600 hover:text-white transition-colors">Forzar Recarga</button>
-            </div>
+            <p className="text-3xl font-black uppercase italic text-zinc-600 tracking-tighter">No hay entrevistas publicadas aún.</p>
+            <p className="text-[10px] text-zinc-700 mt-10 font-mono">DEBUG: Table 'interviews' connected but returned 0 rows.</p>
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-12 text-left">
             {interviews.map((interview) => (
-              <a 
+              <Link 
                 href={`/interviews/${interview.id}`} 
                 key={interview.id}
                 className="group border-4 border-white p-4 bg-zinc-950/80 hover:border-red-600 transition-all shadow-[8px_8px_0px_0px_rgba(220,38,38,0.3)] rounded-[32px] block font-black"
@@ -129,10 +126,10 @@ export default function InterviewsPage() {
                   )}
                   <div className="flex justify-between items-center text-zinc-500 font-bold text-[10px] uppercase tracking-tighter font-black">
                     <p>Publicado: {new Date(interview.published_at).toLocaleDateString()}</p>
-                    {interview.author && <p className="text-red-600 font-black">Por: {interview.author}</p>}
+                    {interview.author && <p className="text-red-600">Por: {interview.author}</p>}
                   </div>
                 </div>
-              </a>
+              </Link>
             ))}
           </div>
         )}
