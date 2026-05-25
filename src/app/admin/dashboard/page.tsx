@@ -119,6 +119,7 @@ export default function AdminDashboard() {
   async function deleteMessage(id: string) { if (confirm('¿Borrar?')) { await supabase.from('contact_messages').delete().eq('id', id); fetchData(); setSelectedMessage(null); } }
   async function deleteInterview(id: string) { if (confirm('¿Borrar?')) { await supabase.from('interviews').delete().eq('id', id); fetchData(); } }
   async function toggleInterviewStatus(id: string, current: boolean) { await supabase.from('interviews').update({ is_active: !current }).eq('id', id); fetchData(); }
+  async function toggleInterviewFeatured(id: string, current: boolean) { await supabase.from('interviews').update({ is_featured: !current }).eq('id', id); fetchData(); }
   async function toggleSponsorStatus(id: string, current: boolean) { await supabase.from('sponsors').update({ is_active: !current }).eq('id', id); fetchData(); }
 
   if (loading) return <div className="min-h-screen bg-black text-red-600 flex items-center justify-center font-black text-2xl uppercase italic">Cargando Admin...</div>;
