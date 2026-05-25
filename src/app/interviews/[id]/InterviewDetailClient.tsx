@@ -33,7 +33,6 @@ export default function InterviewDetailClient({
   async function fetchFallback() {
     try {
       setLoading(true);
-      // Intento con Supabase Client
       const { data, error } = await supabase
         .from('interviews')
         .select('*')
@@ -44,15 +43,7 @@ export default function InterviewDetailClient({
         setInterview(data);
         setErrorState(null);
       } else {
-        // ULTIMO INTENTO: Búsqueda manual sin filtros
-        const { data: allData } = await supabase.from('interviews').select('*');
-        const found = allData?.find(i => i.id === id);
-        if (found) {
-          setInterview(found);
-          setErrorState(null);
-        } else {
-          setErrorState("No encontramos la entrevista.");
-        }
+        setErrorState("No encontramos la entrevista.");
       }
     } catch (err: any) {
       setErrorState("Error al conectar con la base de datos.");
@@ -185,14 +176,6 @@ export default function InterviewDetailClient({
           <div className="relative max-w-lg w-full bg-zinc-900 border-8 border-white p-6 rounded-[50px] shadow-2xl text-center">
             <button onClick={() => setShowLogoModal(false)} className="absolute -top-4 -right-4 bg-red-600 text-white w-12 h-12 font-black text-2xl border-4 border-white rounded-full">X</button>
             <Image src="/logo-rojo.jpg" alt="Logo Grande" width={600} height={600} className="w-full h-auto rounded-[30px]" />
-            <h3 className="text-3xl font-franklin text-red-600 mt-4 leading-none">Hoy Quien Toca</h3>
-          </div>
-        </div>
-      )}
-    </div>
-  );
-}
-<Image src="/logo-rojo.jpg" alt="Logo Grande" width={600} height={600} className="w-full h-auto rounded-[30px]" />
             <h3 className="text-3xl font-franklin text-red-600 mt-4 leading-none">Hoy Quien Toca</h3>
           </div>
         </div>
