@@ -53,7 +53,12 @@ export default function Home() {
       const [eventRes, sponsorRes, interviewRes] = await Promise.all([
         supabase.from('events').select('*').eq('is_approved', true).order('date', { ascending: true }).order('time', { ascending: true }),
         supabase.from('sponsors').select('*').eq('is_active', true),
-        supabase.from('interviews').select('*').eq('is_active', true).limit(2).order('published_at', { ascending: false })
+        supabase.from('interviews')
+          .select('*')
+          .eq('is_active', true)
+          .order('is_featured', { ascending: false })
+          .order('published_at', { ascending: false })
+          .limit(2)
       ]);
 
       if (eventRes.data) {
@@ -195,7 +200,10 @@ export default function Home() {
         )}
 
         {featuredEvents.length > 0 && (
-          <section className="relative h-[300px] md:h-[500px] border-4 md:border-8 border-white bg-zinc-800 flex items-end p-4 md:p-10 overflow-hidden shadow-[12px_12px_0px_0px_rgba(220,38,38,0.3)] group rounded-[24px] md:rounded-[40px]">
+          <section 
+            onClick={() => setSelectedEvent(featuredEvents[currentHeroIndex])}
+            className="relative h-[300px] md:h-[500px] border-4 md:border-8 border-white bg-zinc-800 flex items-end p-4 md:p-10 overflow-hidden shadow-[12px_12px_0px_0px_rgba(220,38,38,0.3)] group rounded-[24px] md:rounded-[40px] cursor-pointer"
+          >
             <div className="absolute inset-0">
                {featuredEvents[currentHeroIndex].flyer_url && (
                  <img src={featuredEvents[currentHeroIndex].flyer_url} className="absolute inset-0 w-full h-full object-cover opacity-60" alt="Hero" />
@@ -203,10 +211,16 @@ export default function Home() {
             </div>
             <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent z-10" />
             
-            <button onClick={prevHero} className="absolute left-2 md:left-4 top-1/2 -translate-y-1/2 z-30 bg-black/50 text-white w-10 h-10 md:w-12 md:h-12 flex items-center justify-center rounded-full border-2 border-white hover:bg-red-600 transition-colors opacity-0 group-hover:opacity-100">
+            <button 
+              onClick={(e) => { e.stopPropagation(); prevHero(); }} 
+              className="absolute left-2 md:left-4 top-1/2 -translate-y-1/2 z-30 bg-black/50 text-white w-10 h-10 md:w-12 md:h-12 flex items-center justify-center rounded-full border-2 border-white hover:bg-red-600 transition-colors opacity-0 group-hover:opacity-100"
+            >
                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7"></path></svg>
             </button>
-            <button onClick={nextHero} className="absolute right-2 md:right-4 top-1/2 -translate-y-1/2 z-30 bg-black/50 text-white w-10 h-10 md:w-12 md:h-12 flex items-center justify-center rounded-full border-2 border-white hover:bg-red-600 transition-colors opacity-0 group-hover:opacity-100">
+            <button 
+              onClick={(e) => { e.stopPropagation(); nextHero(); }} 
+              className="absolute right-2 md:right-4 top-1/2 -translate-y-1/2 z-30 bg-black/50 text-white w-10 h-10 md:w-12 md:h-12 flex items-center justify-center rounded-full border-2 border-white hover:bg-red-600 transition-colors opacity-0 group-hover:opacity-100"
+            >
                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7"></path></svg>
             </button>
 
@@ -225,7 +239,6 @@ export default function Home() {
               <p className="text-xs md:text-2xl font-bold text-white uppercase tracking-widest border-l-4 md:border-l-8 border-red-600 pl-4 mt-2 md:mt-4 font-black">
                 {formatDate(featuredEvents[currentHeroIndex].date)} @ {featuredEvents[currentHeroIndex].venue} {featuredEvents[currentHeroIndex].address && `- ${featuredEvents[currentHeroIndex].address}`}
               </p>
-              <button onClick={() => setSelectedEvent(featuredEvents[currentHeroIndex])} className="mt-4 md:mt-8 bg-white text-black font-black uppercase px-4 py-1.5 md:px-8 md:py-3 hover:bg-red-600 hover:text-white transition-all text-[10px] md:text-base rounded-full shadow-lg">Ver Detalles</button>
             </div>
           </section>
         )}

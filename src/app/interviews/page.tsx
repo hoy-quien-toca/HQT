@@ -49,9 +49,9 @@ export default function InterviewsPage() {
       <header className="border-b-4 border-red-600 p-4 md:p-6 bg-zinc-950 sticky top-0 z-50 shadow-xl text-left">
         <div className="max-w-6xl mx-auto flex justify-between items-center">
           <div className="flex items-center gap-4">
-            <button onClick={() => setShowLogoModal(true)} className="hover:scale-110 transition-transform cursor-pointer focus:outline-none">
+            <Link href="/" className="hover:scale-110 transition-transform cursor-pointer focus:outline-none">
                <Image src="/logo-rojo.jpg" alt="Logo" width={70} height={70} className="border-2 border-white rounded-2xl md:w-[85px] md:h-[85px] shadow-lg shadow-red-600/30" />
-            </button>
+            </Link>
             <div>
               <h1 className="text-2xl md:text-5xl font-franklin tracking-tighter text-red-600 leading-none uppercase">Hoy Quien Toca</h1>
               <p className="text-[10px] md:text-xs font-bold text-white uppercase tracking-widest mt-1">Descubri recitales en tu Ciudad</p>
