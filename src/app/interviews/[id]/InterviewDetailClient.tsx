@@ -193,10 +193,7 @@ export default function InterviewDetailClient({
 
           <div className="pt-16 border-t-4 border-zinc-800 flex flex-col items-center gap-8 pb-32 font-black">
             <p className="text-zinc-500 uppercase text-xs italic font-black">Gracias por leer Hoy Quien Toca</p>
-            <div className="flex flex-col sm:flex-row gap-4 w-full max-w-md px-4">
-              <button onClick={shareOnWhatsApp} className="flex-1 bg-green-600 text-white py-4 font-black uppercase text-lg hover:bg-white hover:text-green-600 shadow-xl rounded-full border-4 border-black italic font-franklin transition-all">WhatsApp</button>
-              <button onClick={shareGeneral} className="flex-1 bg-gradient-to-tr from-yellow-400 via-red-600 to-purple-600 text-white py-4 font-black uppercase text-lg hover:scale-105 shadow-xl rounded-full border-4 border-black italic font-franklin transition-all">Instagram / Compartir</button>
-            </div>
+            <button onClick={shareOnWhatsApp} className="bg-green-600 text-white px-10 py-4 font-black uppercase text-lg hover:bg-white hover:text-green-600 shadow-xl rounded-full border-4 border-black italic font-franklin transition-all">Compartir en WhatsApp</button>
           </div>
         </article>
       </main>
