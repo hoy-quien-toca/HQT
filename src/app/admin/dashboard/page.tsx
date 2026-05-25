@@ -97,7 +97,17 @@ export default function AdminDashboard() {
   async function handleSaveEvent(e: React.FormEvent) {
     e.preventDefault(); if (!editingEvent) return;
     const { id, created_at, ...data } = editingEvent;
-    const res = id === 'new' ? await supabase.from('events').insert([data]) : await supabase.from('events').update(data).eq('id', id);
+    
+    // Normalización de datos para filtros consistentes
+    const normalizedData = {
+      ...data,
+      band_name: data.band_name?.trim().toUpperCase(),
+      venue: data.venue?.trim().toUpperCase(),
+      address: data.address?.trim().toUpperCase(),
+      city: data.city?.trim().toUpperCase(),
+    };
+
+    const res = id === 'new' ? await supabase.from('events').insert([normalizedData]) : await supabase.from('events').update(normalizedData).eq('id', id);
     if (res.error) alert('Error: ' + res.error.message); else { setEditingEvent(null); fetchData(); }
   }
 

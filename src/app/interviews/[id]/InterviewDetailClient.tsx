@@ -67,25 +67,6 @@ export default function InterviewDetailClient({
     window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
   };
 
-  const shareGeneral = async () => {
-    const data = interview || initialInterview;
-    const shareData = {
-      title: 'Hoy Quien Toca',
-      text: `Mira la entrevista a ${data?.band_name}: ${data?.title}`,
-      url: window.location.href,
-    };
-    try {
-      if (navigator.share) {
-        await navigator.share(shareData);
-      } else {
-        await navigator.clipboard.writeText(window.location.href);
-        alert('Enlace copiado al portapapeles. ¡Pegalo en tu Instagram!');
-      }
-    } catch (err) {
-      console.log('Error compartiendo:', err);
-    }
-  };
-
   if (loading && !interview) {
     return (
       <div className="min-h-screen bg-black text-red-600 flex flex-col items-center justify-center p-6 text-center font-franklin">
@@ -204,6 +185,14 @@ export default function InterviewDetailClient({
           <div className="relative max-w-lg w-full bg-zinc-900 border-8 border-white p-6 rounded-[50px] shadow-2xl text-center">
             <button onClick={() => setShowLogoModal(false)} className="absolute -top-4 -right-4 bg-red-600 text-white w-12 h-12 font-black text-2xl border-4 border-white rounded-full">X</button>
             <Image src="/logo-rojo.jpg" alt="Logo Grande" width={600} height={600} className="w-full h-auto rounded-[30px]" />
+            <h3 className="text-3xl font-franklin text-red-600 mt-4 leading-none">Hoy Quien Toca</h3>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+<Image src="/logo-rojo.jpg" alt="Logo Grande" width={600} height={600} className="w-full h-auto rounded-[30px]" />
             <h3 className="text-3xl font-franklin text-red-600 mt-4 leading-none">Hoy Quien Toca</h3>
           </div>
         </div>
