@@ -174,7 +174,10 @@ export default function InterviewDetailClient({
 
           <div className="pt-16 border-t-4 border-zinc-800 flex flex-col items-center gap-8 pb-32 font-black">
             <p className="text-zinc-500 uppercase text-xs italic font-black">Gracias por leer Hoy Quien Toca</p>
-            <button onClick={shareOnWhatsApp} className="bg-green-600 text-white px-10 py-4 font-black uppercase text-lg hover:bg-white hover:text-green-600 shadow-xl rounded-full border-4 border-black italic font-franklin">Compartir en WhatsApp</button>
+            <div className="flex flex-col sm:flex-row gap-4 w-full max-w-md px-4">
+              <button onClick={shareOnWhatsApp} className="flex-1 bg-green-600 text-white py-4 font-black uppercase text-lg hover:bg-white hover:text-green-600 shadow-xl rounded-full border-4 border-black italic font-franklin transition-all">WhatsApp</button>
+              <button onClick={shareGeneral} className="flex-1 bg-gradient-to-tr from-yellow-400 via-red-600 to-purple-600 text-white py-4 font-black uppercase text-lg hover:scale-105 shadow-xl rounded-full border-4 border-black italic font-franklin transition-all">Instagram / Compartir</button>
+            </div>
           </div>
         </article>
       </main>
@@ -185,6 +188,14 @@ export default function InterviewDetailClient({
           <div className="relative max-w-lg w-full bg-zinc-900 border-8 border-white p-6 rounded-[50px] shadow-2xl text-center">
             <button onClick={() => setShowLogoModal(false)} className="absolute -top-4 -right-4 bg-red-600 text-white w-12 h-12 font-black text-2xl border-4 border-white rounded-full">X</button>
             <Image src="/logo-rojo.jpg" alt="Logo Grande" width={600} height={600} className="w-full h-auto rounded-[30px]" />
+            <h3 className="text-3xl font-franklin text-red-600 mt-4 leading-none">Hoy Quien Toca</h3>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+ rounded-[30px]" />
             <h3 className="text-3xl font-franklin text-red-600 mt-4 leading-none">Hoy Quien Toca</h3>
           </div>
         </div>
