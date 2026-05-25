@@ -125,6 +125,24 @@ export default function Home() {
     window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
   };
 
+  const shareGeneral = async (event: any) => {
+    const shareData = {
+      title: 'Hoy Quien Toca',
+      text: `¡Mirá este show: ${event.band_name} en ${event.venue}!`,
+      url: window.location.origin,
+    };
+    try {
+      if (typeof navigator !== 'undefined' && navigator.share) {
+        await navigator.share(shareData);
+      } else {
+        await navigator.clipboard.writeText(window.location.origin);
+        alert('Enlace copiado al portapapeles. ¡Pegalo en tu Instagram!');
+      }
+    } catch (err) {
+      console.log('Error compartiendo:', err);
+    }
+  };
+
   const handleTicketAction = (event: any) => {
     if (event.ticket_type === 'whatsapp') {
       window.open(`https://wa.me/${event.ticket_contact}`, '_blank');
