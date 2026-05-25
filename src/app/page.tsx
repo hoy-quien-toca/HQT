@@ -324,14 +324,13 @@ export default function Home() {
                     <div className="flex-1 min-w-0 flex flex-col justify-center text-left space-y-0.5 md:space-y-2 font-black">
                       <div className="flex justify-between items-start font-black">
                         <h3 className="text-base md:text-2xl font-franklin leading-none truncate group-hover/card:text-red-600 transition-colors font-black">{event.band_name}</h3>
-                        <span className="hidden md:inline-block text-[8px] bg-red-600 text-white px-2 py-0.5 uppercase font-black italic rounded-sm font-black">{event.genre || 'Show'}</span>
                       </div>
                       <p className="font-black text-red-600 tracking-tighter uppercase text-[10px] md:text-sm font-black">{formatDate(event.date)} - {formatTime(event.time)}hs</p>
                       <p className="text-[9px] md:text-[10px] uppercase tracking-tight text-zinc-400 font-bold leading-none md:leading-tight truncate font-black">{event.venue}, {event.city}</p>
                       
                       <div className="flex gap-2 mt-1 flex-wrap font-black">
                          <span className="text-[7px] md:text-[8px] bg-white text-black px-2 py-0.5 uppercase font-black rounded-full border border-red-600 font-black">{renderPriceLabel(event)}</span>
-                         <span className="text-[7px] md:text-[8px] bg-zinc-800 text-zinc-400 px-2 py-0.5 uppercase font-black rounded-full border border-zinc-700 font-black">{event.genre || 'Show'}</span>
+                         <span className="text-[7px] md:text-[8px] bg-red-600 text-white px-2 py-0.5 uppercase font-black rounded-full border border-white font-black">{event.genre || 'Show'}</span>
                       </div>
                     </div>
                   </div>
