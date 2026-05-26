@@ -134,8 +134,10 @@ export default function AdminDashboard() {
 
   if (loading) return <div className="min-h-screen bg-black text-red-600 flex items-center justify-center font-black text-2xl uppercase italic">Cargando Admin...</div>;
 
+  const today = new Date().toISOString().split('T')[0];
   const pendingEvents = events.filter((e) => !e.is_approved);
-  const approvedEvents = events.filter((e) => e.is_approved);
+  const upcomingEvents = events.filter((e) => e.is_approved && e.date >= today);
+  const pastEvents = events.filter((e) => e.is_approved && e.date < today);
 
   const renderEventCard = (ev: any) => {
     const isPending = !ev.is_approved;
@@ -250,14 +252,24 @@ export default function AdminDashboard() {
                 {pendingEvents.map(renderEventCard)}
               </div>
             )}
-            {approvedEvents.length > 0 && (
+            
+            {upcomingEvents.length > 0 && (
               <div className="flex flex-col gap-5">
-                {pendingEvents.length > 0 && (
-                  <p className="text-[10px] font-black uppercase tracking-widest text-zinc-500 border-b border-zinc-800 pb-2">
-                    Fechas publicadas
-                  </p>
-                )}
-                {approvedEvents.map(renderEventCard)}
+                <p className="text-[10px] font-black uppercase tracking-widest text-zinc-500 border-b border-zinc-800 pb-2">
+                  Próximas fechas ({upcomingEvents.length})
+                </p>
+                {upcomingEvents.map(renderEventCard)}
+              </div>
+            )}
+
+            {pastEvents.length > 0 && (
+              <div className="flex flex-col gap-5 mt-4">
+                <p className="text-[10px] font-black uppercase tracking-widest text-zinc-500 border-b border-zinc-800 pb-2">
+                  Fechas pasadas ({pastEvents.length}) - No visibles en la web
+                </p>
+                <div className="opacity-60 grayscale">
+                  {pastEvents.map(renderEventCard)}
+                </div>
               </div>
             )}
           </div>
