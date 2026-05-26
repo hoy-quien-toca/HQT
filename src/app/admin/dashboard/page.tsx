@@ -226,7 +226,22 @@ export default function AdminDashboard() {
                 <input required type="time" value={editingEvent.time} onChange={e => setEditingEvent({...editingEvent, time: e.target.value})} className="bg-black border-2 border-white p-2 rounded-lg" />
                 <select value={editingEvent.age_rating} onChange={e => setEditingEvent({...editingEvent, age_rating: e.target.value})} className="bg-black border-2 border-white p-2 rounded-lg uppercase"><option value="ATP">ATP</option><option value="+12">+12</option><option value="+18">+18</option></select>
                 <select value={editingEvent.price_type} onChange={e => setEditingEvent({...editingEvent, price_type: e.target.value})} className="bg-black border-2 border-white p-2 rounded-lg uppercase"><option value="range">PAGO</option><option value="free">LIBRE</option></select>
-                <div className="grid grid-cols-2 gap-2 col-span-2"><input type="number" placeholder="Mín $" value={editingEvent.price_min || ''} onChange={e => setEditingEvent({...editingEvent, price_min: e.target.value})} className="bg-black border-2 border-white p-2 rounded-lg" /><input type="number" placeholder="Máx $" value={editingEvent.price_max || ''} onChange={e => setEditingEvent({...editingEvent, price_max: e.target.value})} className="bg-black border-2 border-white p-2 rounded-lg" /></div>
+                <div className="grid grid-cols-2 gap-2 col-span-2">
+                  <input 
+                    type="number" 
+                    placeholder="Mín $" 
+                    value={editingEvent.price_min || ''} 
+                    onChange={e => setEditingEvent({...editingEvent, price_min: e.target.value})} 
+                    className="bg-black border-2 border-white p-2 rounded-lg" 
+                  />
+                  <input 
+                    type="number" 
+                    placeholder="Máx $" 
+                    value={editingEvent.price_max || ''} 
+                    onChange={e => setEditingEvent({...editingEvent, price_max: e.target.value})} 
+                    className="bg-black border-2 border-white p-2 rounded-lg" 
+                  />
+                </div>
                 <div className="grid grid-cols-2 gap-2 col-span-2">
                   <select value={editingEvent.ticket_type || 'link'} onChange={e => setEditingEvent({...editingEvent, ticket_type: e.target.value})} className="bg-black border-2 border-white p-2 rounded-lg uppercase">
                     <option value="link">LINK PAGO</option>

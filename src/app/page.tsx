@@ -152,7 +152,10 @@ export default function Home() {
     if (event.price_type === 'free') return 'LIBRE';
     if (event.price_type === 'gorra') return 'GORRA';
     if (event.price_type === 'sobre') return 'SOBRE';
-    return `$${event.price_min}${event.price_max ? `-$${event.price_max}` : ''}`;
+    const min = event.price_min;
+    const max = event.price_max;
+    if (min && max && min !== max) return `$${min}-$${max}`;
+    return `$${min || max || '0'}`;
   };
 
   return (
@@ -403,7 +406,7 @@ export default function Home() {
                 </div>
                 <div className="pt-6 border-t-2 border-zinc-800 space-y-4 font-black">
                   <p className="text-2xl md:text-3xl font-franklin text-red-600 tracking-tighter uppercase font-black">
-                    {selectedEvent.is_suspended ? 'SUSPENDIDO' : selectedEvent.is_sold_out ? 'AGOTADO' : (selectedEvent.price_type === 'free' ? 'ENTRADA LIBRE' : selectedEvent.price_type === 'gorra' ? 'A LA GORRA' : selectedEvent.price_type === 'sobre' ? 'SOBRE ARTÍSTICO' : `$${selectedEvent.price_min}${selectedEvent.price_max ? ` - $${selectedEvent.price_max}` : ''}`)}
+                    {selectedEvent.is_suspended ? 'SUSPENDIDO' : selectedEvent.is_sold_out ? 'AGOTADO' : (selectedEvent.price_type === 'free' ? 'ENTRADA LIBRE' : selectedEvent.price_type === 'gorra' ? 'A LA GORRA' : selectedEvent.price_type === 'sobre' ? 'SOBRE ARTÍSTICO' : (selectedEvent.price_min && selectedEvent.price_max && selectedEvent.price_min !== selectedEvent.price_max) ? `$${selectedEvent.price_min} - $${selectedEvent.price_max}` : `$${selectedEvent.price_min || selectedEvent.price_max || '0'}`)}
                   </p>
                   
                   {(!selectedEvent.is_sold_out && !selectedEvent.is_suspended) && (
