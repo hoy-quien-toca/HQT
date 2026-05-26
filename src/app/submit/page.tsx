@@ -117,10 +117,25 @@ export default function SubmitEvent() {
 
       <main className="max-w-3xl mx-auto p-4 md:p-12 relative z-10 font-black">
         {submitted ? (
-          <div className="border-8 border-white p-12 bg-zinc-950 shadow-[12px_12px_0px_0px_rgba(220,38,38,0.5)] rounded-[40px] text-center space-y-6 font-black">
-            <h2 className="text-6xl font-brusher uppercase text-red-600 leading-none font-black">¡Recibido!</h2>
-            <p className="text-xl font-bold uppercase tracking-widest italic font-black font-black">Tu fecha está en la cola de aprobación.</p>
-            <Link href="/" className="inline-block bg-white text-black px-12 py-4 rounded-full font-black uppercase hover:bg-red-600 hover:text-white transition-all shadow-lg font-black font-black">Volver al Inicio</Link>
+          <div className="border-8 border-white p-8 md:p-12 bg-zinc-950 shadow-[12px_12px_0px_0px_rgba(220,38,38,0.5)] rounded-[40px] text-center flex flex-col items-center justify-center space-y-8 font-black">
+            <div className="space-y-4">
+              <h2 className="text-5xl md:text-7xl font-brusher uppercase text-red-600 leading-none font-black">¡Recibido!</h2>
+              <p className="text-lg md:text-xl font-bold uppercase tracking-widest italic font-black">Tu fecha está en la cola de aprobación.</p>
+            </div>
+            <div className="flex flex-col gap-4 w-full max-w-sm">
+              <button 
+                onClick={() => {
+                  setSubmitted(false);
+                  setFlyerUrl('');
+                }}
+                className="bg-red-600 text-white px-8 py-4 rounded-full font-black uppercase hover:bg-white hover:text-black transition-all border-4 border-white shadow-lg"
+              >
+                Subir otra fecha
+              </button>
+              <Link href="/" className="bg-white text-black px-8 py-4 rounded-full font-black uppercase hover:bg-red-600 hover:text-white transition-all border-4 border-white shadow-lg">
+                Volver al Inicio
+              </Link>
+            </div>
           </div>
         ) : (
           <div className="border-8 border-white p-6 md:p-12 bg-zinc-950 shadow-[12px_12px_0px_0px_rgba(220,38,38,0.5)] rounded-[40px] relative font-black font-black">
