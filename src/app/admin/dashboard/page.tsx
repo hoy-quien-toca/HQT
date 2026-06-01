@@ -5,7 +5,7 @@ import { supabase } from '@/lib/supabase';
 import { useRouter } from 'next/navigation';
 
 const DEPARTAMENTOS = ["MONTEVIDEO", "CANELONES", "MALDONADO", "COLONIA", "SAN JOSE", "FLORIDA", "LAVALLEJA", "ROCHA", "TREINTA Y TRES", "CERRO LARGO", "RIVERA", "TACUAREMBÓ", "DURAZNO", "SORIANO", "RIO NEGRO", "PAYSANDU", "SALTO", "ARTIGAS"];
-const GENEROS = ["ROCK", "CUMBIA", "PLENA", "ELECTRONICA", "TECHNO", "HOUSE", "INDIE", "POP", "TRAP", "REGGAETON", "HIP-HOP/RAP", "PUNK ROCK", "METAL", "FOLKLORE", "TANGO", "JAZZ", "BLUES", "FUNK", "REGGUE", "SKA", "ALTERNATIVO", "CARNAVAL", "MURGA", "TROPICAL", "LATINA", "ACUSTICO", "COVERS", "FIESTA", "DJ-SET", "UNDER"];
+const GENEROS = ["ACUSTICO", "ALTERNATIVO", "BLUES", "CANDOMBE", "COVERS", "CUMBIA", "ELECTRONICA", "FIESTA", "FOLKLORE", "HIP-HOP/RAP", "JAZZ", "METAL", "MILONGA", "MURGA", "OTROS", "PLENA", "POP", "PUNK ROCK", "REGGAETON", "REGGUE", "ROCK", "SKA", "TANGO", "TRAP", "TROPICAL", "UNDER"];
 
 const adminBtn = 'text-[9px] sm:text-[10px] px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-full border font-black whitespace-nowrap';
 const adminBar = 'w-full py-1 sm:py-1.5 px-1.5 text-[9px] sm:text-[10px] font-black uppercase tracking-wide border-2 rounded-md transition-colors leading-tight min-h-[1.35rem] sm:min-h-[1.6rem] flex items-center justify-center';
