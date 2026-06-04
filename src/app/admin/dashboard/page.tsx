@@ -210,7 +210,7 @@ export default function AdminDashboard() {
         <section className="space-y-4 sm:space-y-6">
           <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2 bg-zinc-950 p-3 sm:p-4 border-l-8 border-red-600 rounded-r-2xl font-black">
              <h2 className="text-xl sm:text-2xl uppercase italic text-red-600 font-franklin">Fechas</h2>
-             <button onClick={() => setEditingEvent({ id: 'new', band_name: '', venue: '', address: '', city: '', department: 'MONTEVIDEO', date: '', time: '21:00', age_rating: 'ATP', description: '', is_approved: false, price_type: 'range', genre: 'ROCK', flyer_url: '', price_min: '', price_max: '', ticket_type: 'link', ticket_contact: '' })} className="w-full sm:w-auto bg-red-600 text-white px-4 sm:px-6 py-2 text-[10px] font-black uppercase rounded-full border-2 border-white">+ NUEVA FECHA</button>
+             <button onClick={() => setEditingEvent({ id: 'new', band_name: '', venue: '', address: '', city: '', department: 'MONTEVIDEO', date: '', time: '21:00', age_rating: 'ATP', description: '', is_approved: false, price_type: 'range', genre: 'ROCK', flyer_url: '', price_min: null, price_max: null, ticket_type: 'link', ticket_contact: '' })} className="w-full sm:w-auto bg-red-600 text-white px-4 sm:px-6 py-2 text-[10px] font-black uppercase rounded-full border-2 border-white">+ NUEVA FECHA</button>
           </div>
           
           {editingEvent && (
