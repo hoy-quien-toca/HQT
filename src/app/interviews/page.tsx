@@ -9,7 +9,6 @@ export default function InterviewsPage() {
   const [interviews, setInterviews] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [errorMsg, setErrorMsg] = useState<string>("");
-  const [showLogoModal, setShowLogoModal] = useState(false);
 
   useEffect(() => {
     fetchInterviews();
@@ -40,7 +39,7 @@ export default function InterviewsPage() {
   }
 
   return (
-    <div className="min-h-screen text-white font-sans relative overflow-x-hidden bg-zinc-900 font-black">
+    <div className="min-h-screen text-white font-sans relative overflow-x-hidden bg-zinc-900 font-black text-left">
       <div className="fixed inset-0 flex items-center justify-center pointer-events-none opacity-[0.03] z-0">
         <Image src="/logo-rojo.jpg" alt="Watermark" width={1000} height={1000} className="grayscale" priority />
       </div>
@@ -48,12 +47,12 @@ export default function InterviewsPage() {
       <header className="border-b-4 border-red-600 p-4 md:p-6 bg-zinc-950 sticky top-0 z-50 shadow-xl text-left">
         <div className="max-w-6xl mx-auto flex justify-between items-center">
           <div className="flex items-center gap-4">
-            <Link href="/" className="hover:scale-110 transition-transform cursor-pointer focus:outline-none">
+            <Link href="/" className="hover:scale-110 transition-transform cursor-pointer focus:outline-none shrink-0">
                <Image src="/logo-rojo.jpg" alt="Logo" width={70} height={70} className="border-2 border-white rounded-2xl md:w-[85px] md:h-[85px] shadow-lg shadow-red-600/30" />
             </Link>
             <div>
-              <h1 className="text-2xl md:text-5xl font-franklin tracking-tighter text-red-600 leading-none uppercase">Hoy Quien Toca</h1>
-              <p className="text-[10px] md:text-xs font-bold text-white uppercase tracking-widest mt-1">Descubri recitales en tu Ciudad</p>
+              <h1 className="text-2xl md:text-5xl font-franklin tracking-tighter text-red-600 leading-none">Hoy Quien Toca</h1>
+              <p className="text-[10px] md:text-xs font-black text-white uppercase tracking-widest mt-1">Descubri recitales, toques y eventos musicales en tu Ciudad</p>
               {/* Navegación rápida móvil */}
               <div className="flex md:hidden gap-2 mt-3 flex-wrap">
                 <Link href="/" className="text-[8px] font-black bg-zinc-800 border border-zinc-700 px-2 py-1 rounded-full uppercase text-white">Fechas</Link>
@@ -125,18 +124,6 @@ export default function InterviewsPage() {
           </div>
         )}
       </main>
-
-      {/* Logo Modal */}
-      {showLogoModal && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 font-black">
-          <div className="absolute inset-0 bg-black/95 backdrop-blur-xl" onClick={() => setShowLogoModal(false)} />
-          <div className="relative max-w-lg w-full bg-zinc-900 border-8 border-white p-4 rounded-[50px] shadow-2xl text-center font-black">
-            <button onClick={() => setShowLogoModal(false)} className="absolute -top-4 -right-4 bg-red-600 text-white w-12 h-12 font-black text-2xl border-4 border-white rounded-full font-black">X</button>
-            <Image src="/logo-rojo.jpg" alt="Logo Grande" width={800} height={800} className="w-full h-auto rounded-[30px] font-black" />
-            <h3 className="text-3xl font-franklin text-red-600 mt-4 leading-none font-black">Hoy Quien Toca</h3>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

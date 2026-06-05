@@ -56,13 +56,15 @@ export default function ContactPage() {
         <Image src="/logo-rojo.jpg" alt="Watermark" width={1000} height={1000} className="grayscale" priority />
       </div>
 
-      <header className="border-b-4 border-red-600 p-4 md:p-6 bg-zinc-950 sticky top-0 z-50 shadow-xl">
+      <header className="border-b-4 border-red-600 p-4 md:p-6 bg-zinc-950 sticky top-0 z-50 shadow-xl text-left">
         <div className="max-w-6xl mx-auto flex justify-between items-center">
-          <Link href="/" className="flex items-center gap-4">
-            <Image src="/logo-rojo.jpg" alt="Logo Rojo" width={50} height={50} className="border-2 border-white rounded-2xl" />
+          <div className="flex items-center gap-4">
+            <Link href="/" className="hover:scale-110 transition-transform cursor-pointer focus:outline-none shrink-0">
+               <Image src="/logo-rojo.jpg" alt="Logo Rojo" width={70} height={70} className="border-2 border-white rounded-2xl md:w-[85px] md:h-[85px] shadow-lg shadow-red-600/30" />
+            </Link>
             <div>
               <h1 className="text-xl md:text-4xl font-franklin tracking-tighter text-red-600 leading-none">Hoy Quien Toca</h1>
-              <p className="text-[10px] md:text-xs font-bold text-white uppercase tracking-widest mt-1">Descubri recitales en tu Ciudad</p>
+              <p className="text-[10px] md:text-xs font-black text-white uppercase tracking-widest mt-1">Descubri recitales, toques y eventos musicales en tu Ciudad</p>
               {/* Navegación rápida móvil */}
               <div className="flex md:hidden gap-2 mt-3 flex-wrap">
                 <Link href="/" className="text-[8px] font-black bg-zinc-800 border border-zinc-700 px-2 py-1 rounded-full uppercase text-white">Fechas</Link>
@@ -70,7 +72,7 @@ export default function ContactPage() {
                 <Link href="/submit" className="text-[8px] font-black bg-red-600 text-white px-2 py-1 rounded-full uppercase animate-pulse border border-white/20">Subir Fecha</Link>
               </div>
             </div>
-          </Link>
+          </div>
           
           <nav className="hidden md:flex gap-6 font-bold uppercase tracking-widest text-sm items-center">
             <Link href="/" className="hover:text-red-600 font-black transition-colors">Fechas</Link>
