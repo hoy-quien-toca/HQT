@@ -90,6 +90,12 @@ export default function SubmitEvent() {
             <div>
               <h1 className="text-2xl md:text-5xl font-brusher tracking-tighter uppercase text-red-600 leading-none">Hoy Quien Toca</h1>
               <p className="text-[10px] md:text-xs font-bold text-white uppercase tracking-widest mt-1">Descubri recitales, toques y eventos musicales en tu Ciudad</p>
+              {/* Navegación rápida móvil */}
+              <div className="flex md:hidden gap-2 mt-3 flex-wrap">
+                <Link href="/" className="text-[8px] font-black bg-zinc-800 border border-zinc-700 px-2 py-1 rounded-full uppercase text-white">Fechas</Link>
+                <Link href="/interviews" className="text-[8px] font-black bg-zinc-800 border border-zinc-700 px-2 py-1 rounded-full uppercase text-white">Entrevistas</Link>
+                <Link href="/contact" className="text-[8px] font-black bg-zinc-800 border border-zinc-700 px-2 py-1 rounded-full uppercase text-white">Contacto</Link>
+              </div>
             </div>
           </Link>
           <nav className="hidden md:flex gap-6 font-bold uppercase tracking-widest text-sm items-center">

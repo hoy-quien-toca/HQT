@@ -64,6 +64,12 @@ export default function ContactPage() {
             <div>
               <h1 className="text-xl md:text-4xl font-franklin tracking-tighter text-red-600 leading-none">Hoy Quien Toca</h1>
               <p className="text-[10px] md:text-xs font-bold text-white uppercase tracking-widest mt-1">Descubri recitales en tu Ciudad</p>
+              {/* Navegación rápida móvil */}
+              <div className="flex md:hidden gap-2 mt-3 flex-wrap">
+                <Link href="/" className="text-[8px] font-black bg-zinc-800 border border-zinc-700 px-2 py-1 rounded-full uppercase text-white">Fechas</Link>
+                <Link href="/interviews" className="text-[8px] font-black bg-zinc-800 border border-zinc-700 px-2 py-1 rounded-full uppercase text-white">Entrevistas</Link>
+                <Link href="/submit" className="text-[8px] font-black bg-red-600 text-white px-2 py-1 rounded-full uppercase animate-pulse border border-white/20">Subir Fecha</Link>
+              </div>
             </div>
           </Link>
           

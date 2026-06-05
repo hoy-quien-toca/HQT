@@ -22,14 +22,6 @@ export default function InterviewDetailClient({
   const [showLogoModal, setShowLogoModal] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
-  // TRIPLE-CHECK: Si el servidor falla, intentamos dos veces más en el cliente
-  useEffect(() => {
-    if (!initialInterview && id && id !== '[id]') {
-      console.log("Starting redundant client-side fetch for:", id);
-      fetchFallback();
-    }
-  }, [initialInterview, id]);
-
   async function fetchFallback() {
     try {
       setLoading(true);
@@ -51,6 +43,14 @@ export default function InterviewDetailClient({
       setLoading(false);
     }
   }
+
+  // TRIPLE-CHECK: Si el servidor falla, intentamos dos veces más en el cliente
+  useEffect(() => {
+    if (!initialInterview && id && id !== '[id]') {
+      console.log("Starting redundant client-side fetch for:", id);
+      fetchFallback();
+    }
+  }, [initialInterview, id]);
 
   const shareOnWhatsApp = () => {
     const data = interview || initialInterview;
@@ -97,6 +97,13 @@ export default function InterviewDetailClient({
             <div>
               <h1 className="text-xl md:text-4xl font-franklin tracking-tighter text-red-600 leading-none">Hoy Quien Toca</h1>
               <p className="text-[8px] md:text-[10px] font-bold text-white uppercase tracking-widest mt-1">Descubri recitales en tu Ciudad</p>
+              {/* Navegación rápida móvil */}
+              <div className="flex md:hidden gap-2 mt-3 flex-wrap">
+                <Link href="/" className="text-[8px] font-black bg-zinc-800 border border-zinc-700 px-2 py-1 rounded-full uppercase text-white">Fechas</Link>
+                <Link href="/interviews" className="text-[8px] font-black bg-zinc-800 border border-zinc-700 px-2 py-1 rounded-full uppercase text-white">Entrevistas</Link>
+                <Link href="/contact" className="text-[8px] font-black bg-zinc-800 border border-zinc-700 px-2 py-1 rounded-full uppercase text-white">Contacto</Link>
+                <Link href="/submit" className="text-[8px] font-black bg-red-600 text-white px-2 py-1 rounded-full uppercase animate-pulse border border-white/20">Subir Fecha</Link>
+              </div>
             </div>
           </div>
 
