@@ -127,14 +127,14 @@ export default function HomePageClient({
         <Image src="/logo-rojo.jpg" alt="Watermark" width={1000} height={1000} className="grayscale" priority />
       </div>
 
-      <header className="border-b-4 border-red-600 p-4 md:p-6 bg-zinc-950 sticky top-0 z-50 shadow-xl text-left">
+      <header className="border-b-4 border-red-600 p-4 md:p-6 bg-zinc-950 sticky top-0 z-[100] shadow-xl text-left">
         <div className="max-w-6xl mx-auto flex justify-between items-center font-black">
           <div className="flex items-center gap-4">
             <button 
               onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })} 
               className="hover:scale-110 transition-transform cursor-pointer focus:outline-none shrink-0"
             >
-               <Image src="/logo-rojo.jpg" alt="Logo Rojo" width={70} height={70} className="border-2 border-white rounded-2xl md:w-[85px] md:h-[85px] shadow-lg shadow-red-600/30" />
+               <Image src="/logo-rojo.jpg" alt="Logo Rojo" width={80} height={80} className="border-2 border-white rounded-2xl md:w-[100px] md:h-[100px] shadow-lg shadow-red-600/30" />
             </button>
             <div>
               <h1 className="text-2xl md:text-5xl font-franklin tracking-tighter text-red-600 leading-none">Hoy Quien Toca</h1>
