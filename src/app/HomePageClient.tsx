@@ -24,7 +24,6 @@ export default function HomePageClient({
   const [currentBottomAdIndex, setCurrentBottomAdIndex] = useState(0);
   const [selectedEvent, setSelectedEvent] = useState<any>(null);
   const [selectedAd, setSelectedAd] = useState<any>(null);
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [showLogoModal, setShowLogoModal] = useState(false);
   
   const [department, setDepartment] = useState('');
@@ -153,22 +152,8 @@ export default function HomePageClient({
             <Link href="/contact" className="hover:text-red-600 transition-colors font-black">Contacto</Link>
             <Link href="/submit" className="border-2 border-red-600 text-red-600 px-4 py-1 bg-black rounded-full animate-pulse hover:bg-red-600 hover:text-white transition-colors font-black">Subir Fecha</Link>
           </nav>
-
-          <button onClick={() => setIsMenuOpen(!isMenuOpen)} className="md:hidden text-red-600 focus:outline-none">
-            <svg className="w-8 h-8 font-black" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d={isMenuOpen ? "M6 18L18 6M6 6l12 12" : "M4 6h16M4 12h16M4 18h16"}></path></svg>
-          </button>
         </div>
       </header>
-
-      {isMenuOpen && (
-        <div className="fixed inset-0 z-[60] bg-black/95 flex flex-col items-center justify-center space-y-8 md:hidden text-center font-black">
-          <button onClick={() => setIsMenuOpen(false)} className="absolute top-6 right-6 text-white text-4xl font-black font-black font-black">X</button>
-          <Link href="/" onClick={() => setIsMenuOpen(false)} className="text-4xl font-franklin text-red-600 italic">Fechas</Link>
-          <Link href="/interviews" onClick={() => setIsMenuOpen(false)} className="text-4xl font-franklin text-white italic">Entrevistas</Link>
-          <Link href="/contact" onClick={() => setIsMenuOpen(false)} className="text-4xl font-franklin text-white italic">Contacto</Link>
-          <Link href="/submit" onClick={() => setIsMenuOpen(false)} className="text-3xl font-franklin border-4 border-red-600 text-red-600 px-8 py-4 rounded-full animate-pulse font-black">Subir Fecha</Link>
-        </div>
-      )}
 
       <main className="max-w-6xl mx-auto p-4 md:p-6 space-y-8 md:space-y-12 relative z-10 font-black">
         
@@ -357,18 +342,18 @@ export default function HomePageClient({
               </div>
               <div className="md:w-1/2 p-6 md:p-8 space-y-6 text-left font-black">
                 <div>
-                  <div className="flex gap-2 font-black font-black">
-                    <span className="bg-red-600 text-white px-2 py-1 text-[10px] font-black uppercase italic rounded-md shadow-sm font-black font-black">{selectedEvent.genre}</span>
-                    <span className="bg-white text-black px-2 py-1 text-[10px] font-black uppercase italic rounded-md shadow-sm border border-red-600 font-black font-black">{selectedEvent.age_rating || 'ATP'}</span>
+                  <div className="flex gap-2 font-black">
+                    <span className="bg-red-600 text-white px-2 py-1 text-[10px] font-black uppercase italic rounded-md shadow-sm">{selectedEvent.genre}</span>
+                    <span className="bg-white text-black px-2 py-1 text-[10px] font-black uppercase italic rounded-md shadow-sm border border-red-600">{selectedEvent.age_rating || 'ATP'}</span>
                   </div>
-                  <h2 className="text-3xl md:text-5xl font-franklin tracking-tighter mt-2 text-white leading-none uppercase font-black font-black">{selectedEvent.band_name}</h2>
+                  <h2 className="text-3xl md:text-5xl font-franklin tracking-tighter mt-2 text-white leading-none uppercase font-black">{selectedEvent.band_name}</h2>
                 </div>
-                <div className="space-y-1 text-white font-black font-black">
-                  <p className="text-xl font-bold uppercase font-black">{formatDate(selectedEvent.date)} - {formatTime(selectedEvent.time)}hs</p>
-                  <p className="text-sm font-black text-zinc-400 uppercase italic font-black">{selectedEvent.venue} - {selectedEvent.address} - {selectedEvent.city}, {selectedEvent.department}</p>
+                <div className="space-y-1 text-white font-black">
+                  <p className="text-xl font-bold uppercase">{formatDate(selectedEvent.date)} - {formatTime(selectedEvent.time)}hs</p>
+                  <p className="text-sm font-black text-zinc-400 uppercase italic">{selectedEvent.venue} - {selectedEvent.address} - {selectedEvent.city}, {selectedEvent.department}</p>
                 </div>
                 <div className="border-t-2 border-zinc-800 pt-6 font-black">
-                  <h4 className="text-xs font-black uppercase text-zinc-500 mb-2 italic font-black">Reseña / Bio del Show</h4>
+                  <h4 className="text-xs font-black uppercase text-zinc-500 mb-2 italic">Reseña / Bio del Show</h4>
                   <div className="text-zinc-200 leading-relaxed font-bold space-y-4 max-h-48 overflow-y-auto pr-4 text-xs uppercase custom-scrollbar font-black">
                     {selectedEvent.description?.split('\n').map((p: string, i: number) => <p key={i}>{p}</p>) || <p className="italic text-zinc-600 text-sm font-black">No hay reseña disponible.</p>}
                   </div>
@@ -379,15 +364,15 @@ export default function HomePageClient({
                   </p>
                   
                   {(!selectedEvent.is_sold_out && !selectedEvent.is_suspended) && (
-                    <div className="flex gap-4 font-black font-black">
+                    <div className="flex gap-4 font-black">
                       <button 
                         onClick={() => handleTicketAction(selectedEvent)} 
-                        className="flex-1 font-black uppercase py-4 text-lg md:text-xl border-4 border-black shadow-[6px_6px_0px_0px_rgba(255,255,255,1)] transition-all rounded-full font-black bg-red-600 text-white hover:bg-white hover:text-black font-black"
+                        className="flex-1 font-black uppercase py-4 text-lg md:text-xl border-4 border-black shadow-[6px_6px_0px_0px_rgba(255,255,255,1)] transition-all rounded-full bg-red-600 text-white hover:bg-white hover:text-black"
                       >
                         {selectedEvent.ticket_type === 'whatsapp' ? 'WhatsApp' : 'Entradas'}
                       </button>
-                      <button onClick={() => shareOnWhatsApp(selectedEvent)} className="bg-green-600 text-white p-4 border-4 border-black shadow-[6px_6px_0px_0px_rgba(255,255,255,1)] hover:bg-black transition-colors flex items-center justify-center rounded-full shadow-lg font-black font-black">
-                        <svg className="w-8 h-8 font-black" fill="currentColor" viewBox="0 0 24 24 font-black"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/></svg>
+                      <button onClick={() => shareOnWhatsApp(selectedEvent)} className="bg-green-600 text-white p-4 border-4 border-black shadow-[6px_6px_0px_0px_rgba(255,255,255,1)] hover:bg-black transition-colors flex items-center justify-center rounded-full shadow-lg font-black">
+                        <svg className="w-8 h-8 font-black" fill="currentColor" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/></svg>
                       </button>
                     </div>
                   )}

@@ -9,7 +9,6 @@ export default function InterviewsPage() {
   const [interviews, setInterviews] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [errorMsg, setErrorMsg] = useState<string>("");
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [showLogoModal, setShowLogoModal] = useState(false);
 
   useEffect(() => {
@@ -70,22 +69,8 @@ export default function InterviewsPage() {
             <Link href="/contact" className="hover:text-red-600 transition-colors font-black">Contacto</Link>
             <Link href="/submit" className="border-2 border-red-600 text-red-600 px-4 py-1 bg-black rounded-full animate-pulse hover:bg-red-600 hover:text-white transition-colors font-black">Subir Fecha</Link>
           </nav>
-
-          <button onClick={() => setIsMenuOpen(!isMenuOpen)} className="md:hidden text-red-600 focus:outline-none">
-            <svg className="w-8 h-8 font-black" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d={isMenuOpen ? "M6 18L18 6M6 6l12 12" : "M4 6h16M4 12h16M4 18h16"}></path></svg>
-          </button>
         </div>
       </header>
-
-      {isMenuOpen && (
-        <div className="fixed inset-0 z-[60] bg-black/95 flex flex-col items-center justify-center space-y-8 md:hidden font-black text-center">
-          <button onClick={() => setIsMenuOpen(false)} className="absolute top-6 right-6 text-white text-4xl">X</button>
-          <Link href="/" onClick={() => setIsMenuOpen(false)} className="text-4xl font-franklin text-white italic">Fechas</Link>
-          <Link href="/interviews" onClick={() => setIsMenuOpen(false)} className="text-4xl font-franklin text-red-600 italic">Entrevistas</Link>
-          <Link href="/contact" onClick={() => setIsMenuOpen(false)} className="text-4xl font-franklin text-white italic">Contacto</Link>
-          <Link href="/submit" onClick={() => setIsMenuOpen(false)} className="text-3xl font-franklin border-4 border-red-600 text-red-600 px-8 py-4 rounded-full animate-pulse">Subir Fecha</Link>
-        </div>
-      )}
 
       <main className="max-w-6xl mx-auto p-4 md:p-6 space-y-12 relative z-10">
         <h2 className="text-4xl md:text-6xl font-franklin text-center py-10 border-b-8 border-red-600 text-white leading-none uppercase">Entrevistas</h2>

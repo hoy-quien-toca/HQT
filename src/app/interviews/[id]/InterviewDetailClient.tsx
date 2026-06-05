@@ -20,7 +20,6 @@ export default function InterviewDetailClient({
   const [loading, setLoading] = useState(!initialInterview);
   const [errorState, setErrorState] = useState<string | null>(initialError || null);
   const [showLogoModal, setShowLogoModal] = useState(false);
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   async function fetchFallback() {
     try {
@@ -106,12 +105,6 @@ export default function InterviewDetailClient({
               </div>
             </div>
           </div>
-
-          <button onClick={() => setIsMenuOpen(!isMenuOpen)} className="md:hidden text-red-600 focus:outline-none">
-            <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d={isMenuOpen ? "M6 18L18 6M6 6l12 12" : "M4 6h16M4 12h16M4 18h16"}></path>
-            </svg>
-          </button>
           
           <nav className="hidden md:flex gap-6 font-bold uppercase text-sm items-center">
             <Link href="/" className="hover:text-red-600 transition-colors font-black">Fechas</Link>
@@ -121,16 +114,6 @@ export default function InterviewDetailClient({
           </nav>
         </div>
       </header>
-
-      {isMenuOpen && (
-        <div className="fixed inset-0 z-[60] bg-black/95 flex flex-col items-center justify-center space-y-8 md:hidden font-black">
-          <button onClick={() => setIsMenuOpen(false)} className="absolute top-6 right-6 text-white text-4xl">X</button>
-          <Link href="/" onClick={() => setIsMenuOpen(false)} className="text-4xl uppercase text-white italic font-franklin">Fechas</Link>
-          <Link href="/interviews" onClick={() => setIsMenuOpen(false)} className="text-4xl uppercase text-red-600 italic font-franklin">Entrevistas</Link>
-          <Link href="/contact" onClick={() => setIsMenuOpen(false)} className="text-4xl uppercase text-white italic font-franklin">Contacto</Link>
-          <Link href="/submit" onClick={() => setIsMenuOpen(false)} className="text-3xl uppercase border-4 border-red-600 text-red-600 px-8 py-4 rounded-full animate-pulse font-franklin font-black">Subir Fecha</Link>
-        </div>
-      )}
 
       <main className="max-w-4xl mx-auto p-4 md:p-6 py-10 relative z-10 font-black">
         <button 
