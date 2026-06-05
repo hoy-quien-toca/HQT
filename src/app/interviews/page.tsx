@@ -39,7 +39,7 @@ export default function InterviewsPage() {
   }
 
   return (
-    <div className="min-h-screen text-white font-sans relative overflow-x-hidden bg-zinc-900 font-black text-left">
+    <div className="min-h-screen text-white font-sans relative overflow-x-clip bg-zinc-900 font-black text-left">
       <div className="fixed inset-0 flex items-center justify-center pointer-events-none opacity-[0.03] z-0">
         <Image src="/logo-rojo.jpg" alt="Watermark" width={1000} height={1000} className="grayscale" priority />
       </div>
@@ -53,7 +53,6 @@ export default function InterviewsPage() {
             <div>
               <h1 className="text-2xl md:text-5xl font-franklin tracking-tighter text-red-600 leading-none">Hoy Quien Toca</h1>
               <p className="text-[10px] md:text-xs font-black text-white uppercase tracking-widest mt-1">Descubri recitales, toques y eventos musicales en tu Ciudad</p>
-
               {/* Navegación rápida móvil */}
               <div className="flex md:hidden gap-2 mt-3 flex-wrap">
                 <Link href="/" className="text-[8px] font-black bg-zinc-800 border border-zinc-700 px-2 py-1 rounded-full uppercase text-white">Fechas</Link>

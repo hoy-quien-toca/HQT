@@ -122,7 +122,7 @@ export default function HomePageClient({
   };
 
   return (
-    <div className="min-h-screen text-white font-sans relative overflow-x-hidden text-left bg-zinc-900 font-black">
+    <div className="min-h-screen text-white font-sans relative overflow-x-clip text-left bg-zinc-900 font-black">
       <div className="fixed inset-0 flex items-center justify-center pointer-events-none opacity-[0.03] z-0">
         <Image src="/logo-rojo.jpg" alt="Watermark" width={1000} height={1000} className="grayscale" priority />
       </div>

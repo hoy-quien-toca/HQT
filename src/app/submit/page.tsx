@@ -77,7 +77,7 @@ export default function SubmitEvent() {
   }
 
   return (
-    <div className="min-h-screen text-white font-sans relative overflow-x-hidden bg-zinc-900 font-black">
+    <div className="min-h-screen text-white font-sans relative overflow-x-clip bg-zinc-900 font-black">
       <div className="fixed inset-0 flex items-center justify-center pointer-events-none opacity-[0.03] z-0">
         <Image src="/logo-rojo.jpg" alt="Watermark" width={1000} height={1000} className="grayscale" priority />
       </div>
@@ -113,7 +113,7 @@ export default function SubmitEvent() {
         {submitted ? (
           <div className="border-8 border-white p-8 md:p-12 bg-zinc-950 shadow-[12px_12px_0px_0px_rgba(220,38,38,0.5)] rounded-[40px] text-center flex flex-col items-center justify-center space-y-8 font-black">
             <div className="space-y-4">
-              <h2 className="text-5xl md:text-7xl font-brusher uppercase text-red-600 leading-none font-black">¡Recibido!</h2>
+              <h2 className="text-5xl md:text-7xl font-franklin uppercase text-red-600 leading-none font-black">¡Recibido!</h2>
               <p className="text-lg md:text-xl font-bold uppercase tracking-widest italic font-black">Tu fecha está en la cola de aprobación.</p>
             </div>
             <div className="flex flex-col gap-4 w-full max-w-sm">
@@ -134,7 +134,7 @@ export default function SubmitEvent() {
         ) : (
           <div className="border-8 border-white p-6 md:p-12 bg-zinc-950 shadow-[12px_12px_0px_0px_rgba(220,38,38,0.5)] rounded-[40px] relative font-black">
             <Link href="/" className="absolute -top-4 -right-4 bg-red-600 text-white w-12 h-12 flex items-center justify-center font-black text-2xl border-4 border-white hover:bg-black transition-colors rounded-full shadow-xl font-black">X</Link>
-            <h2 className="text-5xl md:text-7xl font-brusher uppercase text-red-600 mb-2 leading-none font-black">Subir Fecha</h2>
+            <h2 className="text-5xl md:text-7xl font-franklin uppercase text-red-600 mb-2 leading-none font-black">Subir Fecha</h2>
             <p className="text-[10px] font-bold text-white/60 uppercase tracking-widest mb-10 italic font-black">Unite a la cartelera musical más grande de Uruguay</p>
             
             <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-6 text-left font-black uppercase">
