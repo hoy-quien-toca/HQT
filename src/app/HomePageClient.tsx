@@ -144,7 +144,6 @@ export default function HomePageClient({
                 <Link href="/interviews" className="text-[8px] font-black bg-zinc-800 border border-zinc-700 px-2 py-1 rounded-full uppercase">Entrevistas</Link>
                 <Link href="/contact" className="text-[8px] font-black bg-zinc-800 border border-zinc-700 px-2 py-1 rounded-full uppercase">Contacto</Link>
                 <Link href="/submit" className="text-[8px] font-black bg-red-600 text-white px-2 py-1 rounded-full uppercase animate-pulse border border-white/20">Subir Fecha</Link>
-                <Link href="/admin" className="text-[8px] font-black bg-zinc-800 border border-zinc-700 px-2 py-1 rounded-full uppercase">Admin</Link>
               </div>
             </div>
           </div>
@@ -154,7 +153,6 @@ export default function HomePageClient({
             <Link href="/interviews" className="hover:text-red-600 transition-colors font-black">Entrevistas</Link>
             <Link href="/contact" className="hover:text-red-600 transition-colors font-black">Contacto</Link>
             <Link href="/submit" className="border-2 border-red-600 text-red-600 px-4 py-1 bg-black rounded-full animate-pulse hover:bg-red-600 hover:text-white transition-colors font-black">Subir Fecha</Link>
-            <Link href="/admin" className="border-2 border-zinc-700 text-zinc-200 px-4 py-1 bg-zinc-800 rounded-full hover:border-white hover:text-white transition-colors font-black">Admin</Link>
           </nav>
         </div>
       </header>
