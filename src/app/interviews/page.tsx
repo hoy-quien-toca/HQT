@@ -101,11 +101,11 @@ export default function InterviewsPage() {
                     <img 
                       src={interview.image_url} 
                       alt={interview.title} 
-                      className="w-full h-full object-cover object-center grayscale group-hover:grayscale-0 transition-all duration-500 font-black"
-                      style={{ objectPosition: interview.image_position || 'center' }} 
+                      className="absolute inset-0 w-full h-full object-cover object-center grayscale group-hover:grayscale-0 transition-all duration-500"
+                      style={{ objectPosition: 'center' }} 
                     />
                   ) : (
-                    <div className="w-full h-full flex items-center justify-center text-zinc-500 font-black italic uppercase text-center font-black">Sin Imagen</div>
+                    <div className="absolute inset-0 flex items-center justify-center text-zinc-500 font-black italic uppercase text-center">Sin Imagen</div>
                   )}
                 </div>
                 <div className="space-y-3 font-black">

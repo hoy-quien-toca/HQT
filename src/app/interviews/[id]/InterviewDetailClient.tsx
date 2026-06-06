@@ -136,14 +136,14 @@ export default function InterviewDetailClient({
 
           {activeInterview.image_url && (
             <div className="flex justify-center">
-              <div className="border-4 md:border-8 border-white shadow-xl overflow-hidden relative group rounded-[24px] md:rounded-[40px] w-full max-w-3xl">
+              <div className="border-4 md:border-8 border-white shadow-xl overflow-hidden relative group rounded-[24px] md:rounded-[40px] w-full max-w-3xl aspect-[4/3]">
                 <img 
                   src={activeInterview.image_url} 
                   alt={activeInterview.band_name} 
-                  className="w-full h-auto object-center grayscale group-hover:grayscale-0 transition-all duration-700 block"
-                  style={{ objectPosition: activeInterview.image_position || 'center' }} 
+                  className="absolute inset-0 w-full h-full object-cover object-center grayscale group-hover:grayscale-0 transition-all duration-700"
+                  style={{ objectPosition: 'center' }} 
                 />
-                {activeInterview.photo_credit && <div className="absolute bottom-2 right-2 bg-black/80 text-white text-[8px] font-black px-2 py-1 uppercase rounded-full font-black">Foto: {activeInterview.photo_credit}</div>}
+                {activeInterview.photo_credit && <div className="absolute bottom-2 right-2 bg-black/80 text-white text-[8px] font-black px-2 py-1 uppercase rounded-full">Foto: {activeInterview.photo_credit}</div>}
               </div>
             </div>
           )}
