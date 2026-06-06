@@ -8,6 +8,7 @@ import Link from 'next/link';
 export default function ContactPage() {
   const [loading, setLoading] = useState(false);
   const [sent, setSent] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   
   // Simple Math Captcha
   const [captcha, setCaptcha] = useState({ a: 0, b: 0, total: 0 });
@@ -28,11 +29,12 @@ export default function ContactPage() {
     e.preventDefault();
     
     if (parseInt(userAnswer) !== captcha.total) {
-      alert("Captcha incorrecto. Por favor resuelve la suma.");
+      setError('Captcha incorrecto. Por favor resolve la suma.');
       generateCaptcha();
       return;
     }
 
+    setError(null);
     setLoading(true);
     const formData = new FormData(e.currentTarget);
     const { error } = await supabase.from('contact_messages').insert([{
@@ -43,7 +45,7 @@ export default function ContactPage() {
     }]);
     
     if (error) {
-      alert('Error: ' + error.message);
+      setError('Error: ' + error.message);
     } else {
       setSent(true);
     }
@@ -97,6 +99,11 @@ export default function ContactPage() {
             <p className="text-sm font-bold text-white/60 uppercase tracking-widest mb-10 italic">Dejanos tus datos y te contactaremos a la brevedad.</p>
             
             <form onSubmit={handleSubmit} className="space-y-6 text-left font-black">
+              {error && (
+                <div className="rounded-3xl border-2 border-red-600 bg-red-600/10 p-4 text-red-200 font-black uppercase text-xs">
+                  {error}
+                </div>
+              )}
               <div className="space-y-2">
                 <label className="block font-black uppercase text-xs tracking-widest text-red-600">Tu Nombre</label>
                 <input required name="name" className="w-full bg-zinc-900 border-4 border-white p-4 rounded-3xl focus:border-red-600 outline-none text-white font-bold uppercase shadow-inner" />

@@ -101,7 +101,7 @@ export default function InterviewsPage() {
                     <img 
                       src={interview.image_url} 
                       alt={interview.title} 
-                      className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-500 font-black"
+                      className="w-full h-full object-cover object-center grayscale group-hover:grayscale-0 transition-all duration-500 font-black"
                       style={{ objectPosition: interview.image_position || 'center' }} 
                     />
                   ) : (

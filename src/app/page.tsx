@@ -1,5 +1,6 @@
 import { supabase } from '@/lib/supabase';
 import HomePageClient from './HomePageClient';
+import type { Event, Sponsor, Interview } from '@/types';
 
 export const dynamic = 'force-dynamic';
 
@@ -22,7 +23,7 @@ export default async function Home() {
       .limit(2)
   ]);
 
-  const normalizedEvents = (eventRes.data || []).map(e => ({
+  const normalizedEvents = (eventRes.data || []).map((e: Event) => ({
     ...e,
     department: e.department?.trim().toUpperCase(),
     genre: e.genre?.trim().toUpperCase()

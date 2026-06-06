@@ -140,7 +140,7 @@ export default function InterviewDetailClient({
                 <img 
                   src={activeInterview.image_url} 
                   alt={activeInterview.band_name} 
-                  className="w-full h-auto grayscale group-hover:grayscale-0 transition-all duration-700 block"
+                  className="w-full h-auto object-center grayscale group-hover:grayscale-0 transition-all duration-700 block"
                   style={{ objectPosition: activeInterview.image_position || 'center' }} 
                 />
                 {activeInterview.photo_credit && <div className="absolute bottom-2 right-2 bg-black/80 text-white text-[8px] font-black px-2 py-1 uppercase rounded-full font-black">Foto: {activeInterview.photo_credit}</div>}

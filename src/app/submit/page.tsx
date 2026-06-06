@@ -26,6 +26,8 @@ export default function SubmitEvent() {
   const [flyerUrl, setFlyerUrl] = useState('');
   const [ticketType, setTicketType] = useState('link');
   const [priceType, setPriceType] = useState('range');
+  const [error, setError] = useState<string | null>(null);
+  const [message, setMessage] = useState<string | null>(null);
 
   async function handleFileUpload(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
@@ -45,8 +47,15 @@ export default function SubmitEvent() {
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
+    setError(null);
+    setMessage(null);
     setLoading(true);
     const formData = new FormData(e.currentTarget);
+    if (!flyerUrl) {
+      setError('Por favor subí un flyer antes de enviar.');
+      setLoading(false);
+      return;
+    }
     let ticketContact = formData.get('ticket_contact') as string;
     if (ticketType === 'whatsapp' && ticketContact && !ticketContact.startsWith('+')) {
       ticketContact = '+598' + ticketContact.replace(/\s/g, '');
@@ -71,8 +80,12 @@ export default function SubmitEvent() {
       is_approved: false,
     };
     const { error } = await supabase.from('events').insert([data]);
-    if (error) alert('Error al enviar el evento: ' + error.message);
-    else setSubmitted(true);
+    if (error) {
+      setError('Error al enviar el evento: ' + error.message);
+    } else {
+      setSubmitted(true);
+      setMessage('Tu fecha quedó en la cola de aprobación.');
+    }
     setLoading(false);
   }
 
@@ -138,6 +151,11 @@ export default function SubmitEvent() {
             <p className="text-[10px] font-bold text-white/60 uppercase tracking-widest mb-10 italic font-black">Unite a la cartelera musical más grande de Uruguay</p>
             
             <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-6 text-left font-black uppercase">
+              {(error || message) && (
+                <div className={`md:col-span-2 rounded-3xl p-4 ${error ? 'bg-red-600/10 border-red-600 text-red-200 border-2' : 'bg-green-600/10 border-green-600 text-green-200 border-2'}`}>
+                  {error || message}
+                </div>
+              )}
               <div className="md:col-span-2 space-y-2 font-black">
                 <label className="text-xs text-red-600 font-black">Flyer del Show</label>
                 <div className="border-4 border-dashed border-zinc-700 p-4 text-center relative rounded-3xl hover:border-red-600 transition-colors bg-zinc-900 shadow-inner font-black">

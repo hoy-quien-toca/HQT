@@ -1,13 +1,14 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
+import type { Event, Sponsor, Interview } from '@/types';
 
 interface HomePageClientProps {
-  initialEvents: any[];
-  initialSponsors: any[];
-  initialInterviews: any[];
+  initialEvents: Event[];
+  initialSponsors: Sponsor[];
+  initialInterviews: Interview[];
 }
 
 export default function HomePageClient({
@@ -15,12 +16,12 @@ export default function HomePageClient({
   initialSponsors,
   initialInterviews,
 }: HomePageClientProps) {
-  const [events, setEvents] = useState<any[]>(initialEvents);
-  const [allEvents] = useState<any[]>(initialEvents);
-  const [featuredEvents] = useState<any[]>(initialEvents.filter(e => e.is_featured === true));
+  const [events, setEvents] = useState<Event[]>(initialEvents);
+  const allEvents = initialEvents;
+  const featuredEvents = useMemo(() => initialEvents.filter(e => e.is_featured === true), [initialEvents]);
   const [currentHeroIndex, setCurrentHeroIndex] = useState(0);
-  const [sponsors] = useState<any[]>(initialSponsors); 
-  const [interviews] = useState<any[]>(initialInterviews);
+  const sponsors = initialSponsors;
+  const interviews = initialInterviews;
   const [currentBottomAdIndex, setCurrentBottomAdIndex] = useState(0);
   const [selectedEvent, setSelectedEvent] = useState<any>(null);
   const [selectedAd, setSelectedAd] = useState<any>(null);
@@ -66,17 +67,17 @@ export default function HomePageClient({
   const nextHero = () => setCurrentHeroIndex((prev) => (prev + 1) % featuredEvents.length);
   const prevHero = () => setCurrentHeroIndex((prev) => (prev - 1 + featuredEvents.length) % featuredEvents.length);
 
-  const topSponsor = sponsors.find(a => a.position === 'top');
-  const bottomSponsors = sponsors.filter(a => a.position === 'bottom');
+  const topSponsor = useMemo(() => sponsors.find(a => a.position === 'top'), [sponsors]);
+  const bottomSponsors = useMemo(() => sponsors.filter(a => a.position === 'bottom'), [sponsors]);
   const activeBottomAd = bottomSponsors[currentBottomAdIndex];
-  const sidebarSponsors = sponsors.filter(a => a.position === 'sidebar');
+  const sidebarSponsors = useMemo(() => sponsors.filter(a => a.position === 'sidebar'), [sponsors]);
   
-  const activeDepartments = Array.from(new Set(allEvents.map(e => e.department))).filter(Boolean).sort();
-  const activeGenres = Array.from(new Set(allEvents.map(e => e.genre))).filter(Boolean).sort();
-  const activeAgeRatings = Array.from(new Set(allEvents.map(e => e.age_rating || 'ATP'))).sort();
+  const activeDepartments = useMemo(() => Array.from(new Set(allEvents.map(e => e.department))).filter(Boolean).sort(), [allEvents]);
+  const activeGenres = useMemo(() => Array.from(new Set(allEvents.map(e => e.genre))).filter(Boolean).sort(), [allEvents]);
+  const activeAgeRatings = useMemo(() => Array.from(new Set(allEvents.map(e => e.age_rating || 'ATP'))).sort(), [allEvents]);
   
   const priceMapping: Record<string, string> = { 'range': 'PAGO', 'free': 'LIBRE', 'gorra': 'GORRA', 'sobre': 'SOBRE' };
-  const activePriceTypes = Array.from(new Set(allEvents.map(e => priceMapping[e.price_type] || e.price_type))).filter(Boolean).sort();
+  const activePriceTypes = useMemo(() => Array.from(new Set(allEvents.map(e => priceMapping[e.price_type ?? ''] || (e.price_type ?? '')))).filter(Boolean).sort(), [allEvents]);
 
   const formatDate = (dateStr: string) => {
     if (!dateStr) return '';
@@ -161,7 +162,7 @@ export default function HomePageClient({
         
         {topSponsor && (
           <div onClick={() => setSelectedAd(topSponsor)} className="cursor-pointer block w-full h-20 md:h-24 bg-zinc-950 border-4 border-white overflow-hidden shadow-lg group relative rounded-2xl md:rounded-3xl">
-            <img src={topSponsor.image_url} alt="Sponsor" className="w-full h-full object-cover transition-all duration-500" />
+            <img src={topSponsor.image_url} alt="Sponsor" className="w-full h-full object-cover object-center transition-all duration-500" />
             <div className="absolute top-2 left-2 bg-black/60 text-white text-[8px] font-black px-2 py-0.5 border border-red-600 uppercase tracking-widest rounded-lg">Publicidad</div>
           </div>
         )}
@@ -173,7 +174,7 @@ export default function HomePageClient({
           >
             <div className="absolute inset-0">
                {featuredEvents[currentHeroIndex].flyer_url && (
-                 <img src={featuredEvents[currentHeroIndex].flyer_url} className="absolute inset-0 w-full h-full object-cover opacity-60" alt="Hero" />
+                 <img src={featuredEvents[currentHeroIndex].flyer_url} className="absolute inset-0 w-full h-full object-cover object-center opacity-60" alt="Hero" />
                )}
             </div>
             <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent z-10" />
@@ -193,7 +194,7 @@ export default function HomePageClient({
 
             <div className="relative z-20 w-full text-left font-black">
               <div className="flex gap-2 items-center mb-2">
-                <span className={`px-3 py-0.5 text-[10px] md:text-sm font-black uppercase italic tracking-widest shadow-md rounded-full border-2 ${getTagStyle(featuredEvents[currentHeroIndex].suggestion_tag)}`}>
+                <span className={`px-3 py-0.5 text-[10px] md:text-sm font-black uppercase italic tracking-widest shadow-md rounded-full border-2 ${getTagStyle(featuredEvents[currentHeroIndex].suggestion_tag || '')}`}>
                   {featuredEvents[currentHeroIndex].suggestion_tag || 'DESTACADO'}
                 </span>
                 <span className="bg-white text-black px-3 py-0.5 text-[10px] md:text-sm font-black uppercase rounded-full border-2 border-red-600 shadow-md">
@@ -204,7 +205,7 @@ export default function HomePageClient({
                 {featuredEvents[currentHeroIndex].band_name}
               </h2>
               <p className="text-xs md:text-2xl font-bold text-white uppercase tracking-widest border-l-4 md:border-l-8 border-red-600 pl-4 mt-2 md:mt-4 font-black">
-                {formatDate(featuredEvents[currentHeroIndex].date)} @ {featuredEvents[currentHeroIndex].venue} {featuredEvents[currentHeroIndex].address && `- ${featuredEvents[currentHeroIndex].address}`}
+                 {formatDate(featuredEvents[currentHeroIndex].date ?? '')} @ {formatTime(featuredEvents[currentHeroIndex].time ?? '')} {featuredEvents[currentHeroIndex].address && `- ${featuredEvents[currentHeroIndex].address}`}
               </p>
             </div>
           </section>
@@ -220,7 +221,7 @@ export default function HomePageClient({
               {interviews.map(int => (
                 <Link key={int.id} href={`/interviews/${int.id}`} className="flex gap-4 bg-zinc-950 border-4 border-white p-3 hover:border-red-600 transition-all rounded-[24px] shadow-lg group">
                   <div className="w-24 h-24 shrink-0 overflow-hidden rounded-xl border-2 border-zinc-800">
-                    <img src={int.image_url} className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all" alt={int.title} />
+                    <img src={int.image_url || '/logo-rojo.jpg'} className="w-full h-full object-cover object-center grayscale group-hover:grayscale-0 transition-all" alt={int.title || 'Entrevista'} />
                   </div>
                   <div className="flex flex-col justify-center text-left font-black">
                     <span className="text-[8px] bg-red-600 text-white px-2 py-0.5 rounded-full w-fit mb-1 italic font-black">BANDA: {int.band_name}</span>
@@ -240,14 +241,14 @@ export default function HomePageClient({
                 <span className="text-[8px] md:text-[10px] opacity-80 uppercase font-black font-black">Dpto</span>
                 <select value={department} onChange={(e) => { setDepartment(e.target.value); applyFilters(allEvents, e.target.value, genre, ageRating, priceType); }} className="bg-black text-white p-2 border-2 border-white focus:outline-none font-bold text-[10px] md:text-xs uppercase rounded-xl font-black font-black">
                   <option value="">Todos</option>
-                  {activeDepartments.map(d => <option key={d} value={d}>{d}</option>)}
+                  {activeDepartments.map(d => <option key={String(d)} value={String(d)}>{d}</option>)}
                 </select>
               </div>
               <div className="flex flex-col gap-1">
                 <span className="text-[8px] md:text-[10px] opacity-80 uppercase font-black font-black">Género</span>
                 <select value={genre} onChange={(e) => { setGenre(e.target.value); applyFilters(allEvents, department, e.target.value, ageRating, priceType); }} className="bg-black text-white p-2 border-2 border-white focus:outline-none font-bold text-[10px] md:text-xs uppercase rounded-xl font-black font-black">
                   <option value="">Todos</option>
-                  {activeGenres.map(g => <option key={g} value={g}>{g}</option>)}
+                  {activeGenres.map(g => <option key={String(g)} value={String(g)}>{g}</option>)}
                 </select>
               </div>
               <div className="flex flex-col gap-1">
@@ -281,7 +282,7 @@ export default function HomePageClient({
                     )}
 
                     <div className="w-24 h-24 md:w-full md:aspect-square bg-zinc-800 shrink-0 border-2 border-zinc-700 relative flex items-center justify-center overflow-hidden rounded-xl md:rounded-2xl shadow-[inset_0_0_15px_rgba(0,0,0,0.5)] font-black">
-                      {event.flyer_url ? <img src={event.flyer_url} alt="Flyer" className={`object-cover w-full h-full transition-all duration-500 ${(event.is_sold_out || event.is_suspended) ? 'grayscale blur-[1px]' : 'group-hover/card:scale-105'}`} /> : <div className="text-zinc-600 font-black italic uppercase text-center text-[10px] font-franklin font-black">FLYER</div>}
+                      {event.flyer_url ? <img src={event.flyer_url} alt="Flyer" className={`object-cover object-center w-full h-full transition-all duration-500 ${(event.is_sold_out || event.is_suspended) ? 'grayscale blur-[1px]' : 'group-hover/card:scale-105'}`} /> : <div className="text-zinc-600 font-black italic uppercase text-center text-[10px] font-franklin font-black">FLYER</div>}
                       {event.is_sold_out && <div className="absolute inset-0 bg-red-600/60 flex items-center justify-center text-white font-black uppercase text-[10px] rotate-12 font-black">AGOTADO</div>}
                       {event.is_suspended && <div className="absolute inset-0 bg-zinc-700/60 flex items-center justify-center text-white font-black uppercase text-[10px] rotate-12 font-black">SUSPENDIDO</div>}
                     </div>
@@ -290,7 +291,7 @@ export default function HomePageClient({
                       <div className="flex justify-between items-start font-black">
                         <h3 className="text-base md:text-2xl font-franklin leading-none truncate group-hover/card:text-red-600 transition-colors font-black">{event.band_name}</h3>
                       </div>
-                      <p className="font-black text-red-600 tracking-tighter uppercase text-[10px] md:text-sm font-black">{formatDate(event.date)} - {formatTime(event.time)}hs</p>
+                      <p className="font-black text-red-600 tracking-tighter uppercase text-[10px] md:text-sm font-black">{formatDate(event.date ?? '')} - {formatTime(event.time ?? '')}hs</p>
                       <p className="text-[9px] md:text-[10px] uppercase tracking-tight text-zinc-400 font-bold leading-none md:leading-tight truncate font-black">{event.venue}, {event.city}</p>
                       
                       <div className="flex gap-2 mt-1 flex-wrap font-black">
@@ -309,7 +310,7 @@ export default function HomePageClient({
               {sidebarSponsors.map(ad => (
                 <div key={ad.id} onClick={() => setSelectedAd(ad)} className="block border-4 border-white bg-zinc-950 p-2 shadow-[8px_8px_0px_0px_rgba(220,38,38,0.3)] hover:-translate-x-1 transition-transform group cursor-pointer rounded-2xl">
                   <div className="aspect-[4/5] overflow-hidden border-2 border-zinc-800 rounded-xl">
-                    <img src={ad.image_url} alt="Sponsor" className="w-full h-full object-cover transition-all duration-500" />
+                    <img src={ad.image_url} alt="Sponsor" className="w-full h-full object-cover object-center transition-all duration-500" />
                   </div>
                 </div>
               ))}
@@ -323,7 +324,7 @@ export default function HomePageClient({
         {activeBottomAd && (
           <section className="pt-8 md:pt-12 font-black">
              <div onClick={() => setSelectedAd(activeBottomAd)} className="cursor-pointer block w-full h-32 md:h-64 bg-zinc-950 border-4 md:border-8 border-white overflow-hidden shadow-[12px_12px_0px_0px_rgba(220,38,38,0.5)] group relative rounded-[32px] md:rounded-[40px]">
-                <img src={activeBottomAd.image_url} alt="Sponsor" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-1000" />
+                <img src={activeBottomAd.image_url} alt="Sponsor" className="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-1000" />
                 <div className="absolute top-4 left-4 bg-black/80 text-white text-[8px] md:text-[10px] font-black px-4 py-1 border-2 border-red-600 uppercase tracking-widest rounded-full font-black">Auspiciante Destacado</div>
              </div>
         </section>
