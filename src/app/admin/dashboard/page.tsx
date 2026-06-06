@@ -245,7 +245,7 @@ export default function AdminDashboard() {
 
   const renderInterviewCard = (intv: any) => (
     <div key={intv.id} className={`border-4 p-2.5 sm:p-3 flex flex-col sm:flex-row items-center sm:items-start gap-2 sm:gap-3 rounded-2xl ${intv.is_active ? 'border-red-600 bg-zinc-950 shadow-md' : 'border-zinc-800 opacity-50 bg-zinc-900 grayscale'}`}>
-      <img src={intv.image_url || '/logo-rojo.jpg'} alt={intv.title} className="w-full h-48 sm:w-28 sm:h-28 object-cover object-center border-2 border-white rounded-lg flex-shrink-0" />
+      <img src={intv.image_url || '/logo-rojo.jpg'} alt={intv.title} className="w-24 h-24 sm:w-28 sm:h-28 object-cover object-center border-2 border-white rounded-lg flex-shrink-0" />
       <div className="w-full sm:min-w-0 sm:flex-1 flex flex-col gap-2">
         <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2 sm:gap-0">
           <h3 className="text-sm sm:text-base font-black uppercase leading-tight truncate">{intv.title}</h3>
