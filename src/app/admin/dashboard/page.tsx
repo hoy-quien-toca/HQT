@@ -202,6 +202,67 @@ export default function AdminDashboard() {
     );
   };
 
+  const renderMessageCard = (m: any) => (
+    <div key={m.id} className={`border-4 p-2.5 sm:p-3 rounded-2xl border-red-600 bg-zinc-950/80`}>
+      <div className="flex gap-3">
+        <div className="w-20 h-20 flex-shrink-0 rounded-lg bg-zinc-800 border-2 border-zinc-700 flex items-center justify-center">
+          <span className="text-xs uppercase text-red-600 font-black">MSG</span>
+        </div>
+        <div className="min-w-0 flex-1 flex flex-col">
+          <div className="flex items-start justify-between">
+            <h3 className="text-sm sm:text-base font-black uppercase leading-tight truncate">{m.name}</h3>
+            <div className="flex gap-1">
+              <button type="button" onClick={() => setSelectedMessage(m)} className={`${adminBtn} bg-blue-600 border-white`}>VER</button>
+              <button type="button" onClick={() => deleteMessage(m.id)} className={`${adminBtn} bg-red-600 border-white`}>BORRAR</button>
+            </div>
+          </div>
+          <p className="text-[10px] text-zinc-300 truncate mt-1">{m.message}</p>
+          <p className="text-[9px] text-zinc-500 mt-2 uppercase">{m.email} · {m.phone}</p>
+        </div>
+      </div>
+    </div>
+  );
+
+  const renderSponsorCard = (sp: any) => (
+    <div key={sp.id} className={`border-4 p-2.5 sm:p-3 rounded-2xl ${sp.is_active ? 'border-red-600 bg-zinc-950' : 'border-zinc-800 opacity-60 bg-zinc-900'}`}>
+      <div className="flex gap-3">
+        <img src={sp.image_url || '/logo-rojo.jpg'} alt={sp.client_name} className="w-28 h-28 object-contain object-center border-2 border-white rounded-lg flex-shrink-0" />
+        <div className="min-w-0 flex-1 flex flex-col">
+          <div className="flex items-start justify-between">
+            <h3 className="text-sm sm:text-base font-black uppercase leading-tight truncate">{sp.client_name}</h3>
+            <div className="flex gap-1">
+              <button type="button" onClick={() => setNewSponsor(sp)} className={`${adminBtn} bg-blue-600 border-white`}>EDITAR</button>
+              <button type="button" onClick={() => toggleSponsorStatus(sp.id, sp.is_active)} className={`${adminBtn} bg-green-600 border-white`}>{sp.is_active ? 'PAUSA' : 'ACTIVO'}</button>
+              <button type="button" onClick={() => deleteSponsor(sp.id)} className={`${adminBtn} bg-red-600 border-white`}>BORRAR</button>
+            </div>
+          </div>
+          <p className="text-[10px] sm:text-xs font-bold text-red-600 uppercase mt-1">{sponsorPositionLabel(sp.position)} · Ord. {sp.display_order}</p>
+          {sp.link && <p className="text-[10px] text-zinc-400 truncate mt-1">{sp.link}</p>}
+        </div>
+      </div>
+    </div>
+  );
+
+  const renderInterviewCard = (intv: any) => (
+    <div key={intv.id} className={`border-4 p-2.5 sm:p-3 flex gap-2 sm:gap-3 rounded-2xl ${intv.is_active ? 'border-red-600 bg-zinc-950 shadow-md' : 'border-zinc-800 opacity-50 bg-zinc-900 grayscale'}`}>
+      <img src={intv.image_url || '/logo-rojo.jpg'} alt={intv.title} className="w-28 h-28 object-cover object-center border-2 border-white rounded-lg flex-shrink-0" />
+      <div className="min-w-0 flex-1 flex flex-col">
+        <div className="flex items-start justify-between">
+          <h3 className="text-sm sm:text-base font-black uppercase leading-tight truncate">{intv.title}</h3>
+          <div className="flex gap-1">
+            <button type="button" onClick={() => setSelectedInterview(intv)} className={`${adminBtn} bg-zinc-700 border-white text-white`}>VER</button>
+            <button type="button" onClick={() => setNewInterview(intv)} className={`${adminBtn} bg-blue-600 border-white`}>EDITAR</button>
+            <button type="button" onClick={() => toggleInterviewFeatured(intv.id, intv.is_featured)} className={`${adminBtn} ${intv.is_featured ? 'bg-yellow-400 text-black border-black' : 'bg-zinc-800 border-white'}`}>DESTACAR</button>
+            <button type="button" onClick={() => toggleInterviewStatus(intv.id, intv.is_active)} className={`${adminBtn} bg-green-600 border-white`}>{intv.is_active ? 'PAUSA' : 'ACTIVO'}</button>
+            <button type="button" onClick={() => deleteInterview(intv.id)} className={`${adminBtn} bg-red-600 border-white`}>BORRAR</button>
+          </div>
+        </div>
+        <p className="text-[10px] sm:text-xs font-bold text-red-600 uppercase mt-1 truncate">BANDA: {intv.band_name}</p>
+        <p className="text-[10px] text-zinc-400 mt-2 line-clamp-2">{intv.subtitle}</p>
+      </div>
+    </div>
+  );
+
   return (
     <div className="min-h-screen bg-zinc-900 text-white p-3 sm:p-4 md:p-6 font-sans relative text-left overflow-x-hidden font-black">
       <header className="flex flex-col sm:flex-row justify-between items-stretch sm:items-center mb-4 sm:mb-6 border-b-4 border-red-600 pb-4 sm:pb-6 bg-zinc-950 p-3 sm:p-4 sticky top-0 z-50 gap-3">
@@ -311,18 +372,7 @@ export default function AdminDashboard() {
             </div>
             {showMessagesSection && (
               <div className="space-y-2 sm:space-y-3 font-black">
-                {messages.map((m) => (
-                  <div key={m.id} className="border-2 p-2.5 sm:p-3 flex justify-between items-center gap-2 border-white bg-zinc-900 rounded-2xl">
-                    <div onClick={() => setSelectedMessage(m)} className="cursor-pointer flex-1 min-w-0 truncate pr-2">
-                      <h3 className="uppercase text-[10px] sm:text-xs text-red-600">{m.name}</h3>
-                      <p className="text-[9px] sm:text-[10px] text-zinc-300 truncate">"{m.message}"</p>
-                    </div>
-                    <div className="flex flex-shrink-0 gap-2">
-                      <button type="button" onClick={() => setSelectedMessage(m)} className={`${adminBtn} bg-blue-600 border-white`}>VER</button>
-                      <button type="button" onClick={() => deleteMessage(m.id)} className={`${adminBtn} bg-red-600 border-white`}>BORRAR</button>
-                    </div>
-                  </div>
-                ))}
+                {messages.map(renderMessageCard)}
               </div>
             )}
           </div>
@@ -343,34 +393,7 @@ export default function AdminDashboard() {
                   <button type="submit" disabled={uploading} className="w-full bg-red-600 py-2 text-xs border-2 border-white rounded-full font-black">GUARDAR</button>
                 </form>
                 <div className="space-y-2 sm:space-y-3">
-                  {sponsors.map(sp => (
-                    <div
-                      key={sp.id}
-                      className={`border-4 p-2.5 sm:p-3 flex gap-2 sm:gap-3 rounded-2xl ${
-                        sp.is_active ? 'border-red-600 bg-zinc-950' : 'border-zinc-800 opacity-60 bg-zinc-900'
-                      }`}
-                    >
-                  <img
-                    src={sp.image_url || '/logo-rojo.jpg'}
-                    alt={sp.client_name}
-                    className="w-14 h-14 sm:w-16 sm:h-16 object-contain object-center bg-black border-2 border-white rounded-lg flex-shrink-0"
-                  />
-                  <div className="min-w-0 flex-1">
-                    <h3 className="text-sm sm:text-base font-black uppercase leading-tight truncate">{sp.client_name}</h3>
-                    <p className="text-[10px] sm:text-xs font-bold text-red-600 uppercase mt-0.5">
-                      {sponsorPositionLabel(sp.position)} · Ord. {sp.display_order}
-                    </p>
-                    {sp.link && (
-                      <p className="text-[10px] text-zinc-400 truncate mt-0.5">{sp.link}</p>
-                    )}
-                    <div className="flex flex-wrap gap-1 mt-1.5">
-                      <button type="button" onClick={() => setNewSponsor(sp)} className={`${adminBtn} bg-blue-600 border-white`}>EDITAR</button>
-                      <button type="button" onClick={() => toggleSponsorStatus(sp.id, sp.is_active)} className={`${adminBtn} bg-green-600 border-white`}>{sp.is_active ? 'PAUSA' : 'ACTIVO'}</button>
-                      <button type="button" onClick={() => deleteSponsor(sp.id)} className={`${adminBtn} bg-red-600 border-white`}>BORRAR</button>
-                    </div>
-                  </div>
-                </div>
-              ))}
+                  {sponsors.map(renderSponsorCard)}
             </div>
           </>
             )}
@@ -394,33 +417,7 @@ export default function AdminDashboard() {
               <div className="flex gap-2"><button type="submit" disabled={uploading} className="flex-1 bg-red-600 py-2 text-xs border-2 border-white rounded-full font-black">PUBLICAR</button>{newInterview.id && <button type="button" onClick={() => setNewInterview({id:null, title:'', subtitle:'', band_name:'', content:'', image_url:'', is_active:true, author:'', photo_credit:''})} className="bg-zinc-700 px-4 border border-white rounded-full font-black font-black">X</button>}</div>
             </form>
             <div className="space-y-2 sm:space-y-3">
-              {interviews.map(int => (
-                <div
-                  key={int.id}
-                  className={`border-4 p-2.5 sm:p-3 flex gap-2 sm:gap-3 rounded-2xl ${
-                    int.is_active
-                      ? 'border-red-600 bg-zinc-950 shadow-md'
-                      : 'border-zinc-800 opacity-50 bg-zinc-900 grayscale'
-                  }`}
-                >
-                  <img
-                    src={int.image_url || '/logo-rojo.jpg'}
-                    alt={int.title}
-                    className="w-14 h-14 sm:w-16 sm:h-16 object-cover object-center border-2 border-white rounded-lg flex-shrink-0"
-                  />
-                  <div className="min-w-0 flex-1">
-                    <h3 className="text-sm sm:text-base font-black uppercase leading-tight line-clamp-2">{int.title}</h3>
-                    <p className="text-[10px] sm:text-xs font-bold text-red-600 uppercase mt-0.5 truncate">{int.band_name}</p>
-                    <div className="flex flex-wrap gap-1 mt-1.5">
-                      <button type="button" onClick={() => setSelectedInterview(int)} className={`${adminBtn} bg-zinc-700 border-white text-white`}>VER</button>
-                      <button type="button" onClick={() => setNewInterview(int)} className={`${adminBtn} bg-blue-600 border-white`}>EDITAR</button>
-                      <button type="button" onClick={() => toggleInterviewFeatured(int.id, int.is_featured)} className={`${adminBtn} ${int.is_featured ? 'bg-yellow-400 text-black border-black' : 'bg-zinc-800 border-white'}`}>DESTACAR</button>
-                      <button type="button" onClick={() => toggleInterviewStatus(int.id, int.is_active)} className={`${adminBtn} bg-green-600 border-white`}>{int.is_active ? 'PAUSA' : 'ACTIVO'}</button>
-                      <button type="button" onClick={() => deleteInterview(int.id)} className={`${adminBtn} bg-red-600 border-white`}>BORRAR</button>
-                    </div>
-                  </div>
-                </div>
-              ))}
+              {interviews.map(renderInterviewCard)}
             </div>
           </div>
         )}
