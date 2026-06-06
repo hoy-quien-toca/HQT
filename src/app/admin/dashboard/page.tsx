@@ -366,8 +366,8 @@ export default function AdminDashboard() {
         <section className="space-y-8 sm:space-y-12">
           {/* MENSAJES */}
           <div className="space-y-4 sm:space-y-6">
-            <div className="flex justify-between items-center gap-4">
-              <h2 className="text-xl sm:text-2xl uppercase italic text-red-600 border-l-8 border-red-600 pl-3 sm:pl-4 bg-zinc-950 py-2 font-franklin">Mensajes</h2>
+            <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2 bg-zinc-950 p-3 border-l-8 border-red-600 rounded-r-2xl">
+              <h2 className="text-xl sm:text-2xl uppercase italic text-red-600 font-franklin">Mensajes</h2>
               <button type="button" onClick={() => setShowMessagesSection((prev) => !prev)} className={`${adminBtn} bg-zinc-800 border-white`}>{showMessagesSection ? 'Ocultar' : 'Mostrar'}</button>
             </div>
             {showMessagesSection && (
@@ -379,8 +379,8 @@ export default function AdminDashboard() {
 
           {/* PUBLICIDAD */}
           <div className="space-y-4 sm:space-y-6 border-t-4 border-zinc-800 pt-6 sm:pt-8">
-            <div className="flex justify-between items-center gap-4">
-              <h2 className="text-xl sm:text-2xl uppercase italic text-red-600 border-l-8 border-red-600 pl-3 sm:pl-4 bg-zinc-950 py-2 font-franklin">Publicidad</h2>
+            <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2 bg-zinc-950 p-3 border-l-8 border-red-600 rounded-r-2xl">
+              <h2 className="text-xl sm:text-2xl uppercase italic text-red-600 font-franklin">Publicidad</h2>
               <button type="button" onClick={() => setShowSponsorsSection((prev) => !prev)} className={`${adminBtn} bg-zinc-800 border-white`}>{showSponsorsSection ? 'Ocultar' : 'Mostrar'}</button>
             </div>
             {showSponsorsSection && (
@@ -401,8 +401,8 @@ export default function AdminDashboard() {
 
           {/* ENTREVISTAS */}
           <div className="space-y-4 sm:space-y-6 border-t-4 border-zinc-800 pt-6 sm:pt-8">
-            <div className="flex justify-between items-center gap-4">
-              <h2 className="text-xl sm:text-2xl uppercase italic text-red-600 border-l-8 border-red-600 pl-3 sm:pl-4 bg-zinc-950 py-2 font-franklin font-black">Entrevistas</h2>
+            <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2 bg-zinc-950 p-3 border-l-8 border-red-600 rounded-r-2xl">
+              <h2 className="text-xl sm:text-2xl uppercase italic text-red-600 font-franklin">Entrevistas</h2>
               <button type="button" onClick={() => setShowInterviewsSection((prev) => !prev)} className={`${adminBtn} bg-zinc-800 border-white`}>{showInterviewsSection ? 'Ocultar' : 'Mostrar'}</button>
             </div>
             {showInterviewsSection && (
