@@ -62,7 +62,7 @@ export default function ContactPage() {
         <div className="max-w-6xl mx-auto flex justify-between items-center">
           <div className="flex items-center gap-4">
             <Link href="/" className="hover:scale-110 transition-transform cursor-pointer focus:outline-none shrink-0">
-               <Image src="/logo-rojo.jpg" alt="Logo Rojo" width={80} height={80} className="border-2 border-white rounded-2xl md:w-[100px] md:h-[100px] shadow-lg shadow-red-600/30" />
+               <Image src="/logo-rojo.jpg" alt="Logo Rojo" width={80} height={80} className="border-2 border-white rounded-2xl md:w-[100px] md:h-[100px] shadow-[0_0_30px_rgba(220,38,38,0.35)] shadow-red-600/40" />
             </Link>
             <div>
               <h1 className="text-2xl md:text-5xl font-franklin tracking-tighter text-red-600 leading-none">Hoy Quien Toca</h1>

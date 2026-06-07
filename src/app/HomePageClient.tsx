@@ -135,7 +135,7 @@ export default function HomePageClient({
               onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })} 
               className="hover:scale-110 transition-transform cursor-pointer focus:outline-none shrink-0"
             >
-               <Image src="/logo-rojo.jpg" alt="Logo Rojo" width={80} height={80} className="border-2 border-white rounded-2xl md:w-[100px] md:h-[100px] shadow-lg shadow-red-600/30" />
+               <Image src="/logo-rojo.jpg" alt="Logo Rojo" width={80} height={80} className="border-2 border-white rounded-2xl md:w-[100px] md:h-[100px] shadow-[0_0_30px_rgba(220,38,38,0.35)] shadow-red-600/40" />
             </button>
             <div>
               <h1 className="text-2xl md:text-5xl font-franklin tracking-tighter text-red-600 leading-none">Hoy Quien Toca</h1>
@@ -162,7 +162,7 @@ export default function HomePageClient({
         
         {topSponsor && (
           <div onClick={() => setSelectedAd(topSponsor)} className="cursor-pointer block w-full h-20 md:h-24 bg-zinc-950 border-4 border-white overflow-hidden shadow-lg group relative rounded-2xl md:rounded-3xl">
-            <img src={topSponsor.image_url} alt="Sponsor" className="w-full h-full object-cover object-center transition-all duration-500" />
+            <img loading="lazy" src={topSponsor.image_url} alt="Sponsor" className="w-full h-full object-cover object-center transition-all duration-500" />
             <div className="absolute top-2 left-2 bg-black/60 text-white text-[8px] font-black px-2 py-0.5 border border-red-600 uppercase tracking-widest rounded-lg">Publicidad</div>
           </div>
         )}
@@ -174,7 +174,7 @@ export default function HomePageClient({
           >
             <div className="absolute inset-0">
                {featuredEvents[currentHeroIndex].flyer_url && (
-                 <img src={featuredEvents[currentHeroIndex].flyer_url} className="absolute inset-0 w-full h-full object-cover object-center opacity-60" alt="Hero" />
+                 <img loading="lazy" src={featuredEvents[currentHeroIndex].flyer_url} className="absolute inset-0 w-full h-full object-cover object-center opacity-60" alt="Hero" />
                )}
             </div>
             <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent z-10" />
@@ -221,7 +221,7 @@ export default function HomePageClient({
               {interviews.map(int => (
                 <Link key={int.id} href={`/interviews/${int.id}`} className="flex gap-4 bg-zinc-950 border-4 border-white p-3 hover:border-red-600 transition-all rounded-[24px] shadow-lg group">
                   <div className="w-24 h-24 shrink-0 overflow-hidden rounded-xl border-2 border-zinc-800">
-                    <img src={int.image_url || '/logo-rojo.jpg'} className="w-full h-full object-cover object-center grayscale group-hover:grayscale-0 transition-all" alt={int.title || 'Entrevista'} />
+                    <img loading="lazy" src={int.image_url || '/logo-rojo.jpg'} className="w-full h-full object-cover object-center grayscale group-hover:grayscale-0 transition-all" alt={int.title || 'Entrevista'} />
                   </div>
                   <div className="flex flex-col justify-center text-left font-black">
                     <span className="text-[8px] bg-red-600 text-white px-2 py-0.5 rounded-full w-fit mb-1 italic font-black">BANDA: {int.band_name}</span>
@@ -282,7 +282,7 @@ export default function HomePageClient({
                     )}
 
                     <div className="w-24 h-24 md:w-full md:aspect-square bg-zinc-800 shrink-0 border-2 border-zinc-700 relative flex items-center justify-center overflow-hidden rounded-xl md:rounded-2xl shadow-[inset_0_0_15px_rgba(0,0,0,0.5)] font-black">
-                      {event.flyer_url ? <img src={event.flyer_url} alt="Flyer" className={`object-cover object-center w-full h-full transition-all duration-500 ${(event.is_sold_out || event.is_suspended) ? 'grayscale blur-[1px]' : 'group-hover/card:scale-105'}`} /> : <div className="text-zinc-600 font-black italic uppercase text-center text-[10px] font-franklin font-black">FLYER</div>}
+                      {event.flyer_url ? <img loading="lazy" src={event.flyer_url} alt="Flyer" className={`object-cover object-center w-full h-full transition-all duration-500 ${(event.is_sold_out || event.is_suspended) ? 'grayscale blur-[1px]' : 'group-hover/card:scale-105'}`} /> : <div className="text-zinc-600 font-black italic uppercase text-center text-[10px] font-franklin font-black">FLYER</div>}
                       {event.is_sold_out && <div className="absolute inset-0 bg-red-600/60 flex items-center justify-center text-white font-black uppercase text-[10px] rotate-12 font-black">AGOTADO</div>}
                       {event.is_suspended && <div className="absolute inset-0 bg-zinc-700/60 flex items-center justify-center text-white font-black uppercase text-[10px] rotate-12 font-black">SUSPENDIDO</div>}
                     </div>
@@ -310,7 +310,7 @@ export default function HomePageClient({
               {sidebarSponsors.map(ad => (
                 <div key={ad.id} onClick={() => setSelectedAd(ad)} className="block border-4 border-white bg-zinc-950 p-2 shadow-[8px_8px_0px_0px_rgba(220,38,38,0.3)] hover:-translate-x-1 transition-transform group cursor-pointer rounded-2xl">
                   <div className="aspect-[4/5] overflow-hidden border-2 border-zinc-800 rounded-xl">
-                    <img src={ad.image_url} alt="Sponsor" className="w-full h-full object-cover object-center transition-all duration-500" />
+                    <img loading="lazy" src={ad.image_url} alt="Sponsor" className="w-full h-full object-cover object-center transition-all duration-500" />
                   </div>
                 </div>
               ))}
@@ -324,7 +324,7 @@ export default function HomePageClient({
         {activeBottomAd && (
           <section className="pt-8 md:pt-12 font-black">
              <div onClick={() => setSelectedAd(activeBottomAd)} className="cursor-pointer block w-full h-32 md:h-64 bg-zinc-950 border-4 md:border-8 border-white overflow-hidden shadow-[12px_12px_0px_0px_rgba(220,38,38,0.5)] group relative rounded-[32px] md:rounded-[40px]">
-                <img src={activeBottomAd.image_url} alt="Sponsor" className="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-1000" />
+                <img loading="lazy" src={activeBottomAd.image_url} alt="Sponsor" className="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-1000" />
                 <div className="absolute top-4 left-4 bg-black/80 text-white text-[8px] md:text-[10px] font-black px-4 py-1 border-2 border-red-600 uppercase tracking-widest rounded-full font-black">Auspiciante Destacado</div>
              </div>
         </section>
@@ -341,7 +341,7 @@ export default function HomePageClient({
             <div className="relative w-full max-w-4xl bg-zinc-900 border-4 md:border-8 border-white shadow-[20px_20px_0px_0px_rgba(220,38,38,0.5)] flex flex-col md:flex-row overflow-y-auto max-h-[90vh] rounded-[32px] md:rounded-[40px] font-black">
               <button onClick={() => setSelectedEvent(null)} className="absolute top-3 right-3 sm:top-4 sm:right-4 bg-red-600 text-white w-10 h-10 font-black text-xl border-4 border-white z-[210] hover:bg-black transition-colors text-center flex items-center justify-center rounded-full shadow-lg font-black">X</button>
               <div className="md:w-1/2 bg-zinc-800 border-b-4 md:border-b-0 md:border-r-4 border-white flex items-center justify-center p-4 font-black">
-                {selectedEvent.flyer_url ? <img src={selectedEvent.flyer_url} alt="Flyer" className="max-w-full h-auto shadow-2xl border-4 border-white rounded-2xl font-black" /> : <p className="font-black italic text-zinc-600 uppercase text-center font-franklin font-black">SIN FLYER</p>}
+                {selectedEvent.flyer_url ? <img loading="lazy" src={selectedEvent.flyer_url} alt="Flyer" className="max-w-full h-auto shadow-2xl border-4 border-white rounded-2xl font-black" /> : <p className="font-black italic text-zinc-600 uppercase text-center font-franklin font-black">SIN FLYER</p>}
               </div>
               <div className="md:w-1/2 p-6 md:p-8 space-y-6 text-left font-black">
                 <div>
@@ -396,7 +396,7 @@ export default function HomePageClient({
             >
               X
             </button>
-            <img src={selectedAd.image_url} alt="Sponsor" className="w-full h-auto border-4 border-zinc-800 shadow-2xl rounded-3xl font-black" />
+            <img loading="lazy" src={selectedAd.image_url} alt="Sponsor" className="w-full h-auto border-4 border-zinc-800 shadow-2xl rounded-3xl font-black" />
             <div className="p-4 sm:p-6 text-center space-y-4 font-black">
               {selectedAd.link && (
                 <a href={selectedAd.link} target="_blank" rel="noopener noreferrer" className="inline-block bg-white text-black px-8 sm:px-10 py-3 font-black uppercase hover:bg-red-600 hover:text-white transition-all shadow-[6px_6px_0px_0px_rgba(220,38,38,0.5)] rounded-full border-2 border-black italic font-black">Visitar Web</a>
