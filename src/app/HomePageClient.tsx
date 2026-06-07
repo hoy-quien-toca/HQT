@@ -31,6 +31,7 @@ export default function HomePageClient({
   const [ageRating, setAgeRating] = useState('');
   const [priceType, setPriceType] = useState('');
   const [visibleEventsCount, setVisibleEventsCount] = useState(12);
+  const [visibleInterviewsCount, setVisibleInterviewsCount] = useState(6);
 
   useEffect(() => {
     if (featuredEvents.length > 1) {
@@ -50,6 +51,11 @@ export default function HomePageClient({
       return () => clearInterval(timer);
     }
   }, [sponsors]);
+
+  useEffect(() => {
+    // reset interviews pagination when interviews list changes
+    setVisibleInterviewsCount(6);
+  }, [interviews]);
 
   function applyFilters(data: any[], dep: string, gen: string, age: string, price: string) {
     let filtered = [...data];
@@ -81,6 +87,7 @@ export default function HomePageClient({
   const priceMapping: Record<string, string> = { 'range': 'PAGO', 'free': 'LIBRE', 'gorra': 'GORRA', 'sobre': 'SOBRE' };
   const activePriceTypes = useMemo(() => Array.from(new Set(allEvents.map(e => priceMapping[e.price_type ?? ''] || (e.price_type ?? '')))).filter(Boolean).sort(), [allEvents]);
   const visibleEvents = events.slice(0, visibleEventsCount);
+  const visibleInterviews = interviews.slice(0, visibleInterviewsCount);
 
   const formatDate = (dateStr: string) => {
     if (!dateStr) return '';
@@ -221,7 +228,7 @@ export default function HomePageClient({
               <Link href="/interviews" className="text-xs md:text-sm font-black uppercase underline hover:text-red-600 transition-colors">Ver Todas</Link>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-8 font-black">
-              {interviews.map(int => (
+              {visibleInterviews.map(int => (
                 <Link key={int.id} href={`/interviews/${int.id}`} className="flex gap-4 bg-zinc-950 border-4 border-white p-3 hover:border-red-600 transition-all rounded-[24px] shadow-lg group">
                   <div className="w-24 h-24 shrink-0 overflow-hidden rounded-xl border-2 border-zinc-800">
                     <img loading="lazy" src={int.image_url || '/logo-rojo.jpg'} className="w-full h-full object-cover object-center grayscale group-hover:grayscale-0 transition-all" alt={int.title || 'Entrevista'} />
@@ -234,6 +241,23 @@ export default function HomePageClient({
                 </Link>
               ))}
             </div>
+
+            {interviews.length > visibleInterviewsCount && (
+              <div className="pt-4 text-center">
+                <button
+                  onClick={() => setVisibleInterviewsCount((prev) => prev + 6)}
+                  className="inline-flex items-center justify-center w-full max-w-xs mx-auto bg-red-600 text-white uppercase text-xs font-black px-4 py-3 rounded-full border-2 border-white hover:bg-red-500 transition-colors"
+                >
+                  Cargar más ({interviews.length - visibleInterviewsCount})
+                </button>
+              </div>
+            )}
+
+            {interviews.length > 0 && interviews.length <= visibleInterviewsCount && (
+              <div className="pt-4 text-center text-red-500 text-xs uppercase tracking-widest font-black">
+                PROXIMAMENTE MÁS ENTREVISTAS
+              </div>
+            )}
           </section>
         )}
 

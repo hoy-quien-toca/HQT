@@ -9,6 +9,7 @@ export default function InterviewsPage() {
   const [interviews, setInterviews] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [errorMsg, setErrorMsg] = useState<string>("");
+  const [visibleInterviewsCount, setVisibleInterviewsCount] = useState(6);
 
   useEffect(() => {
     fetchInterviews();
@@ -37,6 +38,11 @@ export default function InterviewsPage() {
       setLoading(false);
     }
   }
+
+  useEffect(() => {
+    // reset pagination when interviews list updates
+    setVisibleInterviewsCount(6);
+  }, [interviews]);
 
   return (
     <div className="min-h-screen text-white font-sans relative overflow-x-clip bg-zinc-900 font-black text-left">
@@ -90,7 +96,7 @@ export default function InterviewsPage() {
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-12 text-left font-black">
-            {interviews.map((interview) => (
+            {interviews.slice(0, visibleInterviewsCount).map((interview) => (
               <Link 
                 href={`/interviews/${interview.id}`} 
                 key={interview.id}
@@ -122,6 +128,16 @@ export default function InterviewsPage() {
               </Link>
             ))}
           </div>
+
+          {interviews.length > visibleInterviewsCount && (
+            <div className="w-full text-center pt-8">
+              <button onClick={() => setVisibleInterviewsCount((v) => v + 6)} className="inline-flex items-center justify-center w-full max-w-xs mx-auto bg-red-600 text-white uppercase text-xs font-black px-4 py-3 rounded-full border-2 border-white hover:bg-red-500 transition-colors">Cargar más ({interviews.length - visibleInterviewsCount})</button>
+            </div>
+          )}
+
+          {interviews.length > 0 && interviews.length <= visibleInterviewsCount && (
+            <div className="w-full text-center pt-8 text-red-500 text-xs uppercase tracking-widest font-black">PROXIMAMENTE MÁS ENTREVISTAS</div>
+          )}
         )}
       </main>
     </div>
