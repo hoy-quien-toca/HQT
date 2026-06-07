@@ -131,12 +131,19 @@ export default function InterviewsPage() {
 
           {interviews.length > visibleInterviewsCount && (
             <div className="w-full text-center pt-8">
-              <button onClick={() => setVisibleInterviewsCount((v) => v + 6)} className="inline-flex items-center justify-center w-full max-w-xs mx-auto bg-red-600 text-white uppercase text-xs font-black px-4 py-3 rounded-full border-2 border-white hover:bg-red-500 transition-colors">Cargar más ({interviews.length - visibleInterviewsCount})</button>
+              <button
+                onClick={() => setVisibleInterviewsCount((v) => v + 6)}
+                className="inline-flex items-center justify-center w-full max-w-xs mx-auto bg-red-600 text-white uppercase text-xs font-black px-4 py-3 rounded-full border-2 border-white hover:bg-red-500 transition-colors"
+              >
+                Cargar más ({interviews.length - visibleInterviewsCount})
+              </button>
             </div>
           )}
 
           {interviews.length > 0 && interviews.length <= visibleInterviewsCount && (
-            <div className="w-full text-center pt-8 text-red-500 text-xs uppercase tracking-widest font-black">PROXIMAMENTE MÁS ENTREVISTAS</div>
+            <div className="w-full text-center pt-8 text-red-500 text-xs uppercase tracking-widest font-black">
+              PROXIMAMENTE MÁS ENTREVISTAS
+            </div>
           )}
         )}
       </main>
