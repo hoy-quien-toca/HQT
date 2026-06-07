@@ -21,6 +21,7 @@ export default function AdminDashboard() {
   const [showMessagesSection, setShowMessagesSection] = useState(true);
   const [showSponsorsSection, setShowSponsorsSection] = useState(true);
   const [showInterviewsSection, setShowInterviewsSection] = useState(true);
+  const [displayedEventsCount, setDisplayedEventsCount] = useState(12);
   
   const [editingEvent, setEditingEvent] = useState<any>(null);
   const [newSponsor, setNewSponsor] = useState({ id: null, client_name: '', image_url: '', link: '', position: 'sidebar', display_order: 0 });
@@ -159,9 +160,12 @@ export default function AdminDashboard() {
   if (loading) return <div className="min-h-screen bg-black text-red-600 flex items-center justify-center font-black text-2xl uppercase italic">Cargando Admin...</div>;
 
   const today = new Date().toISOString().split('T')[0];
-  const pendingEvents = events.filter((e) => !e.is_approved);
-  const upcomingEvents = events.filter((e) => e.is_approved && e.date >= today);
-  const pastEvents = events.filter((e) => e.is_approved && e.date < today);
+  const pendingEvents = events.filter((e) => !e.is_approved).slice(0, displayedEventsCount);
+  const upcomingEvents = events.filter((e) => e.is_approved && e.date >= today).slice(0, displayedEventsCount);
+  const pastEvents = events.filter((e) => e.is_approved && e.date < today).slice(0, displayedEventsCount);
+  const totalPending = events.filter((e) => !e.is_approved).length;
+  const totalUpcoming = events.filter((e) => e.is_approved && e.date >= today).length;
+  const totalPast = events.filter((e) => e.is_approved && e.date < today).length;
 
   const renderEventCard = (ev: any) => {
     const isPending = !ev.is_approved;
@@ -183,6 +187,7 @@ export default function AdminDashboard() {
           <img
             src={ev.flyer_url || '/logo-rojo.jpg'}
             alt={ev.band_name}
+            loading="lazy"
             className="w-[6.65rem] h-[8.05rem] sm:w-28 sm:h-[8.4rem] object-cover border-2 border-white rounded-lg flex-shrink-0 self-start"
           />
           <div className="min-w-0 flex-1 flex flex-col gap-1 min-h-[8.05rem] sm:min-h-[8.4rem]">
@@ -246,7 +251,7 @@ export default function AdminDashboard() {
   const renderSponsorCard = (sp: any) => (
     <div key={sp.id} className={`border-4 p-2.5 sm:p-3 rounded-2xl ${sp.is_active ? 'border-red-600 bg-zinc-950' : 'border-zinc-800 opacity-60 bg-zinc-900'}`}>
       <div className="flex gap-3">
-        <img src={sp.image_url || '/logo-rojo.jpg'} alt={sp.client_name} className="w-28 h-28 object-contain object-center border-2 border-white rounded-lg flex-shrink-0" />
+        <img src={sp.image_url || '/logo-rojo.jpg'} alt={sp.client_name} loading="lazy" className="w-28 h-28 object-contain object-center border-2 border-white rounded-lg flex-shrink-0" />
         <div className="min-w-0 flex-1 flex flex-col">
           <div className="flex items-start justify-between">
             <h3 className="text-sm sm:text-base font-black uppercase leading-tight truncate">{sp.client_name}</h3>
@@ -266,7 +271,7 @@ export default function AdminDashboard() {
   const renderInterviewCard = (intv: any) => (
     <div key={intv.id} className={`border-4 p-2.5 sm:p-3 rounded-2xl ${intv.is_active ? 'border-red-600 bg-zinc-950 shadow-md' : 'border-zinc-800 opacity-50 bg-zinc-900 grayscale'}`}>
       <div className="flex gap-3 items-start">
-        <img src={intv.image_url || '/logo-rojo.jpg'} alt={intv.title} className="w-20 h-20 sm:w-24 sm:h-24 object-cover object-center border-2 border-white rounded-lg flex-shrink-0" />
+        <img src={intv.image_url || '/logo-rojo.jpg'} alt={intv.title} loading="lazy" className="w-20 h-20 sm:w-24 sm:h-24 object-cover object-center border-2 border-white rounded-lg flex-shrink-0" />
         <div className="min-w-0 flex-1">
           <h3 className="text-sm sm:text-base font-black uppercase leading-tight truncate">{intv.title}</h3>
           <p className="text-[10px] sm:text-xs font-bold text-red-600 uppercase mt-1 truncate">{intv.band_name}</p>
@@ -347,33 +352,36 @@ export default function AdminDashboard() {
           )}
 
           <div className="flex flex-col gap-3 sm:gap-4 pb-6">
-            {pendingEvents.length > 0 && (
+            {totalPending > 0 && (
               <div className="flex flex-col gap-4">
                 <div className="border-2 border-red-600 bg-red-600/20 rounded-2xl px-4 py-2 text-center admin-pending-banner">
                   <p className="text-sm font-black uppercase text-red-500 tracking-widest">
-                    Por aprobar ({pendingEvents.length})
+                    Por aprobar ({totalPending})
                   </p>
                 </div>
                 {pendingEvents.map(renderEventCard)}
+                {totalPending > displayedEventsCount && <button onClick={() => setDisplayedEventsCount(d => d + 12)} className="w-full py-2 bg-red-600/30 border-2 border-red-600 text-red-600 font-black uppercase text-xs rounded-lg hover:bg-red-600/50">Cargar más ({totalPending - displayedEventsCount})</button>}
               </div>
             )}
             
-            {upcomingEvents.length > 0 && (
+            {totalUpcoming > 0 && (
               <div className="flex flex-col gap-5">
                 <p className="text-[10px] font-black uppercase tracking-widest text-zinc-500 border-b border-zinc-800 pb-2">
-                  Próximas fechas ({upcomingEvents.length})
+                  Próximas fechas ({totalUpcoming})
                 </p>
                 {upcomingEvents.map(renderEventCard)}
+                {totalUpcoming > displayedEventsCount && <button onClick={() => setDisplayedEventsCount(d => d + 12)} className="w-full py-2 bg-zinc-800/50 border-2 border-zinc-700 text-zinc-400 font-black uppercase text-xs rounded-lg hover:bg-zinc-800">Cargar más ({totalUpcoming - displayedEventsCount})</button>}
               </div>
             )}
 
-            {pastEvents.length > 0 && (
+            {totalPast > 0 && (
               <div className="flex flex-col gap-5 mt-4">
                 <p className="text-[10px] font-black uppercase tracking-widest text-zinc-500 border-b border-zinc-800 pb-2">
-                  Fechas pasadas ({pastEvents.length}) - No visibles en la web
+                  Fechas pasadas ({totalPast}) - No visibles en la web
                 </p>
                 <div className="opacity-60 grayscale">
                   {pastEvents.map(renderEventCard)}
+                  {totalPast > displayedEventsCount && <button onClick={() => setDisplayedEventsCount(d => d + 12)} className="w-full py-2 bg-zinc-800/30 border-2 border-zinc-700 text-zinc-500 font-black uppercase text-xs rounded-lg hover:bg-zinc-800/50">Cargar más ({totalPast - displayedEventsCount})</button>}
                 </div>
               </div>
             )}
@@ -450,7 +458,7 @@ export default function AdminDashboard() {
       )}
 
       {selectedInterview && (
-        <div className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center p-0 sm:p-4"><div className="absolute inset-0 bg-black/95 backdrop-blur-md" onClick={() => setSelectedInterview(null)} /><div className="relative w-full max-w-2xl bg-zinc-900 border-4 sm:border-8 border-white p-5 sm:p-10 shadow-2xl rounded-t-3xl sm:rounded-[40px] font-black text-left overflow-y-auto max-h-[92vh] sm:max-h-[90vh]"><button onClick={() => setSelectedInterview(null)} className="absolute top-3 right-3 bg-red-600 text-white w-9 h-9 text-lg border-4 border-white rounded-full">X</button><span className="bg-red-600 text-white px-3 py-1 text-[10px] sm:text-xs uppercase italic rounded-full font-black">BANDA: {selectedInterview.band_name}</span><h3 className="text-2xl sm:text-3xl md:text-5xl font-franklin text-white uppercase mt-3 sm:mt-4 leading-none pr-10">{selectedInterview.title}</h3><p className="text-zinc-400 text-sm sm:text-lg uppercase italic mt-2">{selectedInterview.subtitle}</p>{selectedInterview.image_url && <img src={selectedInterview.image_url} className="w-full h-40 sm:h-64 object-cover object-center border-4 border-white rounded-2xl sm:rounded-3xl my-4 sm:my-6" />}<div className="flex flex-col sm:flex-row sm:justify-between gap-1 text-[10px] text-zinc-500 uppercase mb-4 sm:mb-6 font-black"><p>Nota: {selectedInterview.author}</p><p>Foto: {selectedInterview.photo_credit}</p></div><div className="text-white text-base sm:text-xl leading-relaxed whitespace-pre-wrap font-black">{selectedInterview.content}</div></div></div>
+        <div className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center p-0 sm:p-4"><div className="absolute inset-0 bg-black/95 backdrop-blur-md" onClick={() => setSelectedInterview(null)} /><div className="relative w-full max-w-2xl bg-zinc-900 border-4 sm:border-8 border-white p-5 sm:p-10 shadow-2xl rounded-t-3xl sm:rounded-[40px] font-black text-left overflow-y-auto max-h-[92vh] sm:max-h-[90vh]"><button onClick={() => setSelectedInterview(null)} className="absolute top-3 right-3 bg-red-600 text-white w-9 h-9 text-lg border-4 border-white rounded-full">X</button><span className="bg-red-600 text-white px-3 py-1 text-[10px] sm:text-xs uppercase italic rounded-full font-black">BANDA: {selectedInterview.band_name}</span><h3 className="text-2xl sm:text-3xl md:text-5xl font-franklin text-white uppercase mt-3 sm:mt-4 leading-none pr-10">{selectedInterview.title}</h3><p className="text-zinc-400 text-sm sm:text-lg uppercase italic mt-2">{selectedInterview.subtitle}</p>{selectedInterview.image_url && <img src={selectedInterview.image_url} loading="lazy" className="w-full h-40 sm:h-64 object-cover object-center border-4 border-white rounded-2xl sm:rounded-3xl my-4 sm:my-6" />}<div className="flex flex-col sm:flex-row sm:justify-between gap-1 text-[10px] text-zinc-500 uppercase mb-4 sm:mb-6 font-black"><p>Nota: {selectedInterview.author}</p><p>Foto: {selectedInterview.photo_credit}</p></div><div className="text-white text-base sm:text-xl leading-relaxed whitespace-pre-wrap font-black">{selectedInterview.content}</div></div></div>
       )}
       
       <style jsx global>{`
