@@ -30,6 +30,7 @@ export default function HomePageClient({
   const [genre, setGenre] = useState('');
   const [ageRating, setAgeRating] = useState('');
   const [priceType, setPriceType] = useState('');
+  const [visibleEventsCount, setVisibleEventsCount] = useState(12);
 
   useEffect(() => {
     if (featuredEvents.length > 1) {
@@ -62,6 +63,7 @@ export default function HomePageClient({
       else if (price === 'SOBRE') filtered = filtered.filter(e => e.price_type === 'sobre');
     }
     setEvents(filtered);
+    setVisibleEventsCount(12);
   }
 
   const nextHero = () => setCurrentHeroIndex((prev) => (prev + 1) % featuredEvents.length);
@@ -78,6 +80,7 @@ export default function HomePageClient({
   
   const priceMapping: Record<string, string> = { 'range': 'PAGO', 'free': 'LIBRE', 'gorra': 'GORRA', 'sobre': 'SOBRE' };
   const activePriceTypes = useMemo(() => Array.from(new Set(allEvents.map(e => priceMapping[e.price_type ?? ''] || (e.price_type ?? '')))).filter(Boolean).sort(), [allEvents]);
+  const visibleEvents = events.slice(0, visibleEventsCount);
 
   const formatDate = (dateStr: string) => {
     if (!dateStr) return '';
@@ -265,14 +268,14 @@ export default function HomePageClient({
                   {activePriceTypes.map(p => <option key={p} value={p}>{p}</option>)}
                 </select>
               </div>
-              <button onClick={() => {setDepartment(''); setGenre(''); setAgeRating(''); setPriceType(''); setEvents(allEvents);}} className="col-span-full text-[10px] underline hover:text-black font-black uppercase text-center font-black font-franklin">Limpiar Filtros</button>
+<button onClick={() => {setDepartment(''); setGenre(''); setAgeRating(''); setPriceType(''); setEvents(allEvents); setVisibleEventsCount(12);}} className="col-span-full text-[10px] underline hover:text-black font-black uppercase text-center font-black font-franklin">Limpiar Filtros</button>
             </section>
 
             <section className="grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-8 font-black">
-              {events.length === 0 ? (
+              {visibleEvents.length === 0 ? (
                 <div className="col-span-full text-center py-20 border-4 border-dashed border-zinc-700 text-zinc-500 font-black uppercase rounded-3xl font-black">No hay resultados...</div>
               ) : (
-                events.map((event) => (
+                visibleEvents.map((event) => (
                   <div key={event.id} onClick={() => setSelectedEvent(event)} className="border-4 border-white p-2 md:p-4 hover:translate-x-1 hover:-translate-y-1 transition-all bg-zinc-950 shadow-[6px_6px_0px_0px_rgba(220,38,38,0.5)] flex flex-row md:flex-col items-center md:items-stretch gap-3 md:gap-4 group/card relative overflow-hidden cursor-pointer rounded-[24px] md:rounded-[32px] h-36 md:h-auto font-black">
                     
                     {event.suggestion_tag && (
@@ -303,6 +306,22 @@ export default function HomePageClient({
                 ))
               )}
             </section>
+
+            {events.length > visibleEventsCount && (
+              <div className="pt-4 text-center">
+                <button
+                  onClick={() => setVisibleEventsCount((prev) => prev + 12)}
+                  className="inline-flex items-center justify-center w-full max-w-xs mx-auto bg-red-600 text-white uppercase text-xs font-black px-4 py-3 rounded-full border-2 border-white hover:bg-red-500 transition-colors"
+                >
+                  Cargar más ({events.length - visibleEventsCount})
+                </button>
+              </div>
+            )}
+            {events.length > 0 && events.length <= visibleEventsCount && (
+              <div className="pt-4 text-center text-red-500 text-xs uppercase tracking-widest font-black">
+                PROXIMAMENTE MÁS EVENTOS
+              </div>
+            )}
           </div>
 
           <aside className="lg:w-72 space-y-8 relative z-10 text-left uppercase font-black">
