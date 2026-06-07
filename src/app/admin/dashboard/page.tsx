@@ -62,9 +62,29 @@ export default function AdminDashboard() {
 
   async function handleFileUpload(file: File, folder: string) {
     setUploading(true);
-    const fileExt = file.name.split('.').pop();
-    const filePath = `${folder}/${Math.random()}.${fileExt}`;
-    const { error: uploadError } = await supabase.storage.from('hqt-assets').upload(filePath, file);
+    
+    // Comprimir imagen antes de subir
+    const compressedFile = await new Promise<Blob>((resolve) => {
+      const img = document.createElement('img');
+      const canvas = document.createElement('canvas');
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        img.onload = () => {
+          const MAX = 1200;
+          let w = img.width, h = img.height;
+          if (w > MAX) { h = Math.round(h * MAX / w); w = MAX; }
+          if (h > MAX) { w = Math.round(w * MAX / h); h = MAX; }
+          canvas.width = w; canvas.height = h;
+          canvas.getContext('2d')!.drawImage(img, 0, 0, w, h);
+          canvas.toBlob((blob) => resolve(blob!), 'image/jpeg', 0.75);
+        };
+        img.src = e.target!.result as string;
+      };
+      reader.readAsDataURL(file);
+    });
+
+    const filePath = `${folder}/${Math.random()}.jpg`;
+    const { error: uploadError } = await supabase.storage.from('hqt-assets').upload(filePath, compressedFile, { contentType: 'image/jpeg' });
     if (uploadError) { alert('Error: ' + uploadError.message); setUploading(false); return null; }
     const { data } = supabase.storage.from('hqt-assets').getPublicUrl(filePath);
     setUploading(false); return data.publicUrl;
