@@ -94,21 +94,22 @@ export default function InterviewsPage() {
           <div className="text-center py-20 font-black">
             <p className="text-3xl font-black uppercase italic text-zinc-600 tracking-tighter font-black">No hay entrevistas publicadas aún.</p>
           </div>
-        ) : (
+) : (
+          <>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-12 text-left font-black">
             {interviews.slice(0, visibleInterviewsCount).map((interview) => (
-              <Link 
-                href={`/interviews/${interview.id}`} 
+              <Link
+                href={`/interviews/${interview.id}`}
                 key={interview.id}
                 className="group border-4 border-white p-4 bg-zinc-950/80 hover:border-red-600 transition-all shadow-[8px_8px_0px_0px_rgba(220,38,38,0.3)] rounded-[32px] block font-black"
               >
                 <div className="aspect-video bg-zinc-800 mb-6 border-2 border-zinc-700 overflow-hidden rounded-2xl relative font-black">
                   {interview.image_url ? (
-                    <img 
-                      src={interview.image_url} 
-                      alt={interview.title} 
+                    <img
+                      src={interview.image_url}
+                      alt={interview.title}
                       className="absolute inset-0 w-full h-full object-cover object-center grayscale group-hover:grayscale-0 transition-all duration-500"
-                      style={{ objectPosition: 'center' }} 
+                      style={{ objectPosition: 'center' }}
                     />
                   ) : (
                     <div className="absolute inset-0 flex items-center justify-center text-zinc-500 font-black italic uppercase text-center">Sin Imagen</div>
@@ -144,9 +145,9 @@ export default function InterviewsPage() {
             <div className="w-full text-center pt-8 text-red-500 text-xs uppercase tracking-widest font-black">
               PROXIMAMENTE MÁS ENTREVISTAS
             </div>
-          )}
-        )}
-      </main>
+    )}
+          </>
+        </main>
     </div>
   );
 }
