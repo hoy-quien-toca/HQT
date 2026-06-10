@@ -145,10 +145,9 @@ export default function InterviewsPage() {
               PROXIMAMENTE MÁS ENTREVISTAS
             </div>
           )}
-        )}
-          </>
-        )}
-      </main>
-    </div>
-  );
+        </>
+      )}
+    </main>
+  </div>
+);
 }
