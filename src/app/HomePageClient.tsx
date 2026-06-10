@@ -253,11 +253,6 @@ export default function HomePageClient({
               </div>
             )}
 
-            {interviews.length > 0 && interviews.length <= visibleInterviewsCount && (
-              <div className="pt-4 text-center text-red-500 text-xs uppercase tracking-widest font-black">
-                PROXIMAMENTE MÁS ENTREVISTAS
-              </div>
-            )}
           </section>
         )}
 

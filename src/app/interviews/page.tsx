@@ -129,7 +129,6 @@ export default function InterviewsPage() {
               </Link>
             ))}
           </div>
-
           {interviews.length > visibleInterviewsCount && (
             <div className="w-full text-center pt-8">
               <button
@@ -145,7 +144,8 @@ export default function InterviewsPage() {
             <div className="w-full text-center pt-8 text-red-500 text-xs uppercase tracking-widest font-black">
               PROXIMAMENTE MÁS ENTREVISTAS
             </div>
-    )}
+          )}
+        )}
           </>
         )}
       </main>
