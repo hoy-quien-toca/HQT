@@ -147,7 +147,8 @@ export default function InterviewsPage() {
             </div>
     )}
           </>
-        </main>
+        )}
+      </main>
     </div>
   );
 }
