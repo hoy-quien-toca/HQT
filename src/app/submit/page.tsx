@@ -28,6 +28,20 @@ export default function SubmitEvent() {
   const [priceType, setPriceType] = useState('range');
   const [error, setError] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
+  const [eventDates, setEventDates] = useState([{ date: '', time: '21:00' }]);
+
+  const addDate = () => setEventDates([...eventDates, { date: '', time: '21:00' }]);
+  const removeDate = (index: number) => {
+    if (eventDates.length > 1) {
+      setEventDates(eventDates.filter((_, i) => i !== index));
+    }
+  };
+
+  const updateDate = (index: number, field: 'date' | 'time', value: string) => {
+    const newDates = [...eventDates];
+    newDates[index][field] = value;
+    setEventDates(newDates);
+  };
 
   async function handleFileUpload(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
@@ -56,15 +70,21 @@ export default function SubmitEvent() {
       setLoading(false);
       return;
     }
+
+    if (eventDates.some(d => !d.date || !d.time)) {
+      setError('Por favor completa todas las fechas y horarios.');
+      setLoading(false);
+      return;
+    }
+
     let ticketContact = formData.get('ticket_contact') as string;
     if (ticketType === 'whatsapp' && ticketContact && !ticketContact.startsWith('+')) {
       ticketContact = '+598' + ticketContact.replace(/\s/g, '');
     }
-    const data = {
+
+    const baseData = {
       band_name: formData.get('band_name'),
       description: formData.get('description'),
-      date: formData.get('date'),
-      time: formData.get('time'),
       venue: formData.get('venue'),
       address: formData.get('address'),
       department: formData.get('department'),
@@ -79,12 +99,21 @@ export default function SubmitEvent() {
       flyer_url: flyerUrl,
       is_approved: false,
     };
-    const { error } = await supabase.from('events').insert([data]);
+
+    const eventsToInsert = eventDates.map(d => ({
+      ...baseData,
+      date: d.date,
+      time: d.time
+    }));
+
+    const { error } = await supabase.from('events').insert(eventsToInsert);
     if (error) {
       setError('Error al enviar el evento: ' + error.message);
     } else {
       setSubmitted(true);
-      setMessage('Tu fecha quedó en la cola de aprobación.');
+      setMessage(eventDates.length > 1 
+        ? `Tus ${eventDates.length} fechas quedaron en la cola de aprobación.` 
+        : 'Tu fecha quedó en la cola de aprobación.');
     }
     setLoading(false);
   }
@@ -127,13 +156,14 @@ export default function SubmitEvent() {
           <div className="border-8 border-white p-8 md:p-12 bg-zinc-950 shadow-[12px_12px_0px_0px_rgba(220,38,38,0.5)] rounded-[40px] text-center flex flex-col items-center justify-center space-y-8 font-black">
             <div className="space-y-4">
               <h2 className="text-5xl md:text-7xl font-franklin uppercase text-red-600 leading-none font-black">¡Recibido!</h2>
-              <p className="text-lg md:text-xl font-bold uppercase tracking-widest italic font-black">Tu fecha está en la cola de aprobación.</p>
+              <p className="text-lg md:text-xl font-bold uppercase tracking-widest italic font-black">{message || 'Tu fecha quedó en la cola de aprobación.'}</p>
             </div>
             <div className="flex flex-col gap-4 w-full max-w-sm">
               <button 
                 onClick={() => {
                   setSubmitted(false);
                   setFlyerUrl('');
+                  setEventDates([{ date: '', time: '21:00' }]);
                 }}
                 className="bg-red-600 text-white px-8 py-4 rounded-full font-black uppercase hover:bg-white hover:text-black transition-all border-4 border-white shadow-lg"
               >
