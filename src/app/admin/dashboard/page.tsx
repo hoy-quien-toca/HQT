@@ -21,7 +21,8 @@ export default function AdminDashboard() {
   const [showMessagesSection, setShowMessagesSection] = useState(true);
   const [showSponsorsSection, setShowSponsorsSection] = useState(true);
   const [showInterviewsSection, setShowInterviewsSection] = useState(true);
-  const [displayedEventsCount, setDisplayedEventsCount] = useState(12);
+  const [showPastEvents, setShowPastEvents] = useState(false);
+  const [displayedEventsCount, setDisplayedEventsCount] = useState(6);
   
   const [editingEvent, setEditingEvent] = useState<any>(null);
   const [eventDates, setEventDates] = useState([{ date: '', time: '21:00' }]);
@@ -186,7 +187,7 @@ export default function AdminDashboard() {
   const today = new Date().toISOString().split('T')[0];
   const pendingEvents = events.filter((e) => !e.is_approved).slice(0, displayedEventsCount);
   const upcomingEvents = events.filter((e) => e.is_approved && e.date >= today).slice(0, displayedEventsCount);
-  const pastEvents = events.filter((e) => e.is_approved && e.date < today).slice(0, displayedEventsCount);
+  const pastEvents = events.filter((e) => e.is_approved && e.date < today);
   const totalPending = events.filter((e) => !e.is_approved).length;
   const totalUpcoming = events.filter((e) => e.is_approved && e.date >= today).length;
   const totalPast = events.filter((e) => e.is_approved && e.date < today).length;
@@ -212,37 +213,37 @@ export default function AdminDashboard() {
             src={ev.flyer_url || '/logo-rojo.jpg'}
             alt={ev.band_name}
             loading="lazy"
-            className="w-[6.65rem] h-[8.05rem] sm:w-28 sm:h-[8.4rem] object-cover border-2 border-white rounded-lg flex-shrink-0 self-start"
+            className="w-[5.5rem] h-[7rem] sm:w-28 sm:h-[8.4rem] object-cover border-2 border-white rounded-lg flex-shrink-0 self-start"
           />
-          <div className="min-w-0 flex-1 flex flex-col gap-1 min-h-[8.05rem] sm:min-h-[8.4rem]">
-            <div className="flex items-start justify-between gap-1 flex-shrink-0">
-              <h3 className="text-sm sm:text-base font-black uppercase leading-tight truncate flex-1 min-w-0 pr-1">{ev.band_name}</h3>
-              <div className="flex flex-shrink-0 gap-0.5 sm:gap-1">
-                <button type="button" onClick={() => setEditingEvent(ev)} className={`${adminBtn} bg-blue-600 border-white`}>EDITAR</button>
-                <button type="button" onClick={() => supabase.from('events').update({ is_approved: !ev.is_approved }).eq('id', ev.id).then(() => fetchData())} className={`${adminBtn} border-white ${ev.is_approved ? 'bg-zinc-800' : 'bg-green-600'}`}>{ev.is_approved ? 'BAJAR' : 'APROBAR'}</button>
-                <button type="button" onClick={() => deleteEvent(ev.id)} className={`${adminBtn} bg-red-600 border-white`}>BORRAR</button>
+          <div className="min-w-0 flex-1 flex flex-col gap-1.5">
+            <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-2">
+              <h3 className="text-sm sm:text-base font-black uppercase leading-tight truncate pr-1 text-white">{ev.band_name}</h3>
+              <div className="flex gap-1 flex-wrap">
+                <button type="button" onClick={() => setEditingEvent(ev)} className={`${adminBtn} bg-blue-600 border-white text-[8px] sm:text-[10px]`}>EDITAR</button>
+                <button type="button" onClick={() => supabase.from('events').update({ is_approved: !ev.is_approved }).eq('id', ev.id).then(() => fetchData())} className={`${adminBtn} border-white ${ev.is_approved ? 'bg-zinc-800' : 'bg-green-600'} text-[8px] sm:text-[10px]`}>{ev.is_approved ? 'BAJAR' : 'APROBAR'}</button>
+                <button type="button" onClick={() => deleteEvent(ev.id)} className={`${adminBtn} bg-red-600 border-white text-[8px] sm:text-[10px]`}>BORRAR</button>
               </div>
             </div>
-            <p className="text-[10px] sm:text-xs font-bold text-red-600 uppercase line-clamp-2 flex-shrink-0">
+            <p className="text-[10px] sm:text-xs font-bold text-red-600 uppercase">
               {ev.date} — {ev.time?.substring(0, 5)} hs · {ev.venue}
             </p>
-            <div className="flex flex-col gap-1 sm:gap-1.5 flex-1 justify-between min-h-0">
+            <div className="flex flex-col gap-1 sm:gap-1.5">
               <button
                 type="button"
                 onClick={() => toggleFeatured(ev.id, ev.is_featured)}
                 title="Carrusel destacado arriba en la portada"
-                className={`${adminBar} flex-1 ${ev.is_featured ? 'bg-red-600 border-white text-white' : 'bg-transparent border-red-600 text-red-600'}`}
+                className={`${adminBar} w-full ${ev.is_featured ? 'bg-red-600 border-white text-white' : 'bg-transparent border-red-600 text-red-600'}`}
               >
                 BANNER
               </button>
-              <div className="grid grid-cols-3 gap-1 sm:gap-1.5 flex-1">
-                <button type="button" onClick={() => updateEventTag(ev.id, 'PLANAZO', ev.suggestion_tag)} className={`${adminBar} h-full ${ev.suggestion_tag === 'PLANAZO' ? 'bg-yellow-400 text-black border-black' : 'border-yellow-400 text-yellow-400'}`}>PLANAZO</button>
-                <button type="button" onClick={() => updateEventTag(ev.id, 'NO FALLA', ev.suggestion_tag)} className={`${adminBar} h-full ${ev.suggestion_tag === 'NO FALLA' ? 'bg-white text-black border-black' : 'border-white text-white'}`}>NO FALLA</button>
-                <button type="button" onClick={() => updateEventTag(ev.id, 'SALIDA SEGURA', ev.suggestion_tag)} className={`${adminBar} h-full text-[8px] sm:text-[9px] ${ev.suggestion_tag === 'SALIDA SEGURA' ? 'bg-green-600 border-white text-white' : 'border-green-600 text-green-600'}`}>SALIDA SEGURA</button>
+              <div className="grid grid-cols-3 gap-1 sm:gap-1.5">
+                <button type="button" onClick={() => updateEventTag(ev.id, 'PLANAZO', ev.suggestion_tag)} className={`${adminBar} ${ev.suggestion_tag === 'PLANAZO' ? 'bg-yellow-400 text-black border-black' : 'border-yellow-400 text-yellow-400'}`}>PLANAZO</button>
+                <button type="button" onClick={() => updateEventTag(ev.id, 'NO FALLA', ev.suggestion_tag)} className={`${adminBar} ${ev.suggestion_tag === 'NO FALLA' ? 'bg-white text-black border-black' : 'border-white text-white'}`}>NO FALLA</button>
+                <button type="button" onClick={() => updateEventTag(ev.id, 'SALIDA SEGURA', ev.suggestion_tag)} className={`${adminBar} text-[7px] sm:text-[9px] ${ev.suggestion_tag === 'SALIDA SEGURA' ? 'bg-green-600 border-white text-white' : 'border-green-600 text-green-600'}`}>SALIDA SEGURA</button>
               </div>
-              <div className="grid grid-cols-2 gap-1 sm:gap-1.5 flex-1">
-                <button type="button" onClick={() => toggleSoldOut(ev.id, ev.is_sold_out)} className={`${adminBar} h-full ${ev.is_sold_out ? 'bg-red-600 border-white text-white' : 'border-red-600 text-red-600'}`}>AGOTADO</button>
-                <button type="button" onClick={() => toggleSuspended(ev.id, ev.is_suspended)} className={`${adminBar} h-full ${ev.is_suspended ? 'bg-orange-500 border-white text-black' : 'border-orange-500 text-orange-500'}`}>SUSPENDIDO</button>
+              <div className="grid grid-cols-2 gap-1 sm:gap-1.5">
+                <button type="button" onClick={() => toggleSoldOut(ev.id, ev.is_sold_out)} className={`${adminBar} ${ev.is_sold_out ? 'bg-red-600 border-white text-white' : 'border-red-600 text-red-600'}`}>AGOTADO</button>
+                <button type="button" onClick={() => toggleSuspended(ev.id, ev.is_suspended)} className={`${adminBar} ${ev.is_suspended ? 'bg-orange-500 border-white text-black' : 'border-orange-500 text-orange-500'}`}>SUSPENDIDO</button>
               </div>
             </div>
           </div>
@@ -404,7 +405,7 @@ export default function AdminDashboard() {
                   </p>
                 </div>
                 {pendingEvents.map(renderEventCard)}
-                {totalPending > displayedEventsCount && <button onClick={() => setDisplayedEventsCount(d => d + 12)} className="w-full py-2 bg-red-600/30 border-2 border-red-600 text-red-600 font-black uppercase text-xs rounded-lg hover:bg-red-600/50">Cargar más ({totalPending - displayedEventsCount})</button>}
+                {totalPending > displayedEventsCount && <button onClick={() => setDisplayedEventsCount(d => d + 6)} className="w-full py-2 bg-red-600/30 border-2 border-red-600 text-red-600 font-black uppercase text-xs rounded-lg hover:bg-red-600/50">Cargar más ({totalPending - displayedEventsCount})</button>}
               </div>
             )}
             
@@ -414,7 +415,7 @@ export default function AdminDashboard() {
                   Próximas fechas ({totalUpcoming})
                 </p>
                 {upcomingEvents.map(renderEventCard)}
-                {totalUpcoming > displayedEventsCount && <button onClick={() => setDisplayedEventsCount(d => d + 12)} className="w-full py-2 bg-zinc-800/50 border-2 border-zinc-700 text-zinc-400 font-black uppercase text-xs rounded-lg hover:bg-zinc-800">Cargar más ({totalUpcoming - displayedEventsCount})</button>}
+                {totalUpcoming > displayedEventsCount && <button onClick={() => setDisplayedEventsCount(d => d + 6)} className="w-full py-2 bg-zinc-800/50 border-2 border-zinc-700 text-zinc-400 font-black uppercase text-xs rounded-lg hover:bg-zinc-800">Cargar más ({totalUpcoming - displayedEventsCount})</button>}
               </div>
             )}
 
@@ -435,7 +436,7 @@ export default function AdminDashboard() {
 
                 {showPastEvents && (
                   <div className="opacity-60 grayscale space-y-4">
-                    {pastEvents.map(renderEventCard)}
+                    {pastEvents.slice(0, displayedEventsCount).map(renderEventCard)}
                     {totalPast > displayedEventsCount && (
                       <button 
                         onClick={() => setDisplayedEventsCount(d => d + 6)} 
@@ -448,7 +449,6 @@ export default function AdminDashboard() {
                 )}
               </div>
             )}
-
           </div>
           </>
             )}
