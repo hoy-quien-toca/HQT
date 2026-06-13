@@ -169,13 +169,50 @@ export default function SubmitEvent() {
                 <input required name="band_name" className="w-full bg-zinc-900 border-4 border-white p-4 rounded-3xl focus:border-red-600 outline-none shadow-inner font-black uppercase" />
               </div>
 
-              <div className="space-y-2 font-black">
-                <label className="text-xs text-red-600 font-black">Fecha</label>
-                <input required type="date" name="date" className="w-full bg-zinc-900 border-4 border-white p-4 rounded-3xl focus:border-red-600 outline-none font-black" />
-              </div>
-              <div className="space-y-2 font-black">
-                <label className="text-xs text-red-600 font-black">Hora</label>
-                <input required type="time" name="time" className="w-full bg-zinc-900 border-4 border-white p-4 rounded-3xl focus:border-red-600 outline-none font-black" />
+              <div className="md:col-span-2 space-y-2 font-black">
+                <label className="text-xs text-red-600 font-black uppercase">Fechas y Horarios</label>
+                <div className="space-y-4">
+                  {eventDates.map((d, index) => (
+                    <div key={index} className="flex gap-4 items-end animate-in fade-in slide-in-from-left-2">
+                      <div className="flex-1 space-y-2 font-black">
+                        <label className="text-[10px] text-zinc-500 font-black">Fecha {index + 1}</label>
+                        <input 
+                          required 
+                          type="date" 
+                          value={d.date}
+                          onChange={(e) => updateDate(index, 'date', e.target.value)}
+                          className="w-full bg-zinc-900 border-4 border-white p-4 rounded-3xl focus:border-red-600 outline-none font-black" 
+                        />
+                      </div>
+                      <div className="flex-1 space-y-2 font-black">
+                        <label className="text-[10px] text-zinc-500 font-black">Hora</label>
+                        <input 
+                          required 
+                          type="time" 
+                          value={d.time}
+                          onChange={(e) => updateDate(index, 'time', e.target.value)}
+                          className="w-full bg-zinc-900 border-4 border-white p-4 rounded-3xl focus:border-red-600 outline-none font-black" 
+                        />
+                      </div>
+                      {eventDates.length > 1 && (
+                        <button 
+                          type="button" 
+                          onClick={() => removeDate(index)}
+                          className="bg-zinc-800 text-red-600 w-12 h-12 flex items-center justify-center border-4 border-white rounded-2xl hover:bg-red-600 hover:text-white transition-colors font-black mb-1"
+                        >
+                          X
+                        </button>
+                      )}
+                    </div>
+                  ))}
+                  <button 
+                    type="button" 
+                    onClick={addDate}
+                    className="w-full py-3 border-4 border-dashed border-zinc-700 rounded-3xl text-zinc-500 hover:border-red-600 hover:text-red-600 transition-colors font-black uppercase text-xs"
+                  >
+                    + Agregar otra fecha
+                  </button>
+                </div>
               </div>
 
               <div className="md:col-span-2 space-y-2 font-black">

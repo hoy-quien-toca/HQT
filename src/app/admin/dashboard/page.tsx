@@ -24,7 +24,20 @@ export default function AdminDashboard() {
   const [displayedEventsCount, setDisplayedEventsCount] = useState(12);
   
   const [editingEvent, setEditingEvent] = useState<any>(null);
+  const [eventDates, setEventDates] = useState([{ date: '', time: '21:00' }]);
   const [newSponsor, setNewSponsor] = useState({ id: null, client_name: '', image_url: '', link: '', position: 'sidebar', display_order: 0 });
+
+  const addDate = () => setEventDates([...eventDates, { date: '', time: '21:00' }]);
+  const removeDate = (index: number) => {
+    if (eventDates.length > 1) {
+      setEventDates(eventDates.filter((_, i) => i !== index));
+    }
+  };
+  const updateDate = (index: number, field: 'date' | 'time', value: string) => {
+    const newDates = [...eventDates];
+    newDates[index][field] = value;
+    setEventDates(newDates);
+  };
   const [newInterview, setNewInterview] = useState<any>({ id: null, title: '', subtitle: '', band_name: '', content: '', image_url: '', is_active: true, author: '', photo_credit: '' });
   const [selectedMessage, setSelectedMessage] = useState<any>(null);
   const [selectedInterview, setSelectedInterview] = useState<any>(null);
@@ -124,7 +137,7 @@ export default function AdminDashboard() {
     const { id, created_at, ...data } = editingEvent;
     
     // Normalización de datos para filtros consistentes
-    const normalizedData = {
+    const baseNormalizedData = {
       ...data,
       band_name: data.band_name?.trim().toUpperCase(),
       venue: data.venue?.trim().toUpperCase(),
@@ -132,8 +145,19 @@ export default function AdminDashboard() {
       city: data.city?.trim().toUpperCase(),
     };
 
-    const res = id === 'new' ? await supabase.from('events').insert([normalizedData]) : await supabase.from('events').update(normalizedData).eq('id', id);
-    if (res.error) alert('Error: ' + res.error.message); else { setEditingEvent(null); fetchData(); }
+    if (id === 'new') {
+      if (eventDates.some(d => !d.date || !d.time)) return alert('Completa todas las fechas');
+      const eventsToInsert = eventDates.map(d => ({
+        ...baseNormalizedData,
+        date: d.date,
+        time: d.time
+      }));
+      const res = await supabase.from('events').insert(eventsToInsert);
+      if (res.error) alert('Error: ' + res.error.message); else { setEditingEvent(null); fetchData(); }
+    } else {
+      const res = await supabase.from('events').update(baseNormalizedData).eq('id', id);
+      if (res.error) alert('Error: ' + res.error.message); else { setEditingEvent(null); fetchData(); }
+    }
   }
 
   async function handleSaveSponsor(e: React.FormEvent) {
@@ -303,7 +327,7 @@ export default function AdminDashboard() {
               <h2 className="text-xl sm:text-2xl uppercase italic text-red-600 font-franklin">Fechas</h2>
               <button type="button" onClick={() => setShowEventsSection((prev) => !prev)} className={`${adminBtn} bg-zinc-800 border-white`}>{showEventsSection ? 'Ocultar' : 'Mostrar'}</button>
             </div>
-            <button onClick={() => setEditingEvent({ id: 'new', band_name: '', venue: '', address: '', city: '', department: 'MONTEVIDEO', date: '', time: '21:00', age_rating: 'ATP', description: '', is_approved: false, price_type: 'range', genre: 'ROCK', flyer_url: '', price_min: null, price_max: null, ticket_type: 'link', ticket_contact: '' })} className="w-full sm:w-auto bg-red-600 text-white px-4 sm:px-6 py-2 text-[10px] font-black uppercase rounded-full border-2 border-white">+ NUEVA FECHA</button>
+            <button onClick={() => { setEventDates([{ date: '', time: '21:00' }]); setEditingEvent({ id: 'new', band_name: '', venue: '', address: '', city: '', department: 'MONTEVIDEO', date: '', time: '21:00', age_rating: 'ATP', description: '', is_approved: false, price_type: 'range', genre: 'ROCK', flyer_url: '', price_min: null, price_max: null, ticket_type: 'link', ticket_contact: '' }); }} className="w-full sm:w-auto bg-red-600 text-white px-4 sm:px-6 py-2 text-[10px] font-black uppercase rounded-full border-2 border-white">+ NUEVA FECHA</button>
           </div>
           
           {showEventsSection && (
@@ -317,8 +341,28 @@ export default function AdminDashboard() {
                 <input required value={editingEvent.city || ''} onChange={e => setEditingEvent({...editingEvent, city: e.target.value})} className="bg-black border-2 border-white p-2 uppercase rounded-lg" placeholder="Ciudad" />
                 <select value={editingEvent.department} onChange={e => setEditingEvent({...editingEvent, department: e.target.value})} className="bg-black border-2 border-white p-2 rounded-lg">{DEPARTAMENTOS.map(d => <option key={d} value={d}>{d}</option>)}</select>
                 <select value={editingEvent.genre} onChange={e => setEditingEvent({...editingEvent, genre: e.target.value})} className="bg-black border-2 border-white p-2 rounded-lg">{GENEROS.map(g => <option key={g} value={g}>{g}</option>)}</select>
-                <input required type="date" value={editingEvent.date} onChange={e => setEditingEvent({...editingEvent, date: e.target.value})} className="bg-black border-2 border-white p-2 rounded-lg" />
-                <input required type="time" value={editingEvent.time} onChange={e => setEditingEvent({...editingEvent, time: e.target.value})} className="bg-black border-2 border-white p-2 rounded-lg" />
+                
+                {editingEvent.id === 'new' ? (
+                  <div className="col-span-2 space-y-3 bg-zinc-900/50 p-3 rounded-xl border-2 border-dashed border-zinc-700">
+                    <p className="text-[10px] text-zinc-500 uppercase font-black">Fechas y Horarios</p>
+                    {eventDates.map((d, index) => (
+                      <div key={index} className="flex gap-2 items-center">
+                        <input required type="date" value={d.date} onChange={e => updateDate(index, 'date', e.target.value)} className="flex-1 bg-black border-2 border-white p-2 rounded-lg" />
+                        <input required type="time" value={d.time} onChange={e => updateDate(index, 'time', e.target.value)} className="w-24 bg-black border-2 border-white p-2 rounded-lg" />
+                        {eventDates.length > 1 && (
+                          <button type="button" onClick={() => removeDate(index)} className="bg-red-600 text-white w-8 h-8 rounded-lg font-black border border-white">X</button>
+                        )}
+                      </div>
+                    ))}
+                    <button type="button" onClick={addDate} className="w-full py-2 bg-zinc-800 text-zinc-400 text-[10px] uppercase font-black rounded-lg border border-zinc-700 hover:text-white transition-colors">+ Agregar fecha</button>
+                  </div>
+                ) : (
+                  <>
+                    <input required type="date" value={editingEvent.date} onChange={e => setEditingEvent({...editingEvent, date: e.target.value})} className="bg-black border-2 border-white p-2 rounded-lg" />
+                    <input required type="time" value={editingEvent.time} onChange={e => setEditingEvent({...editingEvent, time: e.target.value})} className="bg-black border-2 border-white p-2 rounded-lg" />
+                  </>
+                )}
+
                 <select value={editingEvent.age_rating} onChange={e => setEditingEvent({...editingEvent, age_rating: e.target.value})} className="bg-black border-2 border-white p-2 rounded-lg uppercase"><option value="ATP">ATP</option><option value="+12">+12</option><option value="+18">+18</option></select>
                 <select value={editingEvent.price_type} onChange={e => setEditingEvent({...editingEvent, price_type: e.target.value})} className="bg-black border-2 border-white p-2 rounded-lg uppercase"><option value="range">PAGO</option><option value="free">LIBRE</option></select>
                 <div className="grid grid-cols-2 gap-2 col-span-2">
@@ -376,15 +420,35 @@ export default function AdminDashboard() {
 
             {totalPast > 0 && (
               <div className="flex flex-col gap-5 mt-4">
-                <p className="text-[10px] font-black uppercase tracking-widest text-zinc-500 border-b border-zinc-800 pb-2">
-                  Fechas pasadas ({totalPast}) - No visibles en la web
-                </p>
-                <div className="opacity-60 grayscale">
-                  {pastEvents.map(renderEventCard)}
-                  {totalPast > displayedEventsCount && <button onClick={() => setDisplayedEventsCount(d => d + 12)} className="w-full py-2 bg-zinc-800/30 border-2 border-zinc-700 text-zinc-500 font-black uppercase text-xs rounded-lg hover:bg-zinc-800/50">Cargar más ({totalPast - displayedEventsCount})</button>}
+                <div className="flex justify-between items-center border-b border-zinc-800 pb-2">
+                  <p className="text-[10px] font-black uppercase tracking-widest text-zinc-500">
+                    Fechas pasadas ({totalPast})
+                  </p>
+                  <button 
+                    type="button" 
+                    onClick={() => setShowPastEvents(!showPastEvents)}
+                    className="text-[8px] bg-zinc-800 border border-white px-2 py-0.5 rounded-full uppercase"
+                  >
+                    {showPastEvents ? 'Ocultar' : 'Ver'}
+                  </button>
                 </div>
+
+                {showPastEvents && (
+                  <div className="opacity-60 grayscale space-y-4">
+                    {pastEvents.map(renderEventCard)}
+                    {totalPast > displayedEventsCount && (
+                      <button 
+                        onClick={() => setDisplayedEventsCount(d => d + 6)} 
+                        className="w-full py-2 bg-zinc-800/30 border-2 border-zinc-700 text-zinc-500 font-black uppercase text-xs rounded-lg hover:bg-zinc-800/50"
+                      >
+                        Cargar más ({totalPast - displayedEventsCount})
+                      </button>
+                    )}
+                  </div>
+                )}
               </div>
             )}
+
           </div>
           </>
             )}
