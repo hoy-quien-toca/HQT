@@ -10,6 +10,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Configuración faltante' }, { status: 500 });
     }
 
+    console.log('Intentando enviar mail para:', bandName);
     const res = await fetch('https://api.resend.com/emails', {
       method: 'POST',
       headers: {
@@ -17,7 +18,7 @@ export async function POST(request: Request) {
         'Authorization': `Bearer ${apiKey}`,
       },
       body: JSON.stringify({
-        from: 'HQT Notificaciones <onboarding@resend.dev>',
+        from: 'HQT <onboarding@resend.dev>',
         to: ['ernestopraxis@gmail.com'], 
         subject: `🔔 Nueva fecha: ${bandName}`,
         html: `
@@ -35,6 +36,7 @@ export async function POST(request: Request) {
     });
 
     const data = await res.json();
+    console.log('Respuesta de Resend:', data);
     
     if (!res.ok) {
       console.error('Error de Resend:', data);
