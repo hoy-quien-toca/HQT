@@ -110,9 +110,27 @@ export default function SubmitEvent() {
     if (error) {
       setError('Error al enviar el evento: ' + error.message);
     } else {
+      // Enviar notificación al admin
+      console.log('Evento insertado, enviando notificación...');
+      try {
+        const notifyRes = await fetch('/api/notifications', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            bandName: baseData.band_name,
+            dateCount: eventDates.length,
+            location: baseData.venue
+          })
+        });
+        const notifyData = await notifyRes.json();
+        console.log('Resultado notificación:', notifyData);
+      } catch (err) {
+        console.error('Error enviando notificación:', err);
+      }
+
       setSubmitted(true);
-      setMessage(eventDates.length > 1 
-        ? `Tus ${eventDates.length} fechas quedaron en la cola de aprobación.` 
+      setMessage(eventDates.length > 1
+        ? `Tus ${eventDates.length} fechas quedaron en la cola de aprobación.`
         : 'Tu fecha quedó en la cola de aprobación.');
     }
     setLoading(false);
