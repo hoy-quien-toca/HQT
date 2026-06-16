@@ -18,7 +18,7 @@ export async function POST(request: Request) {
       },
       body: JSON.stringify({
         from: 'HQT Notificaciones <onboarding@resend.dev>',
-        to: ['eventos@hoyquientoca.com'], 
+        to: ['ernestopraxis@gmail.com'], 
         subject: `🔔 Nueva fecha: ${bandName}`,
         html: `
           <div style="font-family: sans-serif; padding: 20px; border: 4px solid #dc2626; border-radius: 20px;">
@@ -35,8 +35,15 @@ export async function POST(request: Request) {
     });
 
     const data = await res.json();
+    
+    if (!res.ok) {
+      console.error('Error de Resend:', data);
+      return NextResponse.json({ error: 'Error en Resend', details: data }, { status: res.status });
+    }
+
     return NextResponse.json(data);
-  } catch (error) {
-    return NextResponse.json({ error: 'Error enviando mail' }, { status: 500 });
+  } catch (error: any) {
+    console.error('Error enviando mail:', error);
+    return NextResponse.json({ error: 'Error enviando mail', details: error.message }, { status: 500 });
   }
 }
