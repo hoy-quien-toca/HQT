@@ -38,6 +38,59 @@ export default function AdminDashboard() {
   const [editingEvent, setEditingEvent] = useState<any>(null);
   const [eventDates, setEventDates] = useState([{ date: '', time: '21:00' }]);
   const [newSponsor, setNewSponsor] = useState({ id: null, client_name: '', image_url: '', link: '', position: 'sidebar', display_order: 0 });
+  
+  const [venues, setVenues] = useState<Array<{ venue: string, address: string, department: string, city: string }>>([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+
+  useEffect(() => {
+    async function fetchVenues() {
+      try {
+        const { data } = await supabase
+          .from('events')
+          .select('venue, address, department, city')
+          .eq('is_approved', true)
+          .order('created_at', { ascending: false });
+        
+        if (data) {
+          const uniqueVenues: Array<{ venue: string, address: string, department: string, city: string }> = [];
+          const seen = new Set<string>();
+          for (const item of data) {
+            if (item.venue) {
+              const normalized = item.venue.trim().toLowerCase();
+              if (!seen.has(normalized)) {
+                seen.add(normalized);
+                uniqueVenues.push({
+                  venue: item.venue.trim(),
+                  address: item.address?.trim() || '',
+                  department: item.department?.trim() || 'MONTEVIDEO',
+                  city: item.city?.trim() || ''
+                });
+              }
+            }
+          }
+          setVenues(uniqueVenues);
+        }
+      } catch (err) {
+        console.error('Error fetching venues:', err);
+      }
+    }
+    fetchVenues();
+  }, []);
+
+  const handleVenueBlur = () => {
+    setTimeout(() => {
+      setShowSuggestions(false);
+      const exactMatch = venues.find(v => v.venue.trim().toLowerCase() === editingEvent.venue.trim().toLowerCase());
+      if (exactMatch && editingEvent) {
+        setEditingEvent({
+          ...editingEvent,
+          address: exactMatch.address,
+          department: exactMatch.department || 'MONTEVIDEO',
+          city: exactMatch.city
+        });
+      }
+    }, 200);
+  };
 
   const addDate = () => setEventDates([...eventDates, { date: '', time: '21:00' }]);
   const removeDate = (index: number) => {
@@ -349,7 +402,39 @@ export default function AdminDashboard() {
             <div className="border-4 border-blue-600 p-4 bg-zinc-950 space-y-4 rounded-3xl font-black">
               <form onSubmit={handleSaveEvent} className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs text-white">
                 <input required value={editingEvent.band_name} onChange={e => setEditingEvent({...editingEvent, band_name: e.target.value})} className="sm:col-span-2 bg-black border-2 border-white p-2 uppercase font-bold rounded-lg" placeholder="Banda" />
-                <input required value={editingEvent.venue || ''} onChange={e => setEditingEvent({...editingEvent, venue: e.target.value})} className="bg-black border-2 border-white p-2 uppercase rounded-lg" placeholder="Lugar" />
+                <div className="relative">
+                  <input 
+                    required 
+                    value={editingEvent.venue || ''} 
+                    onChange={e => {
+                      setEditingEvent({...editingEvent, venue: e.target.value});
+                      setShowSuggestions(true);
+                    }}
+                    onBlur={handleVenueBlur}
+                    className="w-full bg-black border-2 border-white p-2 uppercase rounded-lg" 
+                    placeholder="Lugar" 
+                    autoComplete="off"
+                  />
+                  {showSuggestions && editingEvent.venue?.trim().length > 0 && venues.filter(v => v.venue.toLowerCase().includes(editingEvent.venue.toLowerCase())).slice(0, 5).map((v) => (
+                    <button
+                      key={v.venue}
+                      type="button"
+                      onMouseDown={() => {
+                        setEditingEvent({
+                          ...editingEvent,
+                          venue: v.venue,
+                          address: v.address,
+                          department: v.department || 'MONTEVIDEO',
+                          city: v.city
+                        });
+                        setShowSuggestions(false);
+                      }}
+                      className="absolute z-50 left-0 right-0 mt-1 bg-zinc-950 border-2 border-white p-2 text-left hover:bg-red-600 hover:text-white uppercase font-black text-[10px]"
+                    >
+                      {v.venue} <span className="text-zinc-400">({v.address})</span>
+                    </button>
+                  ))}
+                </div>
                 <input required value={editingEvent.address || ''} onChange={e => setEditingEvent({...editingEvent, address: e.target.value})} className="bg-black border-2 border-white p-2 uppercase rounded-lg" placeholder="Dirección" />
                 <input required value={editingEvent.city || ''} onChange={e => setEditingEvent({...editingEvent, city: e.target.value})} className="bg-black border-2 border-white p-2 uppercase rounded-lg" placeholder="Ciudad" />
                 <select value={editingEvent.department} onChange={e => setEditingEvent({...editingEvent, department: e.target.value})} className="bg-black border-2 border-white p-2 rounded-lg">{DEPARTAMENTOS.map(d => <option key={d} value={d}>{d}</option>)}</select>
