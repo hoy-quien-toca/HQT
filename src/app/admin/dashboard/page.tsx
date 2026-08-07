@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabase';
 import { useRouter } from 'next/navigation';
+import { getEventImageUrl } from '@/lib/imageOptimization';
 
 const DEPARTAMENTOS = [
   "MONTEVIDEO", "CANELONES", "MALDONADO", "COLONIA", "SAN JOSE", 
