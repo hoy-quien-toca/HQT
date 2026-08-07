@@ -1,22 +1,22 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
 import Image from 'next/image';
 import Link from 'next/link';
 
 const DEPARTAMENTOS = [
   "MONTEVIDEO", "CANELONES", "MALDONADO", "COLONIA", "SAN JOSE", 
-  "FLORIDA", "LAVALLEJA", "ROCHA", "TREINTA Y TRES", "CERRO LARGO", 
+  "FLORIDA", "FLORES", "LAVALLEJA", "ROCHA", "TREINTA Y TRES", "CERRO LARGO", 
   "RIVERA", "TACUAREMBÓ", "DURAZNO", "SORIANO", "RIO NEGRO", 
   "PAYSANDU", "SALTO", "ARTIGAS", "ARGENTINA"
 ];
 
 const GENEROS = [
   "ACUSTICO", "ALTERNATIVO", "BLUES", "CANDOMBE", "COVERS", "CUMBIA", 
-  "ELECTRONICA", "FIESTA", "FOLKLORE", "HIP-HOP/RAP", "JAZZ", "METAL", 
-  "MILONGA", "MURGA", "OTROS", "PLENA", "POP", "PUNK ROCK", "REGGAETON", 
-  "REGGUE", "ROCK", "SKA", "TANGO", "TRAP", "TROPICAL", "UNDER"
+  "ELECTRONICA", "FIESTA", "FOLKLORE", "FUSION", "HIP-HOP/RAP", "INDIE", "JAZZ", "METAL", 
+  "MILONGA", "MURGA", "OTROS", "PLENA", "POP", "POP ROCK", "PUNK ROCK", "REGGAETON", 
+  "REGGUE", "ROCK", "ROCK ALTERNATIVO", "RUMBA", "SALSA", "SAMBA", "SINFONICO", "SKA", "TANGO", "TRAP", "TROPICAL", "UNDER"
 ];
 
 export default function SubmitEvent() {
@@ -29,6 +29,67 @@ export default function SubmitEvent() {
   const [error, setError] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
   const [eventDates, setEventDates] = useState([{ date: '', time: '21:00' }]);
+
+  // Auto-complete venue states
+  const [venue, setVenue] = useState('');
+  const [address, setAddress] = useState('');
+  const [department, setDepartment] = useState('MONTEVIDEO');
+  const [city, setCity] = useState('');
+  const [venues, setVenues] = useState<Array<{ venue: string, address: string, department: string, city: string }>>([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+
+  useEffect(() => {
+    async function fetchVenues() {
+      try {
+        const { data, error } = await supabase
+          .from('events')
+          .select('venue, address, department, city')
+          .eq('is_approved', true)
+          .order('created_at', { ascending: false });
+        
+        if (data) {
+          const uniqueVenues: Array<{ venue: string, address: string, department: string, city: string }> = [];
+          const seen = new Set<string>();
+          for (const item of data) {
+            if (item.venue) {
+              const normalized = item.venue.trim().toLowerCase();
+              if (!seen.has(normalized)) {
+                seen.add(normalized);
+                uniqueVenues.push({
+                  venue: item.venue.trim(),
+                  address: item.address?.trim() || '',
+                  department: item.department?.trim() || 'MONTEVIDEO',
+                  city: item.city?.trim() || ''
+                });
+              }
+            }
+          }
+          setVenues(uniqueVenues);
+        }
+      } catch (err) {
+        console.error('Error fetching venues:', err);
+      }
+    }
+    fetchVenues();
+  }, []);
+
+  const filteredVenues = venue.trim().length > 0
+    ? venues.filter(v => v.venue.toLowerCase().includes(venue.toLowerCase())).slice(0, 5)
+    : [];
+
+  const handleVenueBlur = () => {
+    // Delay hiding to allow clicking suggestions
+    setTimeout(() => {
+      setShowSuggestions(false);
+      // Auto-fill if exact match exists
+      const exactMatch = venues.find(v => v.venue.trim().toLowerCase() === venue.trim().toLowerCase());
+      if (exactMatch) {
+        setAddress(exactMatch.address);
+        setDepartment(exactMatch.department || 'MONTEVIDEO');
+        setCity(exactMatch.city);
+      }
+    }, 200);
+  };
 
   const addDate = () => setEventDates([...eventDates, { date: '', time: '21:00' }]);
   const removeDate = (index: number) => {
@@ -182,6 +243,10 @@ export default function SubmitEvent() {
                   setSubmitted(false);
                   setFlyerUrl('');
                   setEventDates([{ date: '', time: '21:00' }]);
+                  setVenue('');
+                  setAddress('');
+                  setDepartment('MONTEVIDEO');
+                  setCity('');
                 }}
                 className="bg-red-600 text-white px-8 py-4 rounded-full font-black uppercase hover:bg-white hover:text-black transition-all border-4 border-white shadow-lg"
               >
@@ -268,24 +333,75 @@ export default function SubmitEvent() {
                 <textarea name="description" rows={3} className="w-full bg-zinc-900 border-4 border-white p-4 rounded-[32px] focus:border-red-600 outline-none font-black uppercase" />
               </div>
 
-              <div className="space-y-2 font-black">
+              <div className="space-y-2 font-black relative">
                 <label className="text-xs text-red-600 font-black">Lugar / Local</label>
-                <input required name="venue" className="w-full bg-zinc-900 border-4 border-white p-4 rounded-3xl focus:border-red-600 outline-none shadow-inner font-black uppercase" placeholder="Ej: Inmigrantes" />
+                <input 
+                  required 
+                  name="venue" 
+                  value={venue}
+                  onChange={(e) => {
+                    setVenue(e.target.value);
+                    setShowSuggestions(true);
+                  }}
+                  onBlur={handleVenueBlur}
+                  className="w-full bg-zinc-900 border-4 border-white p-4 rounded-3xl focus:border-red-600 outline-none shadow-inner font-black uppercase" 
+                  placeholder="Ej: Inmigrantes" 
+                  autoComplete="off"
+                />
+                {showSuggestions && filteredVenues.length > 0 && (
+                  <div className="absolute z-50 left-0 right-0 mt-2 bg-zinc-950 border-4 border-white rounded-3xl max-h-64 overflow-y-auto shadow-[0_10px_30px_rgba(0,0,0,0.8)]">
+                    {filteredVenues.map((v) => (
+                      <button
+                        key={v.venue}
+                        type="button"
+                        onMouseDown={() => {
+                          setVenue(v.venue);
+                          setAddress(v.address);
+                          setDepartment(v.department || 'MONTEVIDEO');
+                          setCity(v.city);
+                          setShowSuggestions(false);
+                        }}
+                        className="w-full text-left px-5 py-4 hover:bg-red-600 hover:text-white border-b-2 border-zinc-800 last:border-b-0 transition-colors uppercase font-black text-xs block"
+                      >
+                        <div className="font-black text-sm tracking-tight text-red-600 hover-text-inherit">{v.venue}</div>
+                        <div className="text-[10px] text-zinc-400 font-bold mt-1">{v.address} — {v.city}</div>
+                      </button>
+                    ))}
+                  </div>
+                )}
               </div>
               <div className="space-y-2 font-black">
                 <label className="text-xs text-red-600 font-black">Dirección del evento</label>
-                <input required name="address" className="w-full bg-zinc-900 border-4 border-white p-4 rounded-3xl focus:border-red-600 outline-none shadow-inner font-black uppercase" placeholder="Ej: Paullier 1234" />
+                <input 
+                  required 
+                  name="address" 
+                  value={address}
+                  onChange={(e) => setAddress(e.target.value)}
+                  className="w-full bg-zinc-900 border-4 border-white p-4 rounded-3xl focus:border-red-600 outline-none shadow-inner font-black uppercase" 
+                  placeholder="Ej: Paullier 1234" 
+                />
               </div>
 
               <div className="space-y-2 font-black">
                 <label className="text-xs text-red-600 font-black">Departamento</label>
-                <select name="department" className="w-full bg-zinc-900 border-4 border-white p-4 rounded-3xl focus:border-red-600 outline-none uppercase font-black">
+                <select 
+                  name="department" 
+                  value={department}
+                  onChange={(e) => setDepartment(e.target.value)}
+                  className="w-full bg-zinc-900 border-4 border-white p-4 rounded-3xl focus:border-red-600 outline-none uppercase font-black"
+                >
                   {DEPARTAMENTOS.map(d => <option key={d} value={d}>{d}</option>)}
                 </select>
               </div>
               <div className="space-y-2 font-black">
                 <label className="text-xs text-red-600 font-black">Ciudad</label>
-                <input required name="city" className="w-full bg-zinc-900 border-4 border-white p-4 rounded-3xl focus:border-red-600 outline-none shadow-inner font-black uppercase" />
+                <input 
+                  required 
+                  name="city" 
+                  value={city}
+                  onChange={(e) => setCity(e.target.value)}
+                  className="w-full bg-zinc-900 border-4 border-white p-4 rounded-3xl focus:border-red-600 outline-none shadow-inner font-black uppercase" 
+                />
               </div>
 
               <div className="space-y-2 font-black">

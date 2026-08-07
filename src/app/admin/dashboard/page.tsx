@@ -4,8 +4,18 @@ import { useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabase';
 import { useRouter } from 'next/navigation';
 
-const DEPARTAMENTOS = ["MONTEVIDEO", "CANELONES", "MALDONADO", "COLONIA", "SAN JOSE", "FLORIDA", "LAVALLEJA", "ROCHA", "TREINTA Y TRES", "CERRO LARGO", "RIVERA", "TACUAREMBÓ", "DURAZNO", "SORIANO", "RIO NEGRO", "PAYSANDU", "SALTO", "ARTIGAS", "ARGENTINA"];
-const GENEROS = ["ACUSTICO", "ALTERNATIVO", "BLUES", "CANDOMBE", "COVERS", "CUMBIA", "ELECTRONICA", "FIESTA", "FOLKLORE", "HIP-HOP/RAP", "JAZZ", "METAL", "MILONGA", "MURGA", "OTROS", "PLENA", "POP", "PUNK ROCK", "REGGAETON", "REGGUE", "ROCK", "SKA", "TANGO", "TRAP", "TROPICAL", "UNDER"];
+const DEPARTAMENTOS = [
+  "MONTEVIDEO", "CANELONES", "MALDONADO", "COLONIA", "SAN JOSE", 
+  "FLORIDA", "FLORES", "LAVALLEJA", "ROCHA", "TREINTA Y TRES", "CERRO LARGO", 
+  "RIVERA", "TACUAREMBÓ", "DURAZNO", "SORIANO", "RIO NEGRO", 
+  "PAYSANDU", "SALTO", "ARTIGAS", "ARGENTINA"
+];
+const GENEROS = [
+  "ACUSTICO", "ALTERNATIVO", "BLUES", "CANDOMBE", "COVERS", "CUMBIA", 
+  "ELECTRONICA", "FIESTA", "FOLKLORE", "FUSION", "HIP-HOP/RAP", "INDIE", "JAZZ", "METAL", 
+  "MILONGA", "MURGA", "OTROS", "PLENA", "POP", "POP ROCK", "PUNK ROCK", "REGGAETON", 
+  "REGGUE", "ROCK", "ROCK ALTERNATIVO", "RUMBA", "SALSA", "SAMBA", "SINFONICO", "SKA", "TANGO", "TRAP", "TROPICAL", "UNDER"
+];
 
 const adminBtn = 'text-[9px] sm:text-[10px] px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-full border font-black whitespace-nowrap';
 const adminBar = 'w-full py-1 sm:py-1.5 px-1.5 text-[9px] sm:text-[10px] font-black uppercase tracking-wide border-2 rounded-md transition-colors leading-tight min-h-[1.35rem] sm:min-h-[1.6rem] flex items-center justify-center';
@@ -210,11 +220,12 @@ export default function AdminDashboard() {
         )}
         <div className="flex gap-2 sm:gap-3">
           <img
-            src={ev.flyer_url || '/logo-rojo.jpg'}
+            src={getEventImageUrl(ev.flyer_url)}
             alt={ev.band_name}
             loading="lazy"
             className="w-[5.5rem] h-[7rem] sm:w-28 sm:h-[8.4rem] object-cover border-2 border-white rounded-lg flex-shrink-0 self-start"
           />
+
           <div className="min-w-0 flex-1 flex flex-col gap-1.5">
             <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-2">
               <h3 className="text-sm sm:text-base font-black uppercase leading-tight truncate pr-1 text-white">{ev.band_name}</h3>
