@@ -35,6 +35,11 @@ export default function AdminDashboard() {
   const [showPastEvents, setShowPastEvents] = useState(false);
   const [displayedEventsCount, setDisplayedEventsCount] = useState(6);
   
+  // Search and Filter States
+  const [searchTerm, setSearchTerm] = useState('');
+  const [filterDate, setFilterDate] = useState('');
+  const [filterStatus, setFilterStatus] = useState<'all' | 'pending' | 'upcoming' | 'past'>('all');
+  
   const [editingEvent, setEditingEvent] = useState<any>(null);
   const [eventDates, setEventDates] = useState([{ date: '', time: '21:00' }]);
   const [newSponsor, setNewSponsor] = useState({ id: null, client_name: '', image_url: '', link: '', position: 'sidebar', display_order: 0 });
@@ -248,16 +253,116 @@ export default function AdminDashboard() {
 
   if (loading) return <div className="min-h-screen bg-black text-red-600 flex items-center justify-center font-black text-2xl uppercase italic">Cargando Admin...</div>;
 
+  // SYSTEM FOR CONFLICT / DUPLICATE DETECTION
+  const getEventConflicts = (currentEvent: any) => {
+    if (!currentEvent || !currentEvent.date) return [];
+    
+    const conflicts: string[] = [];
+    const currentId = currentEvent.id;
+    const currentBand = currentEvent.band_name?.trim().toUpperCase();
+    const currentVenue = currentEvent.venue?.trim().toUpperCase();
+    const currentDate = currentEvent.date;
+    const currentTime = currentEvent.time?.substring(0, 5); // HH:MM
+
+    events.forEach((other) => {
+      // Skip comparing with itself
+      if (other.id === currentId) return;
+
+      const otherBand = other.band_name?.trim().toUpperCase();
+      const otherVenue = other.venue?.trim().toUpperCase();
+      const otherDate = other.date;
+      const otherTime = other.time?.substring(0, 5);
+
+      if (otherDate === currentDate) {
+        // 1. Same Date, Same Band, Same Venue
+        if (otherBand && currentBand && otherBand === currentBand && otherVenue && currentVenue && otherVenue === currentVenue) {
+          conflicts.push(
+            `🚨 DUPLICADO EXACTO: Show de "${other.band_name}" agendado en "${other.venue}" para este día (${other.is_approved ? 'Aprobado' : 'Pendiente'}).`
+          );
+        }
+        // 2. Same Date, Same Band, Different Venue
+        else if (otherBand && currentBand && otherBand === currentBand) {
+          conflicts.push(
+            `⚠️ CONFLICTO BANDA: "${other.band_name}" ya tiene un show para este mismo día en "${other.venue}" (${other.is_approved ? 'Aprobado' : 'Pendiente'}).`
+          );
+        }
+        // 3. Same Date, Different Band, Same Venue
+        else if (otherVenue && currentVenue && otherVenue === currentVenue) {
+          if (otherTime === currentTime) {
+            conflicts.push(
+              `⚠️ CONFLICTO HORARIO/LUGAR: Ya hay un show de "${other.band_name}" en este lugar a la misma hora (${otherTime} hs - ${other.is_approved ? 'Aprobado' : 'Pendiente'}).`
+            );
+          } else {
+            conflicts.push(
+              `ℹ️ EVENTO EN MISMO LUGAR: "${other.band_name}" toca acá este día a las ${otherTime} hs (${other.is_approved ? 'Aprobado' : 'Pendiente'}).`
+            );
+          }
+        }
+      } else {
+        // 4. Same Band, Date within a 3-day range (warning/informational)
+        if (otherBand && currentBand && otherBand === currentBand) {
+          try {
+            const timeDiff = Math.abs(new Date(currentDate).getTime() - new Date(otherDate).getTime());
+            if (timeDiff <= 3 * 24 * 60 * 60 * 1000) {
+              conflicts.push(
+                `ℹ️ FECHA CERCANA: "${other.band_name}" toca cerca de esta fecha (${otherDate} en "${other.venue}" - ${other.is_approved ? 'Aprobado' : 'Pendiente'}).`
+              );
+            }
+          } catch (e) {}
+        }
+      }
+    });
+
+    return conflicts;
+  };
+
   const today = new Date().toISOString().split('T')[0];
-  const pendingEvents = events.filter((e) => !e.is_approved).slice(0, displayedEventsCount);
-  const upcomingEvents = events.filter((e) => e.is_approved && e.date >= today).slice(0, displayedEventsCount);
-  const pastEvents = events.filter((e) => e.is_approved && e.date < today);
-  const totalPending = events.filter((e) => !e.is_approved).length;
-  const totalUpcoming = events.filter((e) => e.is_approved && e.date >= today).length;
-  const totalPast = events.filter((e) => e.is_approved && e.date < today).length;
+
+  // Apply filters on events
+  const filteredEvents = events.filter((ev) => {
+    // 1. Search Term (Band or Venue)
+    if (searchTerm) {
+      const term = searchTerm.toLowerCase();
+      const bandMatch = ev.band_name?.toLowerCase().includes(term);
+      const venueMatch = ev.venue?.toLowerCase().includes(term);
+      if (!bandMatch && !venueMatch) return false;
+    }
+
+    // 2. Filter by Date
+    if (filterDate && ev.date !== filterDate) {
+      return false;
+    }
+
+    // 3. Filter by Status
+    if (filterStatus !== 'all') {
+      if (filterStatus === 'pending' && ev.is_approved) return false;
+      if (filterStatus === 'upcoming' && (!ev.is_approved || ev.date < today)) return false;
+      if (filterStatus === 'past' && (!ev.is_approved || ev.date >= today)) return false;
+    }
+
+    return true;
+  });
+
+  const hasActiveFilters = searchTerm !== '' || filterDate !== '' || filterStatus !== 'all';
+
+  // Build partitioned lists
+  const pendingEventsRaw = filteredEvents.filter((e) => !e.is_approved);
+  const upcomingEventsRaw = filteredEvents.filter((e) => e.is_approved && e.date >= today);
+  const pastEventsRaw = filteredEvents.filter((e) => e.is_approved && e.date < today);
+
+  // If search/filter is active, bypass pagination to show all matches immediately
+  const pendingEvents = hasActiveFilters ? pendingEventsRaw : pendingEventsRaw.slice(0, displayedEventsCount);
+  const upcomingEvents = hasActiveFilters ? upcomingEventsRaw : upcomingEventsRaw.slice(0, displayedEventsCount);
+  const pastEvents = hasActiveFilters ? pastEventsRaw : pastEventsRaw.slice(0, displayedEventsCount);
+
+  // Totals for headers (with/without active filters)
+  const totalPending = pendingEventsRaw.length;
+  const totalUpcoming = upcomingEventsRaw.length;
+  const totalPast = pastEventsRaw.length;
 
   const renderEventCard = (ev: any) => {
     const isPending = !ev.is_approved;
+    const conflicts = getEventConflicts(ev);
     return (
       <div
         key={ev.id}
@@ -272,6 +377,18 @@ export default function AdminDashboard() {
             ⚠ Pendiente
           </p>
         )}
+        
+        {/* Conflict Alerts */}
+        {conflicts.length > 0 && (
+          <div className="mb-3 space-y-1">
+            {conflicts.map((c, i) => (
+              <p key={i} className="text-[9px] font-black uppercase text-yellow-400 bg-yellow-950/50 p-1.5 rounded-md border border-yellow-700">
+                {c}
+              </p>
+            ))}
+          </div>
+        )}
+
         <div className="flex gap-2 sm:gap-3">
           <img
             src={getEventImageUrl(ev.flyer_url)}
@@ -382,6 +499,34 @@ export default function AdminDashboard() {
     <div className="min-h-screen bg-zinc-900 text-white p-3 sm:p-4 md:p-6 font-sans relative text-left overflow-x-hidden font-black">
       <header className="flex flex-col sm:flex-row justify-between items-stretch sm:items-center mb-4 sm:mb-6 border-b-4 border-red-600 pb-4 sm:pb-6 bg-zinc-950 p-3 sm:p-4 sticky top-0 z-50 gap-3">
         <div><h1 className="text-xl sm:text-3xl md:text-4xl font-black uppercase italic text-red-600 leading-none">ADMINISTRADOR HQT</h1></div>
+        
+        {/* Search & Filter Controls */}
+        <div className="flex flex-wrap gap-2">
+          <input 
+            type="text" 
+            placeholder="Buscar banda/lugar..." 
+            className="bg-black border-2 border-red-600 p-2 text-[10px] rounded-full uppercase"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+          />
+          <input 
+            type="date" 
+            className="bg-black border-2 border-red-600 p-2 text-[10px] rounded-full uppercase"
+            value={filterDate}
+            onChange={(e) => setFilterDate(e.target.value)}
+          />
+          <select 
+            className="bg-black border-2 border-red-600 p-2 text-[10px] rounded-full uppercase"
+            value={filterStatus}
+            onChange={(e) => setFilterStatus(e.target.value as any)}
+          >
+            <option value="all">TODOS</option>
+            <option value="pending">PENDIENTES</option>
+            <option value="upcoming">PRÓXIMOS</option>
+            <option value="past">PASADOS</option>
+          </select>
+        </div>
+
         <div className="flex gap-2 sm:gap-4"><button onClick={() => router.push('/')} className="flex-1 sm:flex-none bg-white text-black px-4 py-2 font-black uppercase text-xs rounded-full">Web</button><button onClick={() => supabase.auth.signOut().then(() => router.push('/admin'))} className="flex-1 sm:flex-none bg-red-600 px-4 py-2 font-black uppercase text-xs rounded-full">Salir</button></div>
       </header>
 
@@ -402,6 +547,18 @@ export default function AdminDashboard() {
             <div className="border-4 border-blue-600 p-4 bg-zinc-950 space-y-4 rounded-3xl font-black">
               <form onSubmit={handleSaveEvent} className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs text-white">
                 <input required value={editingEvent.band_name} onChange={e => setEditingEvent({...editingEvent, band_name: e.target.value})} className="sm:col-span-2 bg-black border-2 border-white p-2 uppercase font-bold rounded-lg" placeholder="Banda" />
+                
+                {/* Real-time Conflict Alert in Form */}
+                {getEventConflicts({...editingEvent}).length > 0 && (
+                  <div className="sm:col-span-2 space-y-1">
+                    {getEventConflicts({...editingEvent}).map((c, i) => (
+                      <p key={i} className="text-[9px] font-black uppercase text-yellow-400 bg-yellow-950/50 p-2 rounded-lg border border-yellow-700">
+                        {c}
+                      </p>
+                    ))}
+                  </div>
+                )}
+
                 <div className="relative">
                   <input 
                     required 
@@ -410,30 +567,38 @@ export default function AdminDashboard() {
                       setEditingEvent({...editingEvent, venue: e.target.value});
                       setShowSuggestions(true);
                     }}
+                    onFocus={() => setShowSuggestions(true)}
                     onBlur={handleVenueBlur}
                     className="w-full bg-black border-2 border-white p-2 uppercase rounded-lg" 
                     placeholder="Lugar" 
                     autoComplete="off"
                   />
-                  {showSuggestions && editingEvent.venue?.trim().length > 0 && venues.filter(v => v.venue.toLowerCase().includes(editingEvent.venue.toLowerCase())).slice(0, 5).map((v) => (
-                    <button
-                      key={v.venue}
-                      type="button"
-                      onMouseDown={() => {
-                        setEditingEvent({
-                          ...editingEvent,
-                          venue: v.venue,
-                          address: v.address,
-                          department: v.department || 'MONTEVIDEO',
-                          city: v.city
-                        });
-                        setShowSuggestions(false);
-                      }}
-                      className="absolute z-50 left-0 right-0 mt-1 bg-zinc-950 border-2 border-white p-2 text-left hover:bg-red-600 hover:text-white uppercase font-black text-[10px]"
-                    >
-                      {v.venue} <span className="text-zinc-400">({v.address})</span>
-                    </button>
-                  ))}
+                  {showSuggestions && (
+                    <div className="absolute z-50 left-0 right-0 mt-1 bg-zinc-950 border-2 border-white max-h-40 overflow-y-auto">
+                      {venues
+                        .filter(v => v.venue.toLowerCase().includes(editingEvent.venue?.toLowerCase() || ''))
+                        .slice(0, 10)
+                        .map((v) => (
+                          <button
+                            key={v.venue}
+                            type="button"
+                            onPointerDown={() => {
+                              setEditingEvent({
+                                ...editingEvent,
+                                venue: v.venue,
+                                address: v.address,
+                                department: v.department || 'MONTEVIDEO',
+                                city: v.city
+                              });
+                              setShowSuggestions(false);
+                            }}
+                            className="block w-full p-2 text-left hover:bg-red-600 hover:text-white uppercase font-black text-[10px]"
+                          >
+                            {v.venue} <span className="text-zinc-400">({v.address})</span>
+                          </button>
+                        ))}
+                    </div>
+                  )}
                 </div>
                 <input required value={editingEvent.address || ''} onChange={e => setEditingEvent({...editingEvent, address: e.target.value})} className="bg-black border-2 border-white p-2 uppercase rounded-lg" placeholder="Dirección" />
                 <input required value={editingEvent.city || ''} onChange={e => setEditingEvent({...editingEvent, city: e.target.value})} className="bg-black border-2 border-white p-2 uppercase rounded-lg" placeholder="Ciudad" />
