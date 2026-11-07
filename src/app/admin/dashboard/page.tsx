@@ -111,14 +111,27 @@ export default function AdminDashboard() {
   const [newInterview, setNewInterview] = useState<any>({ id: null, title: '', subtitle: '', band_name: '', content: '', image_url: '', is_active: true, author: '', photo_credit: '' });
   const [selectedMessage, setSelectedMessage] = useState<any>(null);
   const [selectedInterview, setSelectedInterview] = useState<any>(null);
+  const [currentUser, setCurrentUser] = useState<{ id: string; email: string; role: string; isCollaborator: boolean; isSuperAdmin: boolean } | null>(null);
 
   const router = useRouter();
 
   useEffect(() => {
     async function checkUser() {
       const { data: { user } } = await supabase.auth.getUser();
-      if (!user) router.push('/admin');
-      else fetchData();
+      if (!user) {
+        router.push('/admin');
+      } else {
+        const role = user.user_metadata?.role || user.app_metadata?.role || 'superadmin';
+        const isCollaborator = role === 'collaborator';
+        setCurrentUser({
+          id: user.id,
+          email: user.email || '',
+          role: role,
+          isCollaborator: isCollaborator,
+          isSuperAdmin: !isCollaborator,
+        });
+        fetchData();
+      }
     }
     checkUser();
   }, [router]);
@@ -204,7 +217,7 @@ export default function AdminDashboard() {
 
   async function handleSaveEvent(e: React.FormEvent) {
     e.preventDefault(); if (!editingEvent) return;
-    const { id, created_at, ...data } = editingEvent;
+    const { id, created_at, created_by, created_by_email, ...data } = editingEvent;
     
     // Normalización de datos para filtros consistentes
     const baseNormalizedData = {
@@ -213,6 +226,8 @@ export default function AdminDashboard() {
       venue: data.venue?.trim().toUpperCase(),
       address: data.address?.trim().toUpperCase(),
       city: data.city?.trim().toUpperCase(),
+      created_by: id === 'new' ? currentUser?.id : created_by,
+      created_by_email: id === 'new' ? currentUser?.email : created_by_email,
     };
 
     if (id === 'new') {
@@ -229,6 +244,8 @@ export default function AdminDashboard() {
       if (res.error) alert('Error: ' + res.error.message); else { setEditingEvent(null); fetchData(); }
     }
   }
+
+  const canEditEvent = (ev: any) => currentUser?.isSuperAdmin || (currentUser?.id === ev.created_by);
 
   async function handleSaveSponsor(e: React.FormEvent) {
     e.preventDefault(); if (!newSponsor.image_url) return alert('Sube imagen');
@@ -498,8 +515,8 @@ export default function AdminDashboard() {
   return (
     <div className="min-h-screen bg-zinc-900 text-white p-3 sm:p-4 md:p-6 font-sans relative text-left overflow-x-hidden font-black">
       <header className="flex flex-col sm:flex-row justify-between items-stretch sm:items-center mb-4 sm:mb-6 border-b-4 border-red-600 pb-4 sm:pb-6 bg-zinc-950 p-3 sm:p-4 sticky top-0 z-50 gap-3">
-        <div><h1 className="text-xl sm:text-3xl md:text-4xl font-black uppercase italic text-red-600 leading-none">ADMINISTRADOR HQT</h1></div>
-        
+        <div><h1 className="text-xl sm:text-3xl md:text-4xl font-black uppercase italic text-red-600 leading-none">{currentUser?.isCollaborator ? 'COLABORADOR HQT' : 'ADMINISTRADOR HQT'}</h1></div>
+
         {/* Search & Filter Controls */}
         <div className="flex flex-wrap gap-2">
           <input 
@@ -540,14 +557,14 @@ export default function AdminDashboard() {
             </div>
             <button onClick={() => { setEventDates([{ date: '', time: '21:00' }]); setEditingEvent({ id: 'new', band_name: '', venue: '', address: '', city: '', department: 'MONTEVIDEO', date: '', time: '21:00', age_rating: 'ATP', description: '', is_approved: false, price_type: 'range', genre: 'ROCK', flyer_url: '', price_min: null, price_max: null, ticket_type: 'link', ticket_contact: '' }); }} className="w-full sm:w-auto bg-red-600 text-white px-4 sm:px-6 py-2 text-[10px] font-black uppercase rounded-full border-2 border-white">+ NUEVA FECHA</button>
           </div>
-          
+
           {showEventsSection && (
           <>
           {editingEvent && (
             <div className="border-4 border-blue-600 p-4 bg-zinc-950 space-y-4 rounded-3xl font-black">
               <form onSubmit={handleSaveEvent} className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs text-white">
                 <input required value={editingEvent.band_name} onChange={e => setEditingEvent({...editingEvent, band_name: e.target.value})} className="sm:col-span-2 bg-black border-2 border-white p-2 uppercase font-bold rounded-lg" placeholder="Banda" />
-                
+
                 {/* Real-time Conflict Alert in Form */}
                 {getEventConflicts({...editingEvent}).length > 0 && (
                   <div className="sm:col-span-2 space-y-1">
@@ -604,7 +621,7 @@ export default function AdminDashboard() {
                 <input required value={editingEvent.city || ''} onChange={e => setEditingEvent({...editingEvent, city: e.target.value})} className="bg-black border-2 border-white p-2 uppercase rounded-lg" placeholder="Ciudad" />
                 <select value={editingEvent.department} onChange={e => setEditingEvent({...editingEvent, department: e.target.value})} className="bg-black border-2 border-white p-2 rounded-lg">{DEPARTAMENTOS.map(d => <option key={d} value={d}>{d}</option>)}</select>
                 <select value={editingEvent.genre} onChange={e => setEditingEvent({...editingEvent, genre: e.target.value})} className="bg-black border-2 border-white p-2 rounded-lg">{GENEROS.map(g => <option key={g} value={g}>{g}</option>)}</select>
-                
+
                 {editingEvent.id === 'new' ? (
                   <div className="col-span-2 space-y-3 bg-zinc-900/50 p-3 rounded-xl border-2 border-dashed border-zinc-700">
                     <p className="text-[10px] text-zinc-500 uppercase font-black">Fechas y Horarios</p>
@@ -670,7 +687,7 @@ export default function AdminDashboard() {
                 {totalPending > displayedEventsCount && <button onClick={() => setDisplayedEventsCount(d => d + 6)} className="w-full py-2 bg-red-600/30 border-2 border-red-600 text-red-600 font-black uppercase text-xs rounded-lg hover:bg-red-600/50">Cargar más ({totalPending - displayedEventsCount})</button>}
               </div>
             )}
-            
+
             {totalUpcoming > 0 && (
               <div className="flex flex-col gap-5">
                 <p className="text-[10px] font-black uppercase tracking-widest text-zinc-500 border-b border-zinc-800 pb-2">
@@ -717,67 +734,69 @@ export default function AdminDashboard() {
         </section>
 
         {/* DERECHA: MENSAJES -> PUBLICIDAD -> ENTREVISTAS */}
-        <section className="space-y-8 sm:space-y-12">
-          {/* MENSAJES */}
-          <div className="space-y-4 sm:space-y-6">
-            <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2 bg-zinc-950 p-3 border-l-8 border-red-600 rounded-r-2xl">
-              <h2 className="text-xl sm:text-2xl uppercase italic text-red-600 font-franklin">Mensajes</h2>
-              <button type="button" onClick={() => setShowMessagesSection((prev) => !prev)} className={`${adminBtn} bg-zinc-800 border-white`}>{showMessagesSection ? 'Ocultar' : 'Mostrar'}</button>
-            </div>
-            {showMessagesSection && (
-              <div className="space-y-2 sm:space-y-3 font-black">
-                {messages.map(renderMessageCard)}
+        {!currentUser?.isCollaborator && (
+          <section className="space-y-8 sm:space-y-12">
+            {/* MENSAJES */}
+            <div className="space-y-4 sm:space-y-6">
+              <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2 bg-zinc-950 p-3 border-l-8 border-red-600 rounded-r-2xl">
+                <h2 className="text-xl sm:text-2xl uppercase italic text-red-600 font-franklin">Mensajes</h2>
+                <button type="button" onClick={() => setShowMessagesSection((prev) => !prev)} className={`${adminBtn} bg-zinc-800 border-white`}>{showMessagesSection ? 'Ocultar' : 'Mostrar'}</button>
               </div>
-            )}
-          </div>
-
-          {/* PUBLICIDAD */}
-          <div className="space-y-4 sm:space-y-6 border-t-4 border-zinc-800 pt-6 sm:pt-8">
-            <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2 bg-zinc-950 p-3 border-l-8 border-red-600 rounded-r-2xl">
-              <h2 className="text-xl sm:text-2xl uppercase italic text-red-600 font-franklin">Publicidad</h2>
-              <button type="button" onClick={() => setShowSponsorsSection((prev) => !prev)} className={`${adminBtn} bg-zinc-800 border-white`}>{showSponsorsSection ? 'Ocultar' : 'Mostrar'}</button>
-            </div>
-            {showSponsorsSection && (
-              <>
-                <form onSubmit={handleSaveSponsor} className="bg-zinc-950 p-4 border-4 border-white space-y-4 rounded-[32px] font-black">
-                  <input placeholder="Nombre Cliente" className="w-full bg-black border-2 border-white p-2 uppercase text-xs rounded-xl" value={newSponsor.client_name} onChange={e => setNewSponsor({...newSponsor, client_name: e.target.value})} required />
-                  <input placeholder="Link Web" className="w-full bg-black border-2 border-white p-2 text-xs rounded-xl" value={newSponsor.link} onChange={e => setNewSponsor({...newSponsor, link: e.target.value})} />
-                  <div className="grid grid-cols-2 gap-2"><select value={newSponsor.position} onChange={e => setNewSponsor({...newSponsor, position: e.target.value})} className="bg-black border-2 border-white p-2 text-xs rounded-xl"><option value="top">BANNER SUPERIOR</option><option value="sidebar">LATERAL</option><option value="bottom">INFERIOR</option></select><input type="number" placeholder="Orden" value={newSponsor.display_order} onChange={e => setNewSponsor({...newSponsor, display_order: parseInt(e.target.value) || 0})} className="bg-black border-2 border-white p-2 text-xs rounded-xl" /></div>
-                  <div className="flex gap-4 items-center border-2 border-dashed border-zinc-700 p-2 relative rounded-xl font-black font-black"><p className="text-[10px] uppercase text-zinc-500 flex-1 font-black">{uploading ? '...' : (newSponsor.image_url ? 'Imagen OK ✅' : 'Subir Imagen')}</p><input type="file" className="absolute inset-0 opacity-0" onChange={async (e) => { const f = e.target.files?.[0]; if (f) { const u = await handleFileUpload(f, 'sponsors'); if (u) setNewSponsor({...newSponsor, image_url: u}); } }} /></div>
-                  <button type="submit" disabled={uploading} className="w-full bg-red-600 py-2 text-xs border-2 border-white rounded-full font-black">GUARDAR</button>
-                </form>
-                <div className="space-y-2 sm:space-y-3">
-                  {sponsors.map(renderSponsorCard)}
-            </div>
-          </>
-            )}
+              {showMessagesSection && (
+                <div className="space-y-2 sm:space-y-3 font-black">
+                  {messages.map(renderMessageCard)}
+                </div>
+              )}
             </div>
 
-          {/* ENTREVISTAS */}
-          <div className="space-y-4 sm:space-y-6 border-t-4 border-zinc-800 pt-6 sm:pt-8">
-            <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2 bg-zinc-950 p-3 border-l-8 border-red-600 rounded-r-2xl">
-              <h2 className="text-xl sm:text-2xl uppercase italic text-red-600 font-franklin">Entrevistas</h2>
-              <button type="button" onClick={() => setShowInterviewsSection((prev) => !prev)} className={`${adminBtn} bg-zinc-800 border-white`}>{showInterviewsSection ? 'Ocultar' : 'Mostrar'}</button>
+            {/* PUBLICIDAD */}
+            <div className="space-y-4 sm:space-y-6 border-t-4 border-zinc-800 pt-6 sm:pt-8">
+              <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2 bg-zinc-950 p-3 border-l-8 border-red-600 rounded-r-2xl">
+                <h2 className="text-xl sm:text-2xl uppercase italic text-red-600 font-franklin">Publicidad</h2>
+                <button type="button" onClick={() => setShowSponsorsSection((prev) => !prev)} className={`${adminBtn} bg-zinc-800 border-white`}>{showSponsorsSection ? 'Ocultar' : 'Mostrar'}</button>
+              </div>
+              {showSponsorsSection && (
+                <>
+                  <form onSubmit={handleSaveSponsor} className="bg-zinc-950 p-4 border-4 border-white space-y-4 rounded-[32px] font-black">
+                    <input placeholder="Nombre Cliente" className="w-full bg-black border-2 border-white p-2 uppercase text-xs rounded-xl" value={newSponsor.client_name} onChange={e => setNewSponsor({...newSponsor, client_name: e.target.value})} required />
+                    <input placeholder="Link Web" className="w-full bg-black border-2 border-white p-2 text-xs rounded-xl" value={newSponsor.link} onChange={e => setNewSponsor({...newSponsor, link: e.target.value})} />
+                    <div className="grid grid-cols-2 gap-2"><select value={newSponsor.position} onChange={e => setNewSponsor({...newSponsor, position: e.target.value})} className="bg-black border-2 border-white p-2 text-xs rounded-xl"><option value="top">BANNER SUPERIOR</option><option value="sidebar">LATERAL</option><option value="bottom">INFERIOR</option></select><input type="number" placeholder="Orden" value={newSponsor.display_order} onChange={e => setNewSponsor({...newSponsor, display_order: parseInt(e.target.value) || 0})} className="bg-black border-2 border-white p-2 text-xs rounded-xl" /></div>
+                    <div className="flex gap-4 items-center border-2 border-dashed border-zinc-700 p-2 relative rounded-xl font-black font-black"><p className="text-[10px] uppercase text-zinc-500 flex-1 font-black">{uploading ? '...' : (newSponsor.image_url ? 'Imagen OK ✅' : 'Subir Imagen')}</p><input type="file" className="absolute inset-0 opacity-0" onChange={async (e) => { const f = e.target.files?.[0]; if (f) { const u = await handleFileUpload(f, 'sponsors'); if (u) setNewSponsor({...newSponsor, image_url: u}); } }} /></div>
+                    <button type="submit" disabled={uploading} className="w-full bg-red-600 py-2 text-xs border-2 border-white rounded-full font-black">GUARDAR</button>
+                  </form>
+                  <div className="space-y-2 sm:space-y-3">
+                    {sponsors.map(renderSponsorCard)}
+              </div>
+            </>
+              )}
+              </div>
+
+            {/* ENTREVISTAS */}
+            <div className="space-y-4 sm:space-y-6 border-t-4 border-zinc-800 pt-6 sm:pt-8">
+              <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2 bg-zinc-950 p-3 border-l-8 border-red-600 rounded-r-2xl">
+                <h2 className="text-xl sm:text-2xl uppercase italic text-red-600 font-franklin">Entrevistas</h2>
+                <button type="button" onClick={() => setShowInterviewsSection((prev) => !prev)} className={`${adminBtn} bg-zinc-800 border-white`}>{showInterviewsSection ? 'Ocultar' : 'Mostrar'}</button>
+              </div>
+              {showInterviewsSection && (
+                <div className="space-y-4">
+                  <form onSubmit={handleSaveInterview} className="bg-zinc-950 p-4 border-4 border-white space-y-4 rounded-[32px] font-black">
+                <input placeholder="Banda / Artista" className="w-full bg-black border-2 border-white p-2 uppercase text-xs rounded-xl" value={newInterview.band_name} onChange={e => setNewInterview({...newInterview, band_name: e.target.value})} required />
+                <input placeholder="Título de la nota" className="w-full bg-black border-2 border-white p-2 uppercase text-xs rounded-xl" value={newInterview.title} onChange={e => setNewInterview({...newInterview, title: e.target.value})} required />
+                <input placeholder="Subtítulo / Bajada" className="w-full bg-black border-2 border-white p-2 uppercase text-xs rounded-xl" value={newInterview.subtitle} onChange={e => setNewInterview({...newInterview, subtitle: e.target.value})} />
+                <div className="grid grid-cols-2 gap-2"><input placeholder="Créditos Nota" className="bg-black border-2 border-white p-2 text-xs rounded-xl" value={newInterview.author} onChange={e => setNewInterview({...newInterview, author: e.target.value})} /><input placeholder="Créditos Foto" className="bg-black border-2 border-white p-2 text-xs rounded-xl" value={newInterview.photo_credit} onChange={e => setNewInterview({...newInterview, photo_credit: e.target.value})} /></div>
+                <div className="flex gap-4 items-center border-2 border-dashed border-zinc-700 p-2 relative rounded-xl font-black"><p className="text-[10px] uppercase text-zinc-500 flex-1">{uploading ? '...' : (newInterview.image_url ? 'Imagen OK ✅' : 'Subir Foto')}</p><input type="file" className="absolute inset-0 opacity-0" onChange={async (e) => { const f = e.target.files?.[0]; if (f) { const u = await handleFileUpload(f, 'interviews'); if (u) setNewInterview({...newInterview, image_url: u}); } }} /></div>
+                <textarea placeholder="Contenido de la entrevista..." className="w-full bg-black border-2 border-white p-2 text-xs rounded-xl h-24" value={newInterview.content} onChange={e => setNewInterview({...newInterview, content: e.target.value})} required />
+                <div className="flex gap-2"><button type="submit" disabled={uploading} className="flex-1 bg-red-600 py-2 text-xs border-2 border-white rounded-full font-black">PUBLICAR</button>{newInterview.id && <button type="button" onClick={() => setNewInterview({id:null, title:'', subtitle:'', band_name:'', content:'', image_url:'', is_active:true, author:'', photo_credit:''})} className="bg-zinc-700 px-4 border border-white rounded-full font-black font-black">X</button>}</div>
+              </form>
+              <div className="space-y-2 sm:space-y-3">
+                {interviews.map(renderInterviewCard)}
+              </div>
             </div>
-            {showInterviewsSection && (
-              <div className="space-y-4">
-                <form onSubmit={handleSaveInterview} className="bg-zinc-950 p-4 border-4 border-white space-y-4 rounded-[32px] font-black">
-              <input placeholder="Banda / Artista" className="w-full bg-black border-2 border-white p-2 uppercase text-xs rounded-xl" value={newInterview.band_name} onChange={e => setNewInterview({...newInterview, band_name: e.target.value})} required />
-              <input placeholder="Título de la nota" className="w-full bg-black border-2 border-white p-2 uppercase text-xs rounded-xl" value={newInterview.title} onChange={e => setNewInterview({...newInterview, title: e.target.value})} required />
-              <input placeholder="Subtítulo / Bajada" className="w-full bg-black border-2 border-white p-2 uppercase text-xs rounded-xl" value={newInterview.subtitle} onChange={e => setNewInterview({...newInterview, subtitle: e.target.value})} />
-              <div className="grid grid-cols-2 gap-2"><input placeholder="Créditos Nota" className="bg-black border-2 border-white p-2 text-xs rounded-xl" value={newInterview.author} onChange={e => setNewInterview({...newInterview, author: e.target.value})} /><input placeholder="Créditos Foto" className="bg-black border-2 border-white p-2 text-xs rounded-xl" value={newInterview.photo_credit} onChange={e => setNewInterview({...newInterview, photo_credit: e.target.value})} /></div>
-              <div className="flex gap-4 items-center border-2 border-dashed border-zinc-700 p-2 relative rounded-xl font-black"><p className="text-[10px] uppercase text-zinc-500 flex-1">{uploading ? '...' : (newInterview.image_url ? 'Imagen OK ✅' : 'Subir Foto')}</p><input type="file" className="absolute inset-0 opacity-0" onChange={async (e) => { const f = e.target.files?.[0]; if (f) { const u = await handleFileUpload(f, 'interviews'); if (u) setNewInterview({...newInterview, image_url: u}); } }} /></div>
-              <textarea placeholder="Contenido de la entrevista..." className="w-full bg-black border-2 border-white p-2 text-xs rounded-xl h-24" value={newInterview.content} onChange={e => setNewInterview({...newInterview, content: e.target.value})} required />
-              <div className="flex gap-2"><button type="submit" disabled={uploading} className="flex-1 bg-red-600 py-2 text-xs border-2 border-white rounded-full font-black">PUBLICAR</button>{newInterview.id && <button type="button" onClick={() => setNewInterview({id:null, title:'', subtitle:'', band_name:'', content:'', image_url:'', is_active:true, author:'', photo_credit:''})} className="bg-zinc-700 px-4 border border-white rounded-full font-black font-black">X</button>}</div>
-            </form>
-            <div className="space-y-2 sm:space-y-3">
-              {interviews.map(renderInterviewCard)}
-            </div>
-          </div>
+          )}
+        </div>
+      </section>
         )}
       </div>
-    </section>
-  </div>
 
       {selectedMessage && (
         <div className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center p-0 sm:p-4"><div className="absolute inset-0 bg-black/90 backdrop-blur-sm" onClick={() => setSelectedMessage(null)} /><div className="relative w-full max-w-xl bg-zinc-900 border-4 sm:border-8 border-white p-5 sm:p-8 shadow-2xl rounded-t-3xl sm:rounded-[40px] font-black text-left max-h-[85vh] overflow-y-auto"><button onClick={() => setSelectedMessage(null)} className="absolute top-3 right-3 sm:-top-4 sm:-right-4 bg-red-600 text-white w-9 h-9 sm:w-10 sm:h-10 text-lg border-4 border-white rounded-full">X</button><h3 className="text-xl sm:text-2xl uppercase text-red-600 mb-2 pr-10">{selectedMessage.name}</h3><p className="text-xs text-zinc-500 mb-2 italic break-all">{selectedMessage.email} | {selectedMessage.phone}</p><p className="text-base sm:text-lg text-white">"{selectedMessage.message}"</p><button onClick={() => { if(confirm('¿Borrar?')) deleteMessage(selectedMessage.id) }} className="mt-6 w-full sm:w-auto bg-red-600 text-white px-6 py-2 rounded-full uppercase text-xs border-2 border-white">ELIMINAR</button></div></div>

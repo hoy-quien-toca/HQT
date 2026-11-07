@@ -22,6 +22,8 @@ export interface Event {
   is_suspended?: boolean;
   suggestion_tag?: string | null;
   created_at?: string | null;
+  created_by?: string | null;
+  created_by_email?: string | null;
 }
 
 export interface Sponsor {
