@@ -34,7 +34,7 @@ export default function AdminDashboard() {
   const [showSponsorsSection, setShowSponsorsSection] = useState(true);
   const [showInterviewsSection, setShowInterviewsSection] = useState(true);
   const [showPastEvents, setShowPastEvents] = useState(false);
-  const [displayedEventsCount, setDisplayedEventsCount] = useState(50);
+  const [displayedEventsCount, setDisplayedEventsCount] = useState(12);
   
   // Search and Filter States
   const [searchTerm, setSearchTerm] = useState('');
@@ -708,7 +708,7 @@ export default function AdminDashboard() {
                   </p>
                 </div>
                 {pendingEvents.map(renderEventCard)}
-                {totalPending > displayedEventsCount && <button onClick={() => setDisplayedEventsCount(d => d + 50)} className="w-full py-2 bg-red-600/30 border-2 border-red-600 text-red-600 font-black uppercase text-xs rounded-lg hover:bg-red-600/50">Cargar más ({totalPending - displayedEventsCount})</button>}
+                {totalPending > displayedEventsCount && <button onClick={() => setDisplayedEventsCount(d => d + 12)} className="w-full py-2 bg-red-600/30 border-2 border-red-600 text-red-600 font-black uppercase text-xs rounded-lg hover:bg-red-600/50">Cargar más ({totalPending - displayedEventsCount})</button>}
               </div>
             )}
 
@@ -718,7 +718,7 @@ export default function AdminDashboard() {
                   Próximas fechas ({totalUpcoming})
                 </p>
                 {upcomingEvents.map(renderEventCard)}
-                {totalUpcoming > displayedEventsCount && <button onClick={() => setDisplayedEventsCount(d => d + 50)} className="w-full py-2 bg-zinc-800/50 border-2 border-zinc-700 text-zinc-400 font-black uppercase text-xs rounded-lg hover:bg-zinc-800">Cargar más ({totalUpcoming - displayedEventsCount})</button>}
+                {totalUpcoming > displayedEventsCount && <button onClick={() => setDisplayedEventsCount(d => d + 12)} className="w-full py-2 bg-zinc-800/50 border-2 border-zinc-700 text-zinc-400 font-black uppercase text-xs rounded-lg hover:bg-zinc-800">Cargar más ({totalUpcoming - displayedEventsCount})</button>}
               </div>
             )}
 
@@ -742,7 +742,7 @@ export default function AdminDashboard() {
                     {pastEvents.slice(0, displayedEventsCount).map(renderEventCard)}
                     {totalPast > displayedEventsCount && (
                       <button 
-                        onClick={() => setDisplayedEventsCount(d => d + 50)} 
+                        onClick={() => setDisplayedEventsCount(d => d + 12)} 
                         className="w-full py-2 bg-zinc-800/30 border-2 border-zinc-700 text-zinc-500 font-black uppercase text-xs rounded-lg hover:bg-zinc-800/50"
                       >
                         Cargar más ({totalPast - displayedEventsCount})
