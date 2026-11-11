@@ -1,4 +1,5 @@
 import { supabase } from '@/lib/supabase';
+import { fetchAllPages } from '@/lib/fetchAllPages';
 import HomePageClient from './HomePageClient';
 import type { Event, Sponsor, Interview } from '@/types';
 
@@ -8,12 +9,16 @@ export default async function Home() {
   const today = new Date().toISOString().split('T')[0];
   
   const [eventRes, sponsorRes, interviewRes] = await Promise.all([
-    supabase.from('events')
-      .select('*')
-      .eq('is_approved', true)
-      .gte('date', today)
-      .order('date', { ascending: true })
-      .order('time', { ascending: true }),
+    fetchAllPages((from, to) =>
+      supabase.from('events')
+        .select('*')
+        .eq('is_approved', true)
+        .gte('date', today)
+        .order('date', { ascending: true })
+        .order('time', { ascending: true })
+        .order('id', { ascending: true })
+        .range(from, to)
+    ),
     supabase.from('sponsors').select('*').eq('is_active', true),
     supabase.from('interviews')
       .select('*')

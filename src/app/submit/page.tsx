@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
+import { fetchAllPages } from '@/lib/fetchAllPages';
 import Image from 'next/image';
 import Link from 'next/link';
 
@@ -41,11 +42,15 @@ export default function SubmitEvent() {
   useEffect(() => {
     async function fetchVenues() {
       try {
-        const { data, error } = await supabase
-          .from('events')
-          .select('venue, address, department, city')
-          .eq('is_approved', true)
-          .order('created_at', { ascending: false });
+        const { data, error } = await fetchAllPages((from, to) =>
+          supabase
+            .from('events')
+            .select('venue, address, department, city')
+            .eq('is_approved', true)
+            .order('created_at', { ascending: false })
+            .order('id', { ascending: true })
+            .range(from, to)
+        );
         
         if (data) {
           const uniqueVenues: Array<{ venue: string, address: string, department: string, city: string }> = [];

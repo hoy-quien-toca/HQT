@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabase';
+import { fetchAllPages } from '@/lib/fetchAllPages';
 import { useRouter } from 'next/navigation';
 import { getEventImageUrl } from '@/lib/imageOptimization';
 
@@ -33,7 +34,7 @@ export default function AdminDashboard() {
   const [showSponsorsSection, setShowSponsorsSection] = useState(true);
   const [showInterviewsSection, setShowInterviewsSection] = useState(true);
   const [showPastEvents, setShowPastEvents] = useState(false);
-  const [displayedEventsCount, setDisplayedEventsCount] = useState(6);
+  const [displayedEventsCount, setDisplayedEventsCount] = useState(50);
   
   // Search and Filter States
   const [searchTerm, setSearchTerm] = useState('');
@@ -50,11 +51,15 @@ export default function AdminDashboard() {
   useEffect(() => {
     async function fetchVenues() {
       try {
-        const { data } = await supabase
-          .from('events')
-          .select('venue, address, department, city')
-          .eq('is_approved', true)
-          .order('created_at', { ascending: false });
+        const { data } = await fetchAllPages((from, to) =>
+          supabase
+            .from('events')
+            .select('venue, address, department, city')
+            .eq('is_approved', true)
+            .order('created_at', { ascending: false })
+            .order('id', { ascending: true })
+            .range(from, to)
+        );
         
         if (data) {
           const uniqueVenues: Array<{ venue: string, address: string, department: string, city: string }> = [];
@@ -139,7 +144,14 @@ export default function AdminDashboard() {
   async function fetchData() {
     setLoading(true);
     const [eventRes, messageRes, interviewRes, sponsorRes] = await Promise.all([
-      supabase.from('events').select('*').order('date', { ascending: true }),
+      fetchAllPages((from, to) =>
+        supabase
+          .from('events')
+          .select('*')
+          .order('date', { ascending: true })
+          .order('id', { ascending: true })
+          .range(from, to)
+      ),
       supabase.from('contact_messages').select('*').order('created_at', { ascending: false }),
       supabase.from('interviews').select('*').order('published_at', { ascending: false }),
       supabase.from('sponsors').select('*').order('position', { ascending: true }).order('display_order', { ascending: true })
@@ -418,31 +430,43 @@ export default function AdminDashboard() {
             <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-2">
               <h3 className="text-sm sm:text-base font-black uppercase leading-tight truncate pr-1 text-white">{ev.band_name}</h3>
               <div className="flex gap-1 flex-wrap">
-                <button type="button" onClick={() => setEditingEvent(ev)} className={`${adminBtn} bg-blue-600 border-white text-[8px] sm:text-[10px]`}>EDITAR</button>
-                <button type="button" onClick={() => supabase.from('events').update({ is_approved: !ev.is_approved }).eq('id', ev.id).then(() => fetchData())} className={`${adminBtn} border-white ${ev.is_approved ? 'bg-zinc-800' : 'bg-green-600'} text-[8px] sm:text-[10px]`}>{ev.is_approved ? 'BAJAR' : 'APROBAR'}</button>
-                <button type="button" onClick={() => deleteEvent(ev.id)} className={`${adminBtn} bg-red-600 border-white text-[8px] sm:text-[10px]`}>BORRAR</button>
+                {canEditEvent(ev) && (
+                  <>
+                    <button type="button" onClick={() => setEditingEvent(ev)} className={`${adminBtn} bg-blue-600 border-white text-[8px] sm:text-[10px]`}>EDITAR</button>
+                    <button type="button" onClick={() => supabase.from('events').update({ is_approved: !ev.is_approved }).eq('id', ev.id).then(() => fetchData())} className={`${adminBtn} border-white ${ev.is_approved ? 'bg-zinc-800' : 'bg-green-600'} text-[8px] sm:text-[10px]`}>{ev.is_approved ? 'BAJAR' : 'APROBAR'}</button>
+                    <button type="button" onClick={() => deleteEvent(ev.id)} className={`${adminBtn} bg-red-600 border-white text-[8px] sm:text-[10px]`}>BORRAR</button>
+                  </>
+                )}
               </div>
             </div>
             <p className="text-[10px] sm:text-xs font-bold text-red-600 uppercase">
               {ev.date} — {ev.time?.substring(0, 5)} hs · {ev.venue}
             </p>
             <div className="flex flex-col gap-1 sm:gap-1.5">
-              <button
-                type="button"
-                onClick={() => toggleFeatured(ev.id, ev.is_featured)}
-                title="Carrusel destacado arriba en la portada"
-                className={`${adminBar} w-full ${ev.is_featured ? 'bg-red-600 border-white text-white' : 'bg-transparent border-red-600 text-red-600'}`}
-              >
-                BANNER
-              </button>
-              <div className="grid grid-cols-3 gap-1 sm:gap-1.5">
-                <button type="button" onClick={() => updateEventTag(ev.id, 'PLANAZO', ev.suggestion_tag)} className={`${adminBar} ${ev.suggestion_tag === 'PLANAZO' ? 'bg-yellow-400 text-black border-black' : 'border-yellow-400 text-yellow-400'}`}>PLANAZO</button>
-                <button type="button" onClick={() => updateEventTag(ev.id, 'NO FALLA', ev.suggestion_tag)} className={`${adminBar} ${ev.suggestion_tag === 'NO FALLA' ? 'bg-white text-black border-black' : 'border-white text-white'}`}>NO FALLA</button>
-                <button type="button" onClick={() => updateEventTag(ev.id, 'SALIDA SEGURA', ev.suggestion_tag)} className={`${adminBar} text-[7px] sm:text-[9px] ${ev.suggestion_tag === 'SALIDA SEGURA' ? 'bg-green-600 border-white text-white' : 'border-green-600 text-green-600'}`}>SALIDA SEGURA</button>
-              </div>
+              {currentUser?.isSuperAdmin && (
+                <>
+                  <button
+                    type="button"
+                    onClick={() => toggleFeatured(ev.id, ev.is_featured)}
+                    title="Carrusel destacado arriba en la portada"
+                    className={`${adminBar} w-full ${ev.is_featured ? 'bg-red-600 border-white text-white' : 'bg-transparent border-red-600 text-red-600'}`}
+                  >
+                    BANNER
+                  </button>
+                  <div className="grid grid-cols-3 gap-1 sm:gap-1.5">
+                    <button type="button" onClick={() => updateEventTag(ev.id, 'PLANAZO', ev.suggestion_tag)} className={`${adminBar} ${ev.suggestion_tag === 'PLANAZO' ? 'bg-yellow-400 text-black border-black' : 'border-yellow-400 text-yellow-400'}`}>PLANAZO</button>
+                    <button type="button" onClick={() => updateEventTag(ev.id, 'NO FALLA', ev.suggestion_tag)} className={`${adminBar} ${ev.suggestion_tag === 'NO FALLA' ? 'bg-white text-black border-black' : 'border-white text-white'}`}>NO FALLA</button>
+                    <button type="button" onClick={() => updateEventTag(ev.id, 'SALIDA SEGURA', ev.suggestion_tag)} className={`${adminBar} text-[7px] sm:text-[9px] ${ev.suggestion_tag === 'SALIDA SEGURA' ? 'bg-green-600 border-white text-white' : 'border-green-600 text-green-600'}`}>SALIDA SEGURA</button>
+                  </div>
+                </>
+              )}
               <div className="grid grid-cols-2 gap-1 sm:gap-1.5">
-                <button type="button" onClick={() => toggleSoldOut(ev.id, ev.is_sold_out)} className={`${adminBar} ${ev.is_sold_out ? 'bg-red-600 border-white text-white' : 'border-red-600 text-red-600'}`}>AGOTADO</button>
-                <button type="button" onClick={() => toggleSuspended(ev.id, ev.is_suspended)} className={`${adminBar} ${ev.is_suspended ? 'bg-orange-500 border-white text-black' : 'border-orange-500 text-orange-500'}`}>SUSPENDIDO</button>
+                {canEditEvent(ev) && (
+                  <>
+                    <button type="button" onClick={() => toggleSoldOut(ev.id, ev.is_sold_out)} className={`${adminBar} ${ev.is_sold_out ? 'bg-red-600 border-white text-white' : 'border-red-600 text-red-600'}`}>AGOTADO</button>
+                    <button type="button" onClick={() => toggleSuspended(ev.id, ev.is_suspended)} className={`${adminBar} ${ev.is_suspended ? 'bg-orange-500 border-white text-black' : 'border-orange-500 text-orange-500'}`}>SUSPENDIDO</button>
+                  </>
+                )}
               </div>
             </div>
           </div>
@@ -684,7 +708,7 @@ export default function AdminDashboard() {
                   </p>
                 </div>
                 {pendingEvents.map(renderEventCard)}
-                {totalPending > displayedEventsCount && <button onClick={() => setDisplayedEventsCount(d => d + 6)} className="w-full py-2 bg-red-600/30 border-2 border-red-600 text-red-600 font-black uppercase text-xs rounded-lg hover:bg-red-600/50">Cargar más ({totalPending - displayedEventsCount})</button>}
+                {totalPending > displayedEventsCount && <button onClick={() => setDisplayedEventsCount(d => d + 50)} className="w-full py-2 bg-red-600/30 border-2 border-red-600 text-red-600 font-black uppercase text-xs rounded-lg hover:bg-red-600/50">Cargar más ({totalPending - displayedEventsCount})</button>}
               </div>
             )}
 
@@ -694,7 +718,7 @@ export default function AdminDashboard() {
                   Próximas fechas ({totalUpcoming})
                 </p>
                 {upcomingEvents.map(renderEventCard)}
-                {totalUpcoming > displayedEventsCount && <button onClick={() => setDisplayedEventsCount(d => d + 6)} className="w-full py-2 bg-zinc-800/50 border-2 border-zinc-700 text-zinc-400 font-black uppercase text-xs rounded-lg hover:bg-zinc-800">Cargar más ({totalUpcoming - displayedEventsCount})</button>}
+                {totalUpcoming > displayedEventsCount && <button onClick={() => setDisplayedEventsCount(d => d + 50)} className="w-full py-2 bg-zinc-800/50 border-2 border-zinc-700 text-zinc-400 font-black uppercase text-xs rounded-lg hover:bg-zinc-800">Cargar más ({totalUpcoming - displayedEventsCount})</button>}
               </div>
             )}
 
@@ -718,7 +742,7 @@ export default function AdminDashboard() {
                     {pastEvents.slice(0, displayedEventsCount).map(renderEventCard)}
                     {totalPast > displayedEventsCount && (
                       <button 
-                        onClick={() => setDisplayedEventsCount(d => d + 6)} 
+                        onClick={() => setDisplayedEventsCount(d => d + 50)} 
                         className="w-full py-2 bg-zinc-800/30 border-2 border-zinc-700 text-zinc-500 font-black uppercase text-xs rounded-lg hover:bg-zinc-800/50"
                       >
                         Cargar más ({totalPast - displayedEventsCount})
