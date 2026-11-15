@@ -4,14 +4,8 @@ const UI_NOISE = [
   'compartir', 'whatsapp', 'facebook', 'instagram', 'copiar link', 'ver mapa', 'ubicación',
   'seleccionar', 'asientos', 'continuar', 'volver', 'filtrar', 'buscar', 'todos los derechos',
   'inicio', 'eventos', 'contacto', 'mis entradas', 'ver más', 'siguiente', 'anterior',
-  'agregado al carrito', 'resumen de compra', 'métodos de pago', 'servicio', 'costo de servicio'
-];
-
-const VENUE_KEYWORDS = [
-  'teatro', 'sala', 'bar', 'club', 'auditorio', 'centro', 'estadio', 'anfiteatro', 
-  'pub', 'hall', 'espacio', 'plaza', 'parque', 'antel arena', 'sodre', 'bluzz', 
-  'live', 'complejo', 'zitarrosa', 'movie', 'metropolitan', 'trillas', 'makala',
-  'bunker', 'BJ', 'agadu', 'canelones', 'montevideo music box', 'la trastienda'
+  'agregado al carrito', 'resumen de compra', 'métodos de pago', 'servicio', 'costo de servicio',
+  'mis tickets', 'mi perfil', 'buscá tu próximo plan', 'crear evento'
 ];
 
 const MONTHS: Record<string, string> = {
@@ -22,19 +16,18 @@ const MONTHS: Record<string, string> = {
 };
 
 export function parseEventText(rawText: string) {
-  const lines = rawText
+  // Limpiar texto general
+  const cleanText = rawText.replace(/\r\n/g, '\n');
+  const lines = cleanText
     .split('\n')
     .map(l => l.trim())
     .filter(l => l.length > 1);
 
-  // Filtrar líneas que son ruido evidente de UI
-  const cleanLines = lines.filter(l => {
-    const lower = l.toLowerCase();
-    return !UI_NOISE.some(noise => lower === noise || lower.startsWith(noise + ' '));
-  });
-
   let bandName = '';
   let venue = '';
+  let address = '';
+  let city = 'Montevideo';
+  let department = 'MONTEVIDEO';
   let date = '';
   let time = '21:00';
   let priceMin: number | null = null;
@@ -42,93 +35,94 @@ export function parseEventText(rawText: string) {
   let priceType = 'range';
   let description = '';
 
-  // 1. Detectar Lugar (Venue)
-  for (const line of cleanLines) {
-    const lower = line.toLowerCase();
-    if (VENUE_KEYWORDS.some(kw => lower.includes(kw)) && line.length < 50) {
-      venue = line;
+  // 1. Detectar Banda / Título (ej: con comillas o primera línea relevante)
+  const quoteMatch = cleanText.match(/"([^"]+)"\s*([^\.]+)/);
+  if (quoteMatch) {
+    bandName = `${quoteMatch[1]} ${quoteMatch[2]}`.trim();
+  } else {
+    for (const line of lines) {
+      const lower = line.toLowerCase();
+      if (!UI_NOISE.some(n => lower.includes(n)) && line.length > 3 && line.length < 80) {
+        if (!/\d{1,2}\s+de\s+[a-z]+/i.test(line) && !line.includes('$')) {
+          bandName = line.replace(/\.$/, '');
+          break;
+        }
+      }
+    }
+  }
+  if (!bandName && lines.length > 0) bandName = lines[0];
+
+  // 2. Detectar Fecha (ej: "Domingo 9 de Mayo" o "9 de Mayo")
+  const spanishDateRegex = /(?:lunes|martes|miércoles|jueves|viernes|sábado|domingo)?[\s,]*(\d{1,2})\s+de\s+([a-záéíóú]+)(?:\s+de\s+(\d{4}))?/i;
+  const spanishMatch = cleanText.match(spanishDateRegex);
+  if (spanishMatch) {
+    const day = spanishMatch[1].padStart(2, '0');
+    const monthName = spanishMatch[2].toLowerCase();
+    const month = MONTHS[monthName] || '05';
+    const year = spanishMatch[3] || new Date().getFullYear().toString();
+    date = `${year}-${month}-${day}`;
+  }
+
+  // 3. Detectar Hora (ej: "21 hs", "21:00")
+  const timeRegex = /(\d{1,2})\s*(?:hs|h|:(\d{2}))/i;
+  const timeMatch = cleanText.match(timeRegex);
+  if (timeMatch) {
+    const hour = timeMatch[1].padStart(2, '0');
+    const minute = timeMatch[2] ? timeMatch[2] : '00';
+    time = `${hour}:${minute}`;
+  }
+
+  // 4. Detectar Lugar y Dirección (ej: "Radisson Montevideo Victoria Plaza Hotel - Pl. Independencia 759")
+  const parts = cleanText.split(/[-–—•]/);
+  for (let i = 0; i < parts.length; i++) {
+    const part = parts[i].trim();
+    const lower = part.toLowerCase();
+    if (
+      lower.includes('hotel') || lower.includes('teatro') || lower.includes('sala') || 
+      lower.includes('hotel') || lower.includes('club') || lower.includes('auditorio') ||
+      lower.includes('radisson') || lower.includes('plaza')
+    ) {
+      venue = part;
+      // Si hay una parte siguiente, suele ser la dirección
+      if (parts[i + 1]) {
+        address = parts[i + 1].trim();
+      }
       break;
     }
   }
 
-  // 2. Detectar Fecha (ej: "15 de noviembre de 2026" o "15/11/2026")
-  const spanishDateRegex = /(\d{1,2})\s+de\s+([a-záéíóú]+)(?:\s+de\s+(\d{4}))?/i;
-  const spanishMatch = rawText.match(spanishDateRegex);
-  if (spanishMatch) {
-    const day = spanishMatch[1].padStart(2, '0');
-    const monthName = spanishMatch[2].toLowerCase();
-    const month = MONTHS[monthName] || '01';
-    const year = spanishMatch[3] || new Date().getFullYear().toString();
-    date = `${year}-${month}-${day}`;
-  } else {
-    const numDateRegex = /(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{2,4})/;
-    const numMatch = rawText.match(numDateRegex);
-    if (numMatch) {
-      const day = numMatch[1].padStart(2, '0');
-      const month = numMatch[2].padStart(2, '0');
-      let year = numMatch[3];
-      if (year.length === 2) year = '20' + year;
-      date = `${year}-${month}-${day}`;
-    }
-  }
-
-  // 3. Detectar Hora
-  const timeRegex = /(\d{1,2}):(\d{2})\s*(?:hs)?/i;
-  const timeMatch = rawText.match(timeRegex);
-  if (timeMatch) {
-    time = `${timeMatch[1].padStart(2, '0')}:${timeMatch[2]}`;
-  }
-
-  // 4. Detectar Precios ($...)
-  const priceRegex = /\$\s*(\d{2,6}(?:[.,]\d{3})*(?:[.,]\d{2})?)/g;
+  // 5. Detectar Precios
+  const priceRegex = /\$\s*(\d{2,6})/g;
   const prices: number[] = [];
   let pMatch;
-  while ((pMatch = priceRegex.exec(rawText)) !== null) {
-    const cleanNum = parseInt(pMatch[1].replace(/[.,]/g, ''), 10);
-    if (!isNaN(cleanNum) && cleanNum > 50 && cleanNum < 500000) {
-      prices.push(cleanNum);
+  while ((pMatch = priceRegex.exec(cleanText)) !== null) {
+    const val = parseInt(pMatch[1], 10);
+    if (!isNaN(val) && val > 50 && val < 500000) {
+      prices.push(val);
     }
   }
 
   if (prices.length > 0) {
     priceMin = Math.min(...prices);
     priceMax = Math.max(...prices);
-  } else if (rawText.toLowerCase().includes('gratis') || rawText.toLowerCase().includes('libre')) {
+  } else if (cleanText.toLowerCase().includes('gratis') || cleanText.toLowerCase().includes('libre')) {
     priceType = 'free';
     priceMin = 0;
     priceMax = 0;
   }
 
-  // 5. Detectar Banda / Título (la línea limpia más prominente que no sea fecha, hora, lugar ni precio)
-  for (const line of cleanLines) {
-    if (
-      line.length > 3 && 
-      line.length < 85 && 
-      line !== venue && 
-      !line.includes('$') &&
-      !/\d{1,2}:\d{2}/.test(line) &&
-      !/\d{1,2}[\/\-]\d{1,2}/.test(line) &&
-      !Object.keys(MONTHS).some(m => line.toLowerCase().includes(m))
-    ) {
-      bandName = line;
-      break;
-    }
-  }
-  if (!bandName && cleanLines.length > 0) bandName = cleanLines[0];
-
   // 6. Descripción
-  const descLines = cleanLines.filter(l => l !== bandName && l !== venue && !l.includes('$'));
-  description = descLines.slice(0, 8).join('. ').substring(0, 1500);
+  description = cleanText.substring(0, 1000);
 
   return {
-    band_name: bandName.substring(0, 100),
-    venue: venue || '',
-    address: '',
+    band_name: bandName.replace(/\.$/, '').substring(0, 100),
+    venue: venue.substring(0, 100),
+    address: address.substring(0, 150),
     city: 'Montevideo',
     department: 'MONTEVIDEO',
     date: date || '',
     time: time || '21:00',
-    description: description || rawText.substring(0, 1000),
+    description: description,
     price_type: priceType,
     price_min: priceMin,
     price_max: priceMax,
