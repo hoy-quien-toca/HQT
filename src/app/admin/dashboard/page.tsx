@@ -71,10 +71,19 @@ export default function AdminDashboard() {
           band_name: json.data.band_name || prev.band_name,
           description: json.data.description || prev.description,
           flyer_url: json.data.flyer_url || prev.flyer_url,
+          date: json.data.date || prev.date,
+          time: json.data.time || prev.time,
+          venue: json.data.venue || prev.venue,
+          address: json.data.address || prev.address,
+          city: json.data.city || prev.city,
+          department: json.data.department || prev.department,
+          price_type: json.data.price_type || prev.price_type,
+          price_min: json.data.price_min !== null ? json.data.price_min : prev.price_min,
+          price_max: json.data.price_max !== null ? json.data.price_max : prev.price_max,
           ticket_contact: json.data.ticket_contact || importUrl,
         }));
         setImportUrl('');
-        alert('¡Datos importados de la URL con éxito! Revisá y completá el resto.');
+        alert('¡Datos completos importados de la URL (lugar, fecha, precios, flyer y descripción)! Revisá que esté todo OK.');
       } else {
         alert(json.error || 'Error al importar');
       }
