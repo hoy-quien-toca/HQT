@@ -10,7 +10,7 @@ export async function POST(request: Request) {
     const apiKey = process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY;
     if (!apiKey) {
       return NextResponse.json({ 
-        error: 'No se encontró la clave de API de Gemini (GEMINI_API_KEY o GOOGLE_API_KEY) en las variables de entorno.' 
+        error: 'No se encontró la clave de API de Gemini (GEMINI_API_KEY o GOOGLE_API_KEY) en las variables de entorno (.env.local).' 
       }, { status: 500 });
     }
 
