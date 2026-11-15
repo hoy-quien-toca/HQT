@@ -55,24 +55,45 @@ export default function AdminDashboard() {
   const [venues, setVenues] = useState<Array<{ venue: string, address: string, department: string, city: string }>>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [pastedText, setPastedText] = useState('');
+  const [parsingAi, setParsingAi] = useState(false);
 
-  const handleSmartPaste = () => {
+  const handleSmartPaste = async () => {
     if (!pastedText.trim()) return;
-    const parsed = parseEventText(pastedText);
-    setEditingEvent((prev: any) => ({
-      ...prev,
-      band_name: parsed.band_name || prev.band_name,
-      venue: parsed.venue || prev.venue,
-      date: parsed.date || prev.date,
-      time: parsed.time || prev.time,
-      description: parsed.description || prev.description,
-      price_type: parsed.price_type || prev.price_type,
-      price_min: parsed.price_min !== null ? parsed.price_min : prev.price_min,
-      price_max: parsed.price_max !== null ? parsed.price_max : prev.price_max,
-      ticket_contact: pastedText.includes('http') ? (pastedText.match(/https?:\/\/[^\s]+/) || [''])[0] : prev.ticket_contact,
-    }));
-    setPastedText('');
-    alert('¡Texto analizado con éxito! Se completaron banda, fecha, lugar, precios y descripción. Revisá los datos.');
+    setParsingAi(true);
+    try {
+      const res = await fetch('/api/admin/ai-parse-event', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text: pastedText })
+      });
+      const json = await res.json();
+      if (json.success && json.data) {
+        const p = json.data;
+        setEditingEvent((prev: any) => ({
+          ...prev,
+          band_name: p.band_name || prev.band_name,
+          venue: p.venue || prev.venue,
+          address: p.address || prev.address,
+          city: p.city || prev.city,
+          department: p.department || prev.department,
+          date: p.date || prev.date,
+          time: p.time || prev.time,
+          description: p.description || prev.description,
+          price_type: p.price_type || prev.price_type,
+          price_min: p.price_min !== undefined ? p.price_min : prev.price_min,
+          price_max: p.price_max !== undefined ? p.price_max : prev.price_max,
+          ticket_contact: pastedText.includes('http') ? (pastedText.match(/https?:\/\/[^\s]+/) || [''])[0] : prev.ticket_contact,
+        }));
+        setPastedText('');
+        alert('✨ ¡Evento analizado y completado con éxito por IA (Gemini)!');
+      } else {
+        alert(json.error || 'Error al procesar con IA');
+      }
+    } catch (err: any) {
+      alert('Error de conexión: ' + err.message);
+    } finally {
+      setParsingAi(false);
+    }
   };
 
   useEffect(() => {
@@ -634,9 +655,10 @@ export default function AdminDashboard() {
                     <button 
                       type="button" 
                       onClick={handleSmartPaste} 
+                      disabled={parsingAi}
                       className="w-full bg-red-600 text-white py-2 text-[10px] font-black uppercase rounded-lg border border-white"
                     >
-                      ⚡ Auto-completar formulario desde texto
+                      {parsingAi ? '✨ Analizando con IA (Gemini)...' : '✨ Auto-completar inteligente con IA (Gemini)'}
                     </button>
                   </div>
                 )}
