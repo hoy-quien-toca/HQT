@@ -11,6 +11,8 @@ import {
   getInterviewModalImageUrl 
 } from '@/lib/imageOptimization';
 
+import { parseEventText } from '@/lib/parseEventText';
+
 const DEPARTAMENTOS = [
   "MONTEVIDEO", "CANELONES", "MALDONADO", "COLONIA", "SAN JOSE", 
   "FLORIDA", "FLORES", "LAVALLEJA", "ROCHA", "TREINTA Y TRES", "CERRO LARGO", 
@@ -52,46 +54,25 @@ export default function AdminDashboard() {
   
   const [venues, setVenues] = useState<Array<{ venue: string, address: string, department: string, city: string }>>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
-  const [importUrl, setImportUrl] = useState('');
-  const [importingUrl, setImportingUrl] = useState(false);
+  const [pastedText, setPastedText] = useState('');
 
-  const handleImportUrl = async () => {
-    if (!importUrl) return;
-    setImportingUrl(true);
-    try {
-      const res = await fetch('/api/admin/scrape-event', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ url: importUrl })
-      });
-      const json = await res.json();
-      if (json.success && json.data) {
-        setEditingEvent((prev: any) => ({
-          ...prev,
-          band_name: json.data.band_name || prev.band_name,
-          description: json.data.description || prev.description,
-          flyer_url: json.data.flyer_url || prev.flyer_url,
-          date: json.data.date || prev.date,
-          time: json.data.time || prev.time,
-          venue: json.data.venue || prev.venue,
-          address: json.data.address || prev.address,
-          city: json.data.city || prev.city,
-          department: json.data.department || prev.department,
-          price_type: json.data.price_type || prev.price_type,
-          price_min: json.data.price_min !== null ? json.data.price_min : prev.price_min,
-          price_max: json.data.price_max !== null ? json.data.price_max : prev.price_max,
-          ticket_contact: json.data.ticket_contact || importUrl,
-        }));
-        setImportUrl('');
-        alert('¡Datos completos importados de la URL (lugar, fecha, precios, flyer y descripción)! Revisá que esté todo OK.');
-      } else {
-        alert(json.error || 'Error al importar');
-      }
-    } catch (err: any) {
-      alert('Error al conectar: ' + err.message);
-    } finally {
-      setImportingUrl(false);
-    }
+  const handleSmartPaste = () => {
+    if (!pastedText.trim()) return;
+    const parsed = parseEventText(pastedText);
+    setEditingEvent((prev: any) => ({
+      ...prev,
+      band_name: parsed.band_name || prev.band_name,
+      venue: parsed.venue || prev.venue,
+      date: parsed.date || prev.date,
+      time: parsed.time || prev.time,
+      description: parsed.description || prev.description,
+      price_type: parsed.price_type || prev.price_type,
+      price_min: parsed.price_min !== null ? parsed.price_min : prev.price_min,
+      price_max: parsed.price_max !== null ? parsed.price_max : prev.price_max,
+      ticket_contact: pastedText.includes('http') ? (pastedText.match(/https?:\/\/[^\s]+/) || [''])[0] : prev.ticket_contact,
+    }));
+    setPastedText('');
+    alert('¡Texto analizado con éxito! Se completaron banda, fecha, lugar, precios y descripción. Revisá los datos.');
   };
 
   useEffect(() => {
@@ -634,21 +615,28 @@ export default function AdminDashboard() {
             <div className="border-4 border-blue-600 p-4 bg-zinc-950 space-y-4 rounded-3xl font-black">
               <form onSubmit={handleSaveEvent} className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs text-white">
                 {editingEvent.id === 'new' && (
-                  <div className="sm:col-span-2 bg-zinc-900 p-3 rounded-xl border-2 border-dashed border-red-600/50 flex flex-col sm:flex-row gap-2 items-center">
+                  <div className="sm:col-span-2 bg-zinc-900 p-3 rounded-xl border-2 border-dashed border-red-600/50 flex flex-col gap-2">
+                    <p className="text-[9px] text-zinc-400 uppercase font-black">⚡ Smart Paste: Seleccioná y copiá todo el contenido de la página de Passline o Redtickets (Ctrl+A, Ctrl+C) y pegalo acá:</p>
+                    <textarea 
+                      rows={3}
+                      placeholder="Pegá todo el texto aquí..." 
+                      value={pastedText} 
+                      onChange={e => setPastedText(e.target.value)} 
+                      className="w-full bg-black border-2 border-white p-2 text-[10px] uppercase rounded-lg text-white" 
+                    />
                     <input 
-                      type="url" 
-                      placeholder="Pegar link de Passline o Redtickets..." 
-                      value={importUrl} 
-                      onChange={e => setImportUrl(e.target.value)} 
-                      className="flex-1 bg-black border-2 border-white p-2 text-[10px] uppercase rounded-lg w-full" 
+                      type="url"
+                      placeholder="Opcional: Pegar URL de la imagen (Clic derecho en imagen del flyer > Copiar dirección de imagen)" 
+                      value={editingEvent.flyer_url || ''} 
+                      onChange={e => setEditingEvent({...editingEvent, flyer_url: e.target.value})} 
+                      className="w-full bg-black border-2 border-white p-2 text-[10px] uppercase rounded-lg text-white" 
                     />
                     <button 
                       type="button" 
-                      onClick={handleImportUrl} 
-                      disabled={importingUrl} 
-                      className="bg-red-600 text-white px-4 py-2 text-[10px] font-black uppercase rounded-lg border border-white whitespace-nowrap"
+                      onClick={handleSmartPaste} 
+                      className="w-full bg-red-600 text-white py-2 text-[10px] font-black uppercase rounded-lg border border-white"
                     >
-                      {importingUrl ? 'Importando...' : '⚡ Auto-completar desde URL'}
+                      ⚡ Auto-completar formulario desde texto
                     </button>
                   </div>
                 )}
